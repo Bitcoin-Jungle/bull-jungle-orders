@@ -1,32 +1,30 @@
 import express from "express"
 import { Telegraf } from "telegraf"
-import sqlite3 from 'sqlite3'
-import { open } from 'sqlite'
 import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv'
+import { GoogleSpreadsheet } from 'google-spreadsheet'
 
 dotenv.config()
 
 const telegram_bot_token = process.env.telegram_bot_token
 const port = process.env.port
 const chat_id = process.env.chat_id
-const db_location = process.env.db_location
 const base_path = process.env.base_path
 const api_key = process.env.api_key
+const google_sheet_id = process.env.google_sheet_id
+const service_account_json = (process.env.service_account_json_base64 ? JSON.parse(Buffer.from(process.env.service_account_json_base64, 'base64').toString()) : null)
+const service_account_email = process.env.service_account_email
 
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
 
-const db = await open({
-  filename: db_location,
-  driver: sqlite3.Database
-})
+const doc = new GoogleSpreadsheet(google_sheet_id);
 
 app.use(bodyParser.json())
 
 app.post('/order', async (req, res) => {
   const apiKey = req.body.apiKey
-  const fiatAmount = parseFloat(req.body.fiatAmount.replace(/,/g, ""))
+  const fiatAmount = (req.body.fiatAmount ? parseFloat(req.body.fiatAmount.replace(/,/g, "")) : null)
   const fiatCurrency = (req.body.fiatCurrency ? req.body.fiatCurrency.toUpperCase() : null)
   const satAmount  = parseInt(req.body.satAmount)
   const direction  = (req.body.direction ? req.body.direction.toUpperCase() : null)
@@ -77,16 +75,32 @@ app.post('/order', async (req, res) => {
     currency: fiatCurrency,
   })
 
-  const order = await db.run(
-    "INSERT INTO orders (fiat_amount, fiat_currency, sat_amount, direction, payment_request) VALUES (?, ?, ?, ?, ?)", 
-    [
-      parseInt(fiatAmount * 100),
-      fiatCurrency,
-      satAmount,
-      direction,
-      paymentReq,
-      ]
-    )
+  await doc.useServiceAccountAuth({
+    client_email: service_account_email,
+    private_key: service_account_json.private_key,
+  })
+
+  await doc.loadInfo()
+
+  const sheet = doc.sheetsByIndex[0]
+
+  const newRow = await sheet.addRow({ 
+    "Type": "TEST",
+    "From currency": "TEST",
+    "From amount": "TEST",
+    "To Currency": "TEST",
+    "TO AMOUNT": "TEST",
+    "Payment type": "TEST",
+    "Biller": "TEST",
+    "Account Number": "TEST",
+    "LN Invoice": "TEST",
+    "USD/CRC": "TEST",
+    "CRC/USD": "TEST",
+    "USD/CAD": "TEST",
+    "EFFECTIVE RATE (TO CURRENCY)": "TEST",
+    "USD RATE": "TEST",
+    "CAD RATE": "TEST",
+  })
 
   let message = `🚨 ${direction} Order 🚨\n`
   message += `Fiat Amount: ${fiatFormatter.format(fiatAmount)}\n`
