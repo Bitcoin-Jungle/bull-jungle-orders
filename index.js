@@ -26,7 +26,7 @@ app.post('/order', async (req, res) => {
   const apiKey = req.body.apiKey
   const fiatAmount = (req.body.fiatAmount ? parseFloat(req.body.fiatAmount.replace(/,/g, "")) : null)
   const fiatCurrency = (req.body.fiatCurrency ? req.body.fiatCurrency.toUpperCase() : null)
-  const satAmount  = parseInt(req.body.satAmount)
+  const satAmount  = parseInt(req.body.satAmount.replace(/,/g, ""))
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
   
