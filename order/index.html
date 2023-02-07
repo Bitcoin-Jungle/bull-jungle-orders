@@ -142,6 +142,10 @@
 					}
 
 					formEl.reset()
+
+					if(key && key.length > 0) {
+						document.querySelector("#apiKey").value = key
+					}
 				})
 				.catch((err) => {
 					alert(err)
