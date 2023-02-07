@@ -109,7 +109,7 @@ app.post('/order', async (req, res) => {
       toCurrency = 'BTC'
       toAmount = `=(${satAmount} / 100000000)`
 
-      paymentType = 'Buy BTC'
+      paymentType = 'Cash'
 
       paymentDestination = paymentReq
       
@@ -123,7 +123,11 @@ app.post('/order', async (req, res) => {
       toCurrency = fiatCurrency
       toAmount = fiatAmountFormatted
 
-      paymentType = 'Sell BTC'
+      if(action === 'BILLPAY') {
+        paymentType = 'Bill Payment'
+      } else {
+        paymentType = 'Cash'
+      }
 
       paymentDestination = paymentReq
 

@@ -89,7 +89,14 @@
 			fetch("/price")
 			.then((res) => res.json())
 			.then((data) => {
-				window.priceData = data
+				if(!data.error) {
+					window.priceData = data
+				} else {
+					alert(data.message)
+				}
+			})
+			.catch((err) => {
+				alert(err)
 			})
 
 			const params = (new URL(document.location)).searchParams;
@@ -124,7 +131,7 @@
   				if(!fiatAmount || !fiatCurrency) {
   					return
   				}
-  				
+
   				const satAmount = fiatAmount / window.priceData[`BTC${fiatCurrency}`] * 100000000
   				satAmountEl.value = Math.round(satAmount)
   			}
