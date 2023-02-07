@@ -203,7 +203,7 @@ const getPrice = async () => {
   }
 
   const priceData = response.data.data.btcPriceList.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
-  const timestamp = priceData.timestamp
+  const timestamp = new Date(priceData.timestamp * 1000).toISOString()
 
   const BTCCRC = Math.round(((priceData.price.base / 10 ** priceData.price.offset) / 100))
 
