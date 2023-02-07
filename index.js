@@ -99,6 +99,7 @@ app.post('/order', async (req, res) => {
   let toAmount = null
   let paymentType = null
   let paymentDestination = null
+  let type = null
   let formulaFreeAmount = (satAmount / 100000000).toFixed(8)
 
   switch(action) {
@@ -110,6 +111,7 @@ app.post('/order', async (req, res) => {
       toAmount = `=(${satAmount} / 100000000)`
 
       paymentType = 'Cash'
+      type = 'Buy'
 
       paymentDestination = paymentReq
       
@@ -122,6 +124,8 @@ app.post('/order', async (req, res) => {
 
       toCurrency = fiatCurrency
       toAmount = fiatAmountFormatted
+
+      type = 'Sell'
 
       if(action === 'BILLPAY') {
         paymentType = 'Bill Payment'
@@ -138,6 +142,8 @@ app.post('/order', async (req, res) => {
       break;
   }
 
+  const priceData = await getPrice()
+
   await doc.useServiceAccountAuth({
     client_email: service_account_email,
     private_key: service_account_json.private_key,
@@ -148,7 +154,7 @@ app.post('/order', async (req, res) => {
   const sheet = doc.sheetsByIndex[0]
 
   const rowData = { 
-    "Type": action,
+    "Type": type,
     "From Amount": fromAmount,
     "From Currency": fromCurrency,
     "To Amount": toAmount,
@@ -159,6 +165,7 @@ app.post('/order', async (req, res) => {
     "Biller Service": billerService,
     "Biller Action Type": billerActionType,
     "Biller Account Number": billerAccountNumber,
+    "USD/CRC": priceData.USDCRC,
   }
 
   const newRow = await sheet.addRow(rowData)
