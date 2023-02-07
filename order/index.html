@@ -34,7 +34,7 @@
 				<div class="mb-3">
 					<label for="satAmount" class="form-label">Sat Amount</label>
 					<input type="text" class="form-control" id="satAmount">
-					<div class="form-text">Enter the amount of satoshis here</div>
+					<div class="form-text">Enter the amount of satoshis here. Exchange rate is updated as of <span style="font-weight: bold;" id="price-timestamp"></span></div>
 				</div>
 
 				<div class="mb-3">
@@ -92,12 +92,15 @@
 				.then((data) => {
 					if(!data.error) {
 						window.priceData = data
+						document.getElementById('price-timestamp').innerText = new Date(data.timestamp).toLocaleString()
 					} else {
 						alert(data.message)
+						document.getElementById('price-timestamp').innerText = data.message
 					}
 				})
 				.catch((err) => {
 					alert(err)
+					document.getElementById('price-timestamp').innerText = err
 				})
 			}
 
