@@ -117,6 +117,10 @@
 				const satAmount = document.querySelector("#satAmount").value
 				const action = document.querySelector("#action").value
 				const paymentReq = document.querySelector("#paymentReq").value
+				const billerCategory = document.querySelector("#billerCategory").value
+				const billerService = document.querySelector("#billerService").value
+				const billerActionType = document.querySelector("#billerActionType").value
+				const billerAccountNumber = document.querySelector("#billerAccountNumber").value
 
 				return fetch("/order", {
 					"method": "POST",
@@ -130,6 +134,10 @@
 						satAmount,
 						action,
 						paymentReq,
+						billerCategory,
+						billerService,
+						billerActionType,
+						billerAccountNumber,
 					})
 				})
 				.then((res) => res.json())
