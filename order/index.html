@@ -1,0 +1,106 @@
+<!doctype html>
+	<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Bitcoin Jungle | Bull Bitcoin | Order Page</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+	</head>
+	<body>
+		<div class="container">
+			<h1>Add New Order For Bull Jungle</h1>
+			<form id="addOrder">
+				<div class="mb-3">
+					<label for="apiKey" class="form-label">API Key</label>
+					<input type="password" class="form-control" id="apiKey">
+					<div class="form-text">Enter your API Key here</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="fiatAmount" class="form-label">Fiat Amount</label>
+					<input type="text" class="form-control" id="fiatAmount">
+					<div class="form-text">Enter the amount in fiat</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="fiatCurrency" class="form-label">Fiat Currency</label>
+					<input type="text" class="form-control" id="fiatCurrency">
+					<div class="form-text">Only USD and CRC are allowed</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="satAmount" class="form-label">Sat Amount</label>
+					<input type="text" class="form-control" id="satAmount">
+					<div class="form-text">Enter the amount of satoshis here</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="direction" class="form-label">Order Type</label>
+					<input type="text" class="form-control" id="direction">
+					<div class="form-text">Enter BUY or SELL order type</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="paymentReq" class="form-label">Payment Request</label>
+					<textarea class="form-control" id="paymentReq"></textarea>
+					<div class="form-text">For BUY orders, enter a lightning invoice. For SELL orders, enter a SINPE Movil number.</div>
+				</div>
+
+				<button type="submit" class="btn btn-primary">Create Order Now</button>
+			</form>
+		</div>
+
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+		<script>
+
+			const params = (new URL(document.location)).searchParams;
+			const key = params.get("key");
+
+			if(key && key.length > 0) {
+				document.querySelector("#apiKey").value = key
+			}
+
+			const formEl = document.querySelector("form#addOrder")
+
+			formEl.addEventListener('submit', async (e) => {
+				e.preventDefault()
+				
+				const apiKey = document.querySelector("#apiKey").value
+				const fiatAmount = document.querySelector("#fiatAmount").value
+				const fiatCurrency = document.querySelector("#fiatCurrency").value
+				const satAmount = document.querySelector("#satAmount").value
+				const direction = document.querySelector("#direction").value
+				const paymentReq = document.querySelector("#paymentReq").value
+
+				return fetch("/order", {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json; charset=utf-8"
+					},
+					"body": JSON.stringify({
+						apiKey,
+						fiatAmount,
+						fiatCurrency,
+						satAmount,
+						direction,
+						paymentReq,
+					})
+				})
+				.then((res) => res.json())
+				.then((data) => {
+					if(data.error) {
+						alert(data.message)
+						return
+					} else {
+						alert("Order created successfully!")
+					}
+
+					formEl.reset()
+				})
+				.catch((err) => {
+					alert(err)
+				})
+			})
+		</script>
+	</body>
+</html>
