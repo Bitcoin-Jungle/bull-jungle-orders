@@ -3,6 +3,7 @@ import { Telegraf } from "telegraf"
 import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv'
 import { GoogleSpreadsheet } from 'google-spreadsheet'
+import axios from 'axios'
 
 dotenv.config()
 
@@ -14,6 +15,7 @@ const api_key = process.env.api_key
 const google_sheet_id = process.env.google_sheet_id
 const service_account_json = (process.env.service_account_json_base64 ? JSON.parse(Buffer.from(process.env.service_account_json_base64, 'base64').toString()) : null)
 const service_account_email = process.env.service_account_email
+const exchange_rate_api_key = process.env.exchange_rate_api_key
 
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
@@ -174,6 +176,57 @@ app.post('/order', async (req, res) => {
   const resp = await bot.telegram.sendMessage(chat_id, message)
 
   res.send({success: true})
+})
+
+const getPrice = async () => {
+  const response = await axios({
+    method: "POST",
+    url: "https://api.mainnet.bitcoinjungle.app/graphql",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: {
+      query: "query BtcPriceList($range: PriceGraphRange!) {\n  btcPriceList(range: $range) {\n    price {\n      base\n      currencyUnit\n      formattedAmount\n      offset\n    }\n    timestamp\n  }\n}",
+      variables: {
+        range: "ONE_DAY"
+      },
+      operationName: "BtcPriceList"
+    }
+  })
+
+  if(!response || !response.data || !response.data.data || !response.data.data.btcPriceList || !response.data.data.btcPriceList.length) {
+    return {error: true, message: "Error fetching price"}
+  }
+
+  const priceData = response.data.data.btcPriceList.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
+  const timestamp = priceData.timestamp
+
+  const BTCCRC = Math.round(((priceData.price.base / 10 ** priceData.price.offset) / 100))
+
+  const fiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CRC`)
+
+  if(!fiatResponse || !fiatResponse.data || !fiatResponse.data.success || !fiatResponse.data.rates || !fiatResponse.data.rates || !fiatResponse.data.rates.CRC) {
+    return {error: true, message: "Error fetching price"}
+  }
+
+  const USDCRC = fiatResponse.data.rates.CRC
+
+  const BTCUSD = Number(BTCCRC / USDCRC).toFixed(2)
+
+  const cadFiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CAD`)
+
+  if(!cadFiatResponse || !cadFiatResponse.data || !cadFiatResponse.data.success || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates.CAD) {
+   return {error: true, message: "Error fetching price"}
+  }
+
+  const USDCAD = cadFiatResponse.data.rates.CAD
+
+  return {BTCCRC, USDCRC, USDCAD, BTCUSD, timestamp}
+}
+
+app.get('/price', async (req, res) => {
+  const priceData = await getPrice()
+  return res.send(priceData)
 })
 
 app.get('/order', (req, res) => {

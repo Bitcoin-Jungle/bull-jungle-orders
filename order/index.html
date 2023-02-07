@@ -84,6 +84,14 @@
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
 		<script>
 
+			window.priceData = {}
+			
+			fetch("/price")
+			.then((res) => res.json())
+			.then((data) => {
+				window.priceData = data
+			})
+
 			const params = (new URL(document.location)).searchParams;
 			const key = params.get("key");
 
@@ -104,6 +112,25 @@
   					billPayContainer.style.display = 'none'
   				}
   			})
+
+  			const fiatAmountEl = document.querySelector("#fiatAmount")
+  			const fiatCurrencyEl = document.querySelector("#fiatCurrency")
+  			const satAmountEl = document.querySelector("#satAmount")
+
+  			const setSatAmount = () => {
+  				const fiatAmount = fiatAmountEl.value.replace(/,/g, "")
+  				const fiatCurrency = fiatCurrencyEl.value.toUpperCase()
+
+  				if(!fiatAmount || !fiatCurrency) {
+  					return
+  				}
+  				
+  				const satAmount = fiatAmount / window.priceData[`BTC${fiatCurrency}`] * 100000000
+  				satAmountEl.value = Math.round(satAmount)
+  			}
+
+  			fiatAmountEl.addEventListener("change", setSatAmount)
+  			fiatCurrencyEl.addEventListener("change", setSatAmount)
 
   			const submitBtnEl = document.getElementById('submit-btn')
 
@@ -167,4 +194,4 @@
 			})
 		</script>
 	</body>
-</html>
+</html>	
