@@ -35,18 +35,46 @@
 				</div>
 
 				<div class="mb-3">
-					<label for="direction" class="form-label">Order Type</label>
-					<input type="text" class="form-control" id="direction">
-					<div class="form-text">Enter BUY or SELL order type</div>
+					<label for="action" class="form-label">Order Type</label>
+					<select class="form-control" id="action">
+						<option value="">-- Select an Option --</option>
+						<option value="BUY">Buy BTC</option>
+						<option value="SELL">Sell BTC</option>
+						<option value="BILLPAY">Bill Payment</option>
+					</select>
 				</div>
 
-				<div class="mb-3">
-					<label for="paymentReq" class="form-label">Payment Request</label>
-					<textarea class="form-control" id="paymentReq"></textarea>
-					<div class="form-text">For BUY orders, enter a lightning invoice. For SELL orders, enter a SINPE Movil number.</div>
+				<div class="paymentReqContainer" style="display: none;">
+					<div class="mb-3">
+						<label for="paymentReq" class="form-label">Payment Request</label>
+						<textarea class="form-control" id="paymentReq"></textarea>
+						<div class="form-text">For BUY orders, enter a lightning invoice. For SELL orders, enter a SINPE Movil number.</div>
+					</div>
 				</div>
 
-				<button type="submit" class="btn btn-primary">Create Order Now</button>
+				<div class="billPayContainer" style="display: none;">
+					<div class="mb-3">
+						<label for="billerCategory" class="form-label">Biller Category</label>
+						<input type="text" class="form-control" id="billerCategory">
+					</div>
+
+					<div class="mb-3">
+						<label for="billerService" class="form-label">Biller Service</label>
+						<input type="text" class="form-control" id="billerService">
+					</div>
+
+					<div class="mb-3">
+						<label for="billerActionType" class="form-label">Biller Action Type</label>
+						<input type="text" class="form-control" id="billerActionType">
+					</div>
+
+					<div class="mb-3">
+						<label for="billerAccountNumber" class="form-label">Biller Account Number</label>
+						<input type="text" class="form-control" id="billerAccountNumber">
+					</div>
+				</div>
+
+				<button id="submit-btn" type="submit" class="btn btn-primary">Create Order Now</button>
 			</form>
 		</div>
 
@@ -60,16 +88,34 @@
 				document.querySelector("#apiKey").value = key
 			}
 
+			const actionEl = document.querySelector("#action")
+			const paymentReqContainer = document.querySelector('.paymentReqContainer')
+			const billPayContainer = document.querySelector('.billPayContainer')
+
+			actionEl.addEventListener("change", () => {
+  				if(actionEl.value === 'BILLPAY') {
+  					paymentReqContainer.style.display = 'none'
+  					billPayContainer.style.display = 'block'
+  				} else {
+  					paymentReqContainer.style.display = 'block'
+  					billPayContainer.style.display = 'none'
+  				}
+  			})
+
+  			const submitBtnEl = document.getElementById('submit-btn')
+
 			const formEl = document.querySelector("form#addOrder")
 
 			formEl.addEventListener('submit', async (e) => {
 				e.preventDefault()
 				
+				submitBtnEl.disabled = true
+
 				const apiKey = document.querySelector("#apiKey").value
 				const fiatAmount = document.querySelector("#fiatAmount").value
 				const fiatCurrency = document.querySelector("#fiatCurrency").value
 				const satAmount = document.querySelector("#satAmount").value
-				const direction = document.querySelector("#direction").value
+				const action = document.querySelector("#action").value
 				const paymentReq = document.querySelector("#paymentReq").value
 
 				return fetch("/order", {
@@ -82,7 +128,7 @@
 						fiatAmount,
 						fiatCurrency,
 						satAmount,
-						direction,
+						action,
 						paymentReq,
 					})
 				})
@@ -99,6 +145,9 @@
 				})
 				.catch((err) => {
 					alert(err)
+				})
+				.finally(() => {
+					submitBtnEl.disabled = false
 				})
 			})
 		</script>
