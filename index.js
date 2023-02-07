@@ -26,7 +26,7 @@ app.post('/order', async (req, res) => {
   const apiKey = req.body.apiKey
   const fiatAmount = (req.body.fiatAmount ? parseFloat(req.body.fiatAmount.replace(/,/g, "")) : null)
   const fiatCurrency = (req.body.fiatCurrency ? req.body.fiatCurrency.toUpperCase() : null)
-  const satAmount  = parseInt(req.body.satAmount.replace(/,/g, ""))
+  const satAmount  = (req.body.satAmount ? parseInt(req.body.satAmount.replace(/,/g, "").replace(/\./g, "")) : null)
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
   
@@ -143,10 +143,10 @@ app.post('/order', async (req, res) => {
 
   const rowData = { 
     "Type": action,
-    "From Currency": fromCurrency,
     "From Amount": fromAmount,
-    "To Currency": toCurrency,
+    "From Currency": fromCurrency,
     "To Amount": toAmount,
+    "To Currency": toCurrency,
     "Payment Type": paymentType,
     "Payment Destination": paymentDestination,
     "Biller Category": billerCategory,
@@ -167,7 +167,7 @@ app.post('/order', async (req, res) => {
         val = formulaFreeAmount
       }
 
-      message += `${key}: ${val}\n`
+      message += `**${key}:** ${val}\n`
     }
   })
 
