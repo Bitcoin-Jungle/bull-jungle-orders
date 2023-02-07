@@ -166,6 +166,7 @@ app.post('/order', async (req, res) => {
     "Biller Action Type": billerActionType,
     "Biller Account Number": billerAccountNumber,
     "USD/CRC": priceData.USDCRC,
+    "USD/CAD": priceData.USDCAD,
   }
 
   const newRow = await sheet.addRow(rowData)
