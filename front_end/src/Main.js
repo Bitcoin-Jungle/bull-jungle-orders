@@ -293,7 +293,7 @@ function Main({ client }) {
                   <div className="col">
                     <label htmlFor="satAmount" className="form-label">Sat Amount</label>
                     <input type="text" className="form-control" id="satAmount" value={satAmount} onChange={(e) => setSatAmount(e.target.value)} />
-                    <div className="form-text">Enter the amount of satoshis here. Exchange rate is updated as of <span style={{fontWeight: "bold"}} id="price-timestamp">{priceData.timestamp || priceData.message}</span></div>
+                    <div className="form-text">Exchange rate is updated as of <span style={{fontWeight: "bold"}} id="price-timestamp">{priceData.timestamp || priceData.message}</span></div>
                   </div>
 
                 </div>
