@@ -112,7 +112,7 @@ app.post('/order', async (req, res) => {
       toCurrency = 'BTC'
       toAmount = `=(${satAmount} / 100000000)`
 
-      paymentType = 'Cash'
+      paymentType = 'SINPE'
       type = 'Buy'
 
       paymentDestination = paymentReq
