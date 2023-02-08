@@ -156,6 +156,7 @@ app.post('/order', async (req, res) => {
   const sheet = doc.sheetsByIndex[0]
 
   const rowData = { 
+    "Date": new Date().toISOString(),
     "Type": type,
     "From Amount": fromAmount,
     "From Currency": fromCurrency,
