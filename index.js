@@ -4,6 +4,7 @@ import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv'
 import { GoogleSpreadsheet } from 'google-spreadsheet'
 import axios from 'axios'
+import serveStatic from 'serve-static'
 
 dotenv.config()
 
@@ -23,6 +24,7 @@ const app = express()
 const doc = new GoogleSpreadsheet(google_sheet_id);
 
 app.use(bodyParser.json())
+app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
 
 app.post('/order', async (req, res) => {
   const apiKey = req.body.apiKey
@@ -181,13 +183,26 @@ app.post('/order', async (req, res) => {
         val = formulaFreeAmount
       }
 
-      message += `**${key}:** ${val}\n`
+      message += `${key}: ${val}\n`
     }
   })
 
   const resp = await bot.telegram.sendMessage(chat_id, message)
 
   res.send({success: true})
+})
+
+app.get('/price', async (req, res) => {
+  const priceData = await getPrice()
+  return res.send(priceData)
+})
+
+app.get('/order', (req, res) => {
+  let uri = '/'
+  if(req.query.key) {
+    uri = '/?key=' + req.query.key
+  }
+  res.redirect(uri)
 })
 
 const getPrice = async () => {
@@ -235,14 +250,5 @@ const getPrice = async () => {
 
   return {BTCCRC, USDCRC, USDCAD, BTCUSD, timestamp}
 }
-
-app.get('/price', async (req, res) => {
-  const priceData = await getPrice()
-  return res.send(priceData)
-})
-
-app.get('/order', (req, res) => {
-  res.sendFile('order/index.html', {root: base_path})
-})
 
 app.listen(port, () => console.log("Listening on port", port))
