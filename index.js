@@ -132,7 +132,7 @@ app.post('/order', async (req, res) => {
       if(action === 'BILLPAY') {
         paymentType = 'Bill Payment'
       } else {
-        paymentType = 'Cash'
+        paymentType = 'SINPE'
       }
 
       paymentDestination = paymentReq
