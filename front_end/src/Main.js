@@ -213,7 +213,7 @@ function Main({ client }) {
 
   useEffect(() => {
     getPriceData()
-    setInterval(getPriceData, 1000 * 30)
+    setInterval(getPriceData, 1000 * 60)
 
     getApiKey()
   }, [])
