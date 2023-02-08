@@ -321,6 +321,20 @@ function Main({ client }) {
                           <div className="form-text">
                             Enter a lightning invoice where you want to receive the bitcoin.                        
                           </div>
+
+                          <div className="alert alert-info">
+                            <p>
+                              <b>Payment Options</b>
+                              <br />
+                              <span>Before submitting the order, you must send {fiatAmount} {fiatCurrency} to one of the following options:</span>
+                              <br />
+                              <ul>
+                                <li>Sinpe Movil to 7157-3637</li>
+                                <li>CR60090100001970028841 (CRC Account)</li>
+                                <li>CR33090100001970028842 (USD Account)</li>
+                              </ul>
+                            </p>
+                          </div>
                         </div>
                       </div>
                     }
