@@ -9,3 +9,8 @@
 .bj-wallet {
   margin-bottom: 5px;
 }
+
+.header select {
+  font-size: initial;
+  margin-top: 10px;
+}

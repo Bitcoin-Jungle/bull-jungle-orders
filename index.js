@@ -85,7 +85,7 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "paymentReq must start with lnbc when buying"})
   }
 
-  if(action === 'BUY' && !randomWords.split(' ').length !== 3) {
+  if(action === 'BUY' && randomWords.split(' ').length !== 3) {
     return res.send({error: true, message: "There must be 3 random words as a payment identifier when BUY action is set"})
   }
 
@@ -181,6 +181,9 @@ app.post('/order', async (req, res) => {
   if(randomWords) {
     rowData["Payment Identifier"] = randomWords
   }
+
+  console.log(rowData)
+  return
 
   const newRow = await sheet.addRow(rowData)
 

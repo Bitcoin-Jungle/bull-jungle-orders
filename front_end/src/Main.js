@@ -9,6 +9,8 @@ import {
   useSubscription,
 } from "@apollo/client"
 
+import localizeText from './lang/index'
+
 var generateRandomWords = require('random-spanish-words')
 
 const RECIPIENT_WALLET_ID = gql`
@@ -44,6 +46,8 @@ const LN_INVOICE_PAYMENT_STATUS = gql`
 `
 
 function Main({ client }) {
+  const [language, setLanguage] = useState('en')
+
   const [loading, setLoading] = useState(false)
   const [disableButton, setDisableButton] = useState(false)
 
@@ -78,7 +82,6 @@ function Main({ client }) {
   }
 
   const loadUserInvoice = (data) => {
-    console.log(data)
     setPaymentReq(data.mutationData.invoice.paymentRequest)
   }
 
@@ -219,14 +222,14 @@ function Main({ client }) {
 
   useEffect(() => {
     getPriceData()
-    setInterval(getPriceData, 1000 * 60)
+    setInterval(getPriceData, 1000 * 120)
 
     getApiKey()
   }, [])
 
   useEffect(() => {
     const calculateSatAmount = () => {
-      if(!fiatAmount || !fiatCurrency || priceData.error) {
+      if(!fiatAmount || !fiatCurrency || priceData.error || paymentReq) {
         return
       }
 
@@ -235,7 +238,7 @@ function Main({ client }) {
     }
 
     calculateSatAmount()
-  }, [fiatAmount, fiatCurrency, priceData])
+  }, [fiatAmount, fiatCurrency, priceData, satAmount, paymentReq])
 
   useEffect(() => {
     if(showModal) {
@@ -253,14 +256,24 @@ function Main({ client }) {
     }
   }, [action])
 
+  const localized = localizeText(language)
+
   return (
     <div className="container">
-      <h1>New Order For Bull Jungle</h1>
+      <div className="header">
+        <h1 className="text-start">
+          {localized.title}
+          <select className="float-end" onChange={(e) => setLanguage(e.target.value)} value={language}>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </h1>
+      </div>
       <form id="addOrder" onSubmit={(e) => e.preventDefault()}>
         <div className="mb-3">
-          <label htmlFor="apiKey" className="form-label">API Key</label>
+          <label htmlFor="apiKey" className="form-label">{localized.apiKeyTitle}</label>
           <input type="password" className="form-control" id="apiKey" value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
-          <div className="form-text">Enter your API Key here</div>
+          <div className="form-text">{localized.apiKeyHelper}</div>
         </div>
 
         {apiKey && 
@@ -268,19 +281,19 @@ function Main({ client }) {
 
             <div className="row action-buttons">
               <div className="mb-3">
-                <label htmlFor="fiatAmount" className="form-label">Action</label>
+                <label htmlFor="fiatAmount" className="form-label">{localized.actionTitle}</label>
               </div>
               <div className="col">
-                <button className={(action === "BUY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("BUY")}>Buy BTC</button>
+                <button className={(action === "BUY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("BUY")}>{localized.buyBtn}</button>
               </div>
               <div className="col">
-                <button className={(action === "SELL" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("SELL")}>Sell BTC</button>
+                <button className={(action === "SELL" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("SELL")}>{localized.sellBtn}</button>
               </div>
               <div className="col">
-                <button className={(action === "BILLPAY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("BILLPAY")}>Bill Pay</button>
+                <button className={(action === "BILLPAY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("BILLPAY")}>{localized.billPayBtn}</button>
               </div>
               <div className="mb-3">
-                <div className="form-text">Select the action you wish to perform above</div>
+                <div className="form-text">{localized.actionHelper}</div>
               </div>
             </div>
 
@@ -289,24 +302,24 @@ function Main({ client }) {
 
                 <div className="row">
                   <div className="col">
-                    <label htmlFor="fiatAmount" className="form-label">Fiat Amount</label>
+                    <label htmlFor="fiatAmount" className="form-label">{localized.fiatAmountTitle}</label>
                     <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value)} />
-                    <div className="form-text">Enter the amount in fiat</div>
+                    <div className="form-text">{localized.fiatAmountHelper}</div>
                   </div>
 
                   <div className="col">
-                    <label htmlFor="fiatCurrency" className="form-label">Fiat Currency</label>
+                    <label htmlFor="fiatCurrency" className="form-label">{localized.fiatCurrencyTitle}</label>
                     <select className="form-control" id="fiatCurrency" value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
                       <option value="CRC">CRC</option>
                       <option value="USD">USD</option>
                     </select>
-                    <div className="form-text">Enter the desired fiat currency</div>
+                    <div className="form-text">{localized.fiatCurrencyHelper}</div>
                   </div>
 
                   <div className="col">
-                    <label htmlFor="satAmount" className="form-label">Sat Amount</label>
-                    <input type="text" className="form-control" id="satAmount" value={satAmount} onChange={(e) => setSatAmount(e.target.value)} />
-                    <div className="form-text">Exchange rate is updated as of <span style={{fontWeight: "bold"}} id="price-timestamp">{priceData.timestamp || priceData.message}</span></div>
+                    <label htmlFor="satAmount" className="form-label">{localized.satAmountTitle}</label>
+                    <input type="text" className="form-control" id="satAmount" value={satAmount} onChange={(e) => setSatAmount(e.target.value)} readOnly={true} />
+                    <div className="form-text">{localized.satAmountHelper} <span style={{fontWeight: "bold"}} id="price-timestamp">{priceData.timestamp || priceData.message}</span></div>
                   </div>
 
                 </div>
@@ -316,9 +329,9 @@ function Main({ client }) {
                     {action === 'SELL' &&
                       <div className="paymentReqContainer">
                         <div className="mb-3">
-                          <label htmlFor="paymentReq" className="form-label">Payment Destination</label>
+                          <label htmlFor="paymentReq" className="form-label">{localized.paymentReqTitle}</label>
                           <input className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => setPaymentReq(e.target.value)} />
-                          <div className="form-text">Enter the SINPE Movil phone number you want to receive payment at.</div>
+                          <div className="form-text">{localized.sellPaymentReqHelper}</div>
                         </div>
                       </div>
                     }
@@ -326,18 +339,18 @@ function Main({ client }) {
                     {action === 'BUY' &&
                       <div className="paymentReqContainer">
                         <div className="mb-3">
-                          <label htmlFor="paymentReq" className="form-label">Payment Destination</label>
+                          <label htmlFor="paymentReq" className="form-label">{localized.paymentReqTitle}</label>
                           <div className="bj-wallet">
-                            <p><b>Have Bitcoin Jungle Wallet? <button className="btn btn-primary btn-sm" onClick={generateUserInvoice}>Click here</button> to automatically generate an invoice for your wallet.</b></p>
+                            <p><b>{localized.haveBjWallet} <button className="btn btn-primary btn-sm" onClick={generateUserInvoice}>{localized.clickHere}</button> {localized.bjInvoiceGenerate}</b></p>
                           </div>
                           <textarea className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => setPaymentReq(e.target.value)}></textarea>
                           <div className="form-text">
-                            Enter a lightning invoice where you want to receive the bitcoin.                        
+                            {localized.buyPaymentReqHelper}                   
                           </div>
 
                           <div className="alert alert-info">
                             <p>
-                              <b>Payment Options</b>
+                              <b>{localized.paymentOptionsTitle}</b>
                               <br />
                               <span>Before submitting the order, you must send {fiatAmount} {fiatCurrency} to one of the following options:</span>
                               <ul>
@@ -361,22 +374,22 @@ function Main({ client }) {
                     {action === 'BILLPAY' &&
                       <div className="billPayContainer">
                         <div className="mb-3">
-                          <label htmlFor="billerCategory" className="form-label">Biller Category</label>
+                          <label htmlFor="billerCategory" className="form-label">{localized.billerCategoryTitle}</label>
                           <input type="text" className="form-control" id="billerCategory" value={billerCategory} onChange={(e) => setBillerCategory(e.target.value)} />
                         </div>
 
                         <div className="mb-3">
-                          <label htmlFor="billerService" className="form-label">Biller Service</label>
+                          <label htmlFor="billerService" className="form-label">{localized.billerServiceTitle}</label>
                           <input type="text" className="form-control" id="billerService" value={billerService} onChange={(e) => setBillerService(e.target.value)} />
                         </div>
 
                         <div className="mb-3">
-                          <label htmlFor="billerActionType" className="form-label">Biller Action Type</label>
+                          <label htmlFor="billerActionType" className="form-label">{localized.billerActionTypeTitle}</label>
                           <input type="text" className="form-control" id="billerActionType" value={billerActionType} onChange={(e) => setBillerActionType(e.target.value)} />
                         </div>
 
                         <div className="mb-3">
-                          <label htmlFor="billerAccountNumber" className="form-label">Biller Account Number</label>
+                          <label htmlFor="billerAccountNumber" className="form-label">{localized.billerAccountNumberTitle}</label>
                           <input type="text" className="form-control" id="billerAccountNumber" value={billerAccountNumber} onChange={(e) => setBillerAccountNumber(e.target.value)} />
                         </div>
                       </div>
@@ -384,7 +397,7 @@ function Main({ client }) {
                   </div>
                 }
 
-                <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton} onClick={handleFormSubmit}>Create Order Now</button>
+                <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton} onClick={handleFormSubmit}>{localized.submitBtnTitle}</button>
                 {loading &&
                   <div className="spinner-border" role="status">
                     <span className="visually-hidden">Loading...</span>
@@ -400,11 +413,11 @@ function Main({ client }) {
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Sell BTC</h5>
+              <h5 className="modal-title">{localized.sellBtn}</h5>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}></button>
             </div>
             <div className="modal-body">
-              <p>Please scan or click on the QR code to pay.</p>
+              <p>{localized.invoiceHelperText}</p>
               <a href={`lightning:${invoice}`}>
                 <QRCode
                   value={invoice}
