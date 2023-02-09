@@ -11,8 +11,6 @@ import {
 
 import localizeText from './lang/index'
 
-var generateRandomWords = require('random-spanish-words')
-
 const RECIPIENT_WALLET_ID = gql`
   query userDefaultWalletId($username: Username!) {
     recipientWalletId: userDefaultWalletId(username: $username)
@@ -65,7 +63,7 @@ function Main({ client }) {
   const [billerAccountNumber, setBillerAccountNumber] = useState("")
   const [invoice, setInvoice] = useState("")
   const [showModal, setShowModal] = useState(false)
-  const [randomWords, setRandomWords] = useState(generateRandomWords({ exactly: 3, join: ' ' }))
+  const [paymentIdentifier, setPaymentIdentifier] = useState("")
 
   const { data: recipientData } = useQuery(RECIPIENT_WALLET_ID, {
     variables: {
@@ -177,7 +175,7 @@ function Main({ client }) {
     setBillerService("")
     setBillerActionType("")
     setBillerAccountNumber("")
-    setRandomWords(generateRandomWords({ exactly: 3, join: ' ' }))
+    setPaymentIdentifier("")
     setInvoice("")
   }
 
@@ -210,7 +208,7 @@ function Main({ client }) {
         billerActionType,
         billerAccountNumber,
         invoice,
-        randomWords,
+        paymentIdentifier,
       })
     })
     .then((res) => res.json())
@@ -370,8 +368,12 @@ function Main({ client }) {
                                 <li>CR60090100001970028841 ({localized.crcAccount})</li>
                                 <li>CR33090100001970028842 ({localized.usdAccount})</li>
                               </ul>
-                              {localized.randomWordsBefore} <b>{randomWords}</b> {localized.randomWordsAfter}
-                              <br />
+                              
+                              <div className="mb-3">
+                                <label htmlFor="paymentIdentifier" className="form-label">{localized.paymentIdentifierTitle}</label>
+                                <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => setPaymentIdentifier(e.target.value)} />
+                              </div>
+
                               <br />
                               <div className="form-check form-switch">
                                 <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckbox" onChange={(e) => setDisableButton(!e.target.checked)} />

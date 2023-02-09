@@ -36,7 +36,7 @@ app.post('/order', async (req, res) => {
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
 
-  const randomWords = (req.body.randomWords && req.body.action === "BUY" ? req.body.randomWords : "")
+  const paymentIdentifier = (req.body.paymentIdentifier && req.body.action === "BUY" ? req.body.paymentIdentifier : "")
   
   const billerCategory = req.body.billerCategory
   const billerService = req.body.billerService
@@ -87,8 +87,8 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "paymentReq must start with lnbc when buying"})
   }
 
-  if(action === 'BUY' && randomWords.split(' ').length !== 3) {
-    return res.send({error: true, message: "There must be 3 random words as a payment identifier when BUY action is set"})
+  if(action === 'BUY' && !paymentIdentifier) {
+    return res.send({error: true, message: "Payment Identifier is required when BUY action is set"})
   }
 
   if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
@@ -171,6 +171,7 @@ app.post('/order', async (req, res) => {
     "To Amount": toAmount,
     "To Currency": toCurrency,
     "Payment Type": paymentType,
+    "Payment Identifier": paymentIdentifier,
     "Payment Destination": paymentDestination,
     "Biller Category": billerCategory,
     "Biller Service": billerService,
@@ -178,10 +179,6 @@ app.post('/order', async (req, res) => {
     "Biller Account Number": billerAccountNumber,
     "USD/CRC": priceData.USDCRC,
     "USD/CAD": priceData.USDCAD,
-  }
-
-  if(randomWords) {
-    rowData["Payment Identifier"] = randomWords
   }
 
   console.log('processed order data to', rowData)

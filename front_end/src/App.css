@@ -16,7 +16,7 @@
 
 @media (max-width: 450px) {
   .header h1 {
-    font-size: calc(1.1rem + 1.5vw);
+    font-size: calc(0.9rem + 1.5vw);
   }
 }
 

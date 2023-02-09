@@ -32,9 +32,9 @@ const es = {
 
 	crcAccount: "Cuenta CRC",
 	usdAccount: "Cuenta USD",
-	randomWordsBefore: "Asegúrate de ingresar",
-	randomWordsAfter: "como la descripción en su pago para que podamos localizarlo.",
-	paymentConfirmationLabel: "Ya he enviado el pago con la descripción adecuada",
+	
+	paymentIdentifierTitle: "Número de Referencia del Pago",
+	paymentConfirmationLabel: "Ya he enviado el pago con este número de referencia",
 	
 	billerCategoryTitle: "Categoría del facturador",
 	billerServiceTitle: "Servicio de facturación",

@@ -32,9 +32,9 @@ const en = {
 	
 	crcAccount: "CRC Account",
 	usdAccount: "USD Account",
-	randomWordsBefore: "Be sure to enter",
-	randomWordsAfter: "as the description on your payment so that we can locate it.",
-	paymentConfirmationLabel: "I have sent the payent with the appropriate description",
+	
+	paymentIdentifierTitle: "Payment Reference #",
+	paymentConfirmationLabel: "I have sent the payent with the above reference number",
 
 	billerCategoryTitle: "Biller Category",
 	billerServiceTitle: "Biller Service",
