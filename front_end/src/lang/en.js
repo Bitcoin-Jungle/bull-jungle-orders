@@ -24,8 +24,7 @@ const en = {
 	sellPaymentReqHelper: "Enter the SINPE Movil phone number you want to receive payment at",
 	buyPaymentReqHelper: "Enter a lightning invoice where you want to receive the bitcoin",
 
-	bjInvoiceGenerate: "to automatically generate an invoice for your Bitcoin Jungle wallet.",
-
+	bjInvoiceGenerate: "to automatically generate an invoice for your Bitcoin Jungle wallet",
 
 	paymentOptionsTitle: "Payment Options",
 
@@ -35,7 +34,7 @@ const en = {
 	billerActionTypeTitle: "Biller Action Type",
 	billerAccountNumberTitle: "Biller Account Number",
 
-	invoiceHelperText: "Please scan or click on the QR code to pay.",
+	invoiceHelperText: "Please scan or click on the QR code to pay",
 
 	submitBtnTitle: "Create Order Now",
 

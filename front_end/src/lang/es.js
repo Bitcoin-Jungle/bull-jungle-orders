@@ -1,45 +1,44 @@
 const es = {
-	title: "New Order For Bull Jungle",
+	title: "Nueva Orden para Bull Jungle",
 
-	apiKeyTitle: "API Key",
-	apiKeyHelper: "Enter your API Key here",
+	apiKeyTitle: "Contraseña",
+	apiKeyHelper: "Ingrese tu contraseña aquí",
 
-	actionTitle: "Action",
-	actionHelper: "Select the action you wish to perform above",
+	actionTitle: "Acción",
+	actionHelper: "Seleccione la acción que desea realizar arriba",
 
-	buyBtn: "Buy BTC",
-	sellBtn: "Sell BTC",
-	billPayBtn: "Bill Pay",
+	buyBtn: "Compra BTC",
+	sellBtn: "Vende BTC",
+	billPayBtn: "Paga Factura",
 
-	fiatAmountTitle: "Fiat Amount",
-	fiatAmountHelper: "Enter the amount in fiat",
+	fiatAmountTitle: "Cantidad Fiat",
+	fiatAmountHelper: "Ingrese la cantidad en fiat",
 
-	fiatCurrencyTitle: "Fiat Currency",
-	fiatCurrencyHelper: "Enter the desired fiat currency",
+	fiatCurrencyTitle: "Tipo de Moneda",
+	fiatCurrencyHelper: "Ingrese el tipo de moneda",
 
-	satAmountTitle: "Sat Amount",
-	satAmountHelper: "Exchange rate is updated as of",
+	satAmountTitle: "Cantidad Sats",
+	satAmountHelper: "Tipo de cambio se actualiza a partir de",
 
-	paymentReqTitle: "Payment Destination",
-	sellPaymentReqHelper: "Enter the SINPE Movil phone number you want to receive payment at",
-	buyPaymentReqHelper: "Enter a lightning invoice where you want to receive the bitcoin",
+	paymentReqTitle: "Destino de pago",
+	sellPaymentReqHelper: "Ingresa el número de teléfono de SINPE Móvil al que deseas recibir el pago",
+	buyPaymentReqHelper: "Ingresa una factura lightning donde quieres recibir el bitcoin",
 
-	bjInvoiceGenerate: "to automatically generate an invoice for your wallet.",
+	bjInvoiceGenerate: "para generar automáticamente una factura para su billetera Bitcoin Jungle",
+
+	paymentOptionsTitle: "Opciones de pago",
 
 
-	paymentOptionsTitle: "Payment Options",
+	billerCategoryTitle: "Categoría del facturador",
+	billerServiceTitle: "Servicio de facturación",
+	billerActionTypeTitle: "Tipo de acción del facturador",
+	billerAccountNumberTitle: "Número de cuenta del facturador",
 
+	invoiceHelperText: "Escanee o haga clic en el código QR para pagar",
 
-	billerCategoryTitle: "Biller Category",
-	billerServiceTitle: "Biller Service",
-	billerActionTypeTitle: "Biller Action Type",
-	billerAccountNumberTitle: "Biller Account Number",
+	submitBtnTitle: "Crear Orden Ya!",
 
-	invoiceHelperText: "Please scan or click on the QR code to pay.",
-
-	submitBtnTitle: "Create Order Now",
-
-	clickHere: "Click Here",
+	clickHere: "Clic Aquí",
 
 
 }
