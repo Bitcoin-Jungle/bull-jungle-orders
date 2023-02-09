@@ -182,9 +182,6 @@ app.post('/order', async (req, res) => {
     rowData["Payment Identifier"] = randomWords
   }
 
-  console.log(rowData)
-  return
-
   const newRow = await sheet.addRow(rowData)
 
   let message = `🚨 New Order 🚨\n`
