@@ -27,8 +27,15 @@ const es = {
 	bjInvoiceGenerate: "para generar automáticamente una factura para su billetera Bitcoin Jungle",
 
 	paymentOptionsTitle: "Opciones de pago",
+	paymentOptionsInstructionBefore: "Antes de enviar el orden, debe enviar",
+	paymentOptionsInstructionsAfter: "a una de las siguientes opciones",
 
-
+	crcAccount: "Cuenta CRC",
+	usdAccount: "Cuenta USD",
+	randomWordsBefore: "Asegúrate de ingresar",
+	randomWordsAfter: "como la descripción en su pago para que podamos localizarlo.",
+	paymentConfirmationLabel: "Ya he enviado el pago con la descripción adecuada",
+	
 	billerCategoryTitle: "Categoría del facturador",
 	billerServiceTitle: "Servicio de facturación",
 	billerActionTypeTitle: "Tipo de acción del facturador",
@@ -39,6 +46,7 @@ const es = {
 	submitBtnTitle: "Crear Orden Ya!",
 
 	clickHere: "Clic Aquí",
+	to: "a",
 
 
 }

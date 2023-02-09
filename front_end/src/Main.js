@@ -352,18 +352,18 @@ function Main({ client }) {
                             <p>
                               <b>{localized.paymentOptionsTitle}</b>
                               <br />
-                              <span>Before submitting the order, you must send {fiatAmount} {fiatCurrency} to one of the following options:</span>
+                              <span>{localized.paymentOptionsInstructionBefore} {fiatAmount} {fiatCurrency} {localized.paymentOptionsInstructionsAfter}:</span>
                               <ul>
-                                <li>Sinpe Movil to 7157-3637</li>
-                                <li>CR60090100001970028841 (CRC Account)</li>
-                                <li>CR33090100001970028842 (USD Account)</li>
+                                <li>Sinpe Móvil {localized.to} 7157-3637</li>
+                                <li>CR60090100001970028841 ({localized.crcAccount})</li>
+                                <li>CR33090100001970028842 ({localized.usdAccount})</li>
                               </ul>
-                              Be sure to enter <b>{randomWords}</b> as the description on your payment so that we can locate it.
+                              {localized.randomWordsBefore} <b>{randomWords}</b> {localized.randomWordsAfter}
                               <br />
                               <br />
                               <div className="form-check form-switch">
                                 <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckbox" onChange={(e) => setDisableButton(!e.target.checked)} />
-                                <label className="form-check-label" for="buyConfirmationCheckbox">I have sent the payent with the appropriate description</label>
+                                <label className="form-check-label" for="buyConfirmationCheckbox">{localized.paymentConfirmationLabel}</label>
                               </div>
                             </p>
                           </div>

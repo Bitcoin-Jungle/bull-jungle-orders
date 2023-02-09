@@ -27,7 +27,14 @@ const en = {
 	bjInvoiceGenerate: "to automatically generate an invoice for your Bitcoin Jungle wallet",
 
 	paymentOptionsTitle: "Payment Options",
-
+	paymentOptionsInstructionBefore: "Before submitting the order, you must send",
+	paymentOptionsInstructionsAfter: "to one of the following options",
+	
+	crcAccount: "CRC Account",
+	usdAccount: "USD Account",
+	randomWordsBefore: "Be sure to enter",
+	randomWordsAfter: "as the description on your payment so that we can locate it.",
+	paymentConfirmationLabel: "I have sent the payent with the appropriate description",
 
 	billerCategoryTitle: "Biller Category",
 	billerServiceTitle: "Biller Service",
@@ -39,6 +46,7 @@ const en = {
 	submitBtnTitle: "Create Order Now",
 
 	clickHere: "Click Here",
+	to: "to",
 
 
 }
