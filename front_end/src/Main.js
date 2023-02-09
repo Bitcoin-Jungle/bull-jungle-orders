@@ -9,6 +9,8 @@ import {
   useSubscription,
 } from "@apollo/client"
 
+var generateRandomWords = require('random-spanish-words')
+
 const RECIPIENT_WALLET_ID = gql`
   query userDefaultWalletId($username: Username!) {
     recipientWalletId: userDefaultWalletId(username: $username)
@@ -43,12 +45,13 @@ const LN_INVOICE_PAYMENT_STATUS = gql`
 
 function Main({ client }) {
   const [loading, setLoading] = useState(false)
+  const [disableButton, setDisableButton] = useState(false)
 
   const [priceData, setPriceData] = useState({})
 
   const [apiKey, setApiKey] = useState("")
   const [fiatAmount, setFiatAmount] = useState("")
-  const [fiatCurrency, setFiatCurrency] = useState("")
+  const [fiatCurrency, setFiatCurrency] = useState("CRC")
   const [satAmount, setSatAmount] = useState("")
   const [action, setAction] = useState("")
   const [paymentReq, setPaymentReq] = useState("")
@@ -58,6 +61,7 @@ function Main({ client }) {
   const [billerAccountNumber, setBillerAccountNumber] = useState("")
   const [invoice, setInvoice] = useState("")
   const [showModal, setShowModal] = useState(false)
+  const [randomWords, setRandomWords] = useState(generateRandomWords({ exactly: 3, join: ' ' }))
 
   const { data: recipientData } = useQuery(RECIPIENT_WALLET_ID, {
     variables: {
@@ -159,6 +163,7 @@ function Main({ client }) {
     setBillerService("")
     setBillerActionType("")
     setBillerAccountNumber("")
+    setRandomWords(generateRandomWords({ exactly: 3, join: ' ' }))
   }
 
   const handleFormSubmit = async (e) => {
@@ -190,6 +195,7 @@ function Main({ client }) {
         billerActionType,
         billerAccountNumber,
         invoice,
+        randomWords,
       })
     })
     .then((res) => res.json())
@@ -239,6 +245,14 @@ function Main({ client }) {
     }
   }, [showModal])
 
+  useEffect(() => {
+    if(action === 'BUY') {
+      setDisableButton(true)
+    } else {
+      setDisableButton(false)
+    }
+  }, [action])
+
   return (
     <div className="container">
       <h1>New Order For Bull Jungle</h1>
@@ -283,7 +297,6 @@ function Main({ client }) {
                   <div className="col">
                     <label htmlFor="fiatCurrency" className="form-label">Fiat Currency</label>
                     <select className="form-control" id="fiatCurrency" value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
-                      <option value="">-- Select an Option --</option>
                       <option value="CRC">CRC</option>
                       <option value="USD">USD</option>
                     </select>
@@ -327,12 +340,18 @@ function Main({ client }) {
                               <b>Payment Options</b>
                               <br />
                               <span>Before submitting the order, you must send {fiatAmount} {fiatCurrency} to one of the following options:</span>
-                              <br />
                               <ul>
                                 <li>Sinpe Movil to 7157-3637</li>
                                 <li>CR60090100001970028841 (CRC Account)</li>
                                 <li>CR33090100001970028842 (USD Account)</li>
                               </ul>
+                              Be sure to enter <b>{randomWords}</b> as the description on your payment so that we can locate it.
+                              <br />
+                              <br />
+                              <div className="form-check form-switch">
+                                <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckbox" onChange={(e) => setDisableButton(!e.target.checked)} />
+                                <label className="form-check-label" for="buyConfirmationCheckbox">I have sent the payent with the appropriate description</label>
+                              </div>
                             </p>
                           </div>
                         </div>
@@ -365,7 +384,7 @@ function Main({ client }) {
                   </div>
                 }
 
-                <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading} onClick={handleFormSubmit}>Create Order Now</button>
+                <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton} onClick={handleFormSubmit}>Create Order Now</button>
                 {loading &&
                   <div className="spinner-border" role="status">
                     <span className="visually-hidden">Loading...</span>

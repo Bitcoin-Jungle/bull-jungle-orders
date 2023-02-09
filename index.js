@@ -33,6 +33,8 @@ app.post('/order', async (req, res) => {
   const satAmount  = (req.body.satAmount ? parseInt(req.body.satAmount.replace(/,/g, "").replace(/\./g, "")) : null)
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
+
+  const randomWords = (req.body.randomWords ? req.body.randomWords : "")
   
   const billerCategory = req.body.billerCategory
   const billerService = req.body.billerService
@@ -81,6 +83,10 @@ app.post('/order', async (req, res) => {
 
   if(action === 'BUY' && paymentReq.toLowerCase().indexOf('lnbc') !== 0) {
     return res.send({error: true, message: "paymentReq must start with lnbc when buying"})
+  }
+
+  if(action === 'BUY' && !randomWords.split(' ').length !== 3) {
+    return res.send({error: true, message: "There must be 3 random words as a payment identifier when BUY action is set"})
   }
 
   if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
@@ -170,6 +176,10 @@ app.post('/order', async (req, res) => {
     "Biller Account Number": billerAccountNumber,
     "USD/CRC": priceData.USDCRC,
     "USD/CAD": priceData.USDCAD,
+  }
+
+  if(randomWords) {
+    rowData["Payment Identifier"] = randomWords
   }
 
   const newRow = await sheet.addRow(rowData)
