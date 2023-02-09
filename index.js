@@ -27,6 +27,8 @@ app.use(bodyParser.json())
 app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
 
 app.post('/order', async (req, res) => {
+  console.log('order received', req.body)
+
   const apiKey = req.body.apiKey
   const fiatAmount = (req.body.fiatAmount ? parseFloat(req.body.fiatAmount.replace(/,/g, "")) : null)
   const fiatCurrency = (req.body.fiatCurrency ? req.body.fiatCurrency.toUpperCase() : null)
@@ -182,6 +184,8 @@ app.post('/order', async (req, res) => {
     rowData["Payment Identifier"] = randomWords
   }
 
+  console.log('processed order data to', rowData)
+
   const newRow = await sheet.addRow(rowData)
 
   let message = `🚨 New Order 🚨\n`
@@ -199,6 +203,8 @@ app.post('/order', async (req, res) => {
   })
 
   const resp = await bot.telegram.sendMessage(chat_id, message)
+
+  console.log('order submitted successfully.')
 
   res.send({success: true})
 })

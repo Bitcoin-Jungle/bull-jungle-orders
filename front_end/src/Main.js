@@ -156,6 +156,17 @@ function Main({ client }) {
     }
   }
 
+  const copyToClipboard = () => {
+    try {
+      navigator.clipboard.writeText(invoice)
+      setTimeout(() => {
+        alert("Invoice copied to clipboard")
+      }, 750)
+    } catch(e) {
+
+    }
+  }
+
   const clearForm = () => {
     setFiatAmount("")
     setFiatCurrency("")
@@ -167,6 +178,7 @@ function Main({ client }) {
     setBillerActionType("")
     setBillerAccountNumber("")
     setRandomWords(generateRandomWords({ exactly: 3, join: ' ' }))
+    setInvoice("")
   }
 
   const handleFormSubmit = async (e) => {
@@ -428,6 +440,11 @@ function Main({ client }) {
                   logoWidth={100}
                 />
               </a>
+              <div>
+                <button className="btn btn-primary" onClick={copyToClipboard}>
+                  Copy Invoice
+                </button>
+              </div>
             </div>
           </div>
         </div>
