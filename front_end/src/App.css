@@ -10,6 +10,16 @@
   margin-bottom: 5px;
 }
 
+.paymentReqContainer {
+  margin-top: 10px;
+}
+
+@media (max-width: 450px) {
+  .header h1 {
+    font-size: calc(1.1rem + 1.5vw);
+  }
+}
+
 .header select {
   font-size: initial;
   margin-top: 10px;
