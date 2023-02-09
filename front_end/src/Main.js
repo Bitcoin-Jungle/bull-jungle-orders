@@ -341,7 +341,7 @@ function Main({ client }) {
                         <div className="mb-3">
                           <label htmlFor="paymentReq" className="form-label">{localized.paymentReqTitle}</label>
                           <div className="bj-wallet">
-                            <p><b>{localized.haveBjWallet} <button className="btn btn-primary btn-sm" onClick={generateUserInvoice}>{localized.clickHere}</button> {localized.bjInvoiceGenerate}</b></p>
+                            <p><b><button className="btn btn-primary btn-sm" onClick={generateUserInvoice}>{localized.clickHere}</button> {localized.bjInvoiceGenerate}</b></p>
                           </div>
                           <textarea className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => setPaymentReq(e.target.value)}></textarea>
                           <div className="form-text">
