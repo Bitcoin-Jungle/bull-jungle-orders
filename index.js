@@ -34,7 +34,7 @@ app.post('/order', async (req, res) => {
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
 
-  const randomWords = (req.body.randomWords ? req.body.randomWords : "")
+  const randomWords = (req.body.randomWords && req.body.action === "BUY" ? req.body.randomWords : "")
   
   const billerCategory = req.body.billerCategory
   const billerService = req.body.billerService
