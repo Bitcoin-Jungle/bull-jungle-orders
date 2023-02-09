@@ -14,7 +14,7 @@ const es = {
 	fiatAmountTitle: "Cantidad Fiat",
 	fiatAmountHelper: "Ingrese la cantidad en fiat",
 
-	fiatCurrencyTitle: "Tipo de Moneda",
+	fiatCurrencyTitle: "Tipo Moneda",
 	fiatCurrencyHelper: "Ingrese el tipo de moneda",
 
 	satAmountTitle: "Cantidad Sats",
