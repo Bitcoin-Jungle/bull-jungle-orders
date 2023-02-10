@@ -1,31 +1,15 @@
 import './App.css'
 
 import { useState, useEffect } from 'react'
-import { QRCode } from "react-qrcode-logo"
-import { gql } from "@apollo/client"
 
 import localizeText from './lang/index'
 
-const RECIPIENT_WALLET_ID = gql`
-  query userDefaultWalletId($username: Username!) {
-    recipientWalletId: userDefaultWalletId(username: $username)
-  }
-`
+import Modal from './components/Modal'
 
-const LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT = gql`
-  mutation lnInvoiceCreateOnBehalfOfRecipient($walletId: WalletId!, $amount: SatAmount!) {
-    mutationData: lnInvoiceCreateOnBehalfOfRecipient(
-      input: { recipientWalletId: $walletId, amount: $amount }
-    ) {
-      errors {
-        message
-      }
-      invoice {
-        paymentRequest
-      }
-    }
-  }
-`
+import { 
+  RECIPIENT_WALLET_ID, 
+  LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT,
+} from './utils/graphql'
 
 function Main({ client }) {
   const [language, setLanguage] = useState('en')
@@ -170,17 +154,6 @@ function Main({ client }) {
     }
   }
 
-  const copyToClipboard = () => {
-    try {
-      navigator.clipboard.writeText(invoice)
-      setTimeout(() => {
-        alert("Invoice copied to clipboard")
-      }, 750)
-    } catch(e) {
-
-    }
-  }
-
   const clearForm = () => {
     setFiatAmount("")
     setFiatCurrency("CRC")
@@ -266,14 +239,6 @@ function Main({ client }) {
 
     calculateSatAmount()
   }, [fiatAmount, fiatCurrency, priceData, satAmount, paymentReq])
-
-  useEffect(() => {
-    if(showModal) {
-      document.querySelector('body').classList.add('modal-open')
-    } else {
-      document.querySelector('body').classList.remove('modal-open')
-    }
-  }, [showModal])
 
   return (
     <div className="container">
@@ -433,36 +398,11 @@ function Main({ client }) {
         </form>
       }
 
-      <div className="modal fade show" role="dialog" style={{display: (showModal ? "block" : "none")}} tabIndex="-1" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">{localized.sellBtn}</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}></button>
-            </div>
-            <div className="modal-body">
-              <p>{localized.invoiceHelperText}</p>
-              <a href={`lightning:${invoice}`}>
-                <QRCode
-                  value={invoice}
-                  size={320}
-                  logoImage={"https://pay.bitcoinjungle.app/BJQRLogo.png"}
-                  logoWidth={100}
-                />
-              </a>
-              <div>
-                <button className="btn btn-primary" onClick={copyToClipboard}>
-                  Copy Invoice
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {showModal &&
-        <div className="modal-backdrop fade show"></div>
-      }
+      <Modal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        localized={localized}
+        invoice={invoice} />
 
     </div>
   )
