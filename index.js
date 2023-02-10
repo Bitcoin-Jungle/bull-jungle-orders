@@ -17,6 +17,9 @@ const google_sheet_id = process.env.google_sheet_id
 const service_account_json = (process.env.service_account_json_base64 ? JSON.parse(Buffer.from(process.env.service_account_json_base64, 'base64').toString()) : null)
 const service_account_email = process.env.service_account_email
 const exchange_rate_api_key = process.env.exchange_rate_api_key
+const invoice_endpoint_url = process.env.invoice_endpoint_url
+const invoice_endpoint_user = process.env.invoice_endpoint_user
+const invoice_endpoint_password = process.env.invoice_endpoint_password
 
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
@@ -204,6 +207,55 @@ app.post('/order', async (req, res) => {
   console.log('order submitted successfully.')
 
   res.send({success: true})
+})
+
+app.post('/invoice', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const label = req.body.label
+  const description = req.body.description
+  const satAmount = req.body.satAmount
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!label) {
+    return res.send({error: true, message: "Label is required"})
+  }
+
+  if(!description) {
+    return res.send({error: true, message: "Description is required."})
+  }
+
+  if(!satAmount) {
+    return res.send({error: true, message: "satAmount is required"})
+  }
+
+  const invoiceData = {
+    jsonrpc: "2.0",
+    id: Math.floor(Math.random() * 1001).toString(),
+    method: "invoice",
+    params: {
+      label: label,
+      description: description,
+      msatoshi: parseInt(satAmount * 1000),
+    }
+  }
+
+  const response = await axios(invoice_endpoint_url, {
+    method: "POST",
+    auth: {
+      username: invoice_endpoint_user,
+      password: invoice_endpoint_password,
+    },
+    data: invoiceData,
+  })
+
+  return res.send(response.data)
 })
 
 app.get('/price', async (req, res) => {
