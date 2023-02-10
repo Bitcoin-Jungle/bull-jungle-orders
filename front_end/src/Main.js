@@ -3,6 +3,7 @@ import './App.css'
 import { useState, useEffect } from 'react'
 
 import localizeText from './lang/index'
+import { getApiKey } from './utils/index'
 
 import Modal from './components/Modal'
 
@@ -19,7 +20,7 @@ function Main({ client }) {
 
   const [priceData, setPriceData] = useState({})
 
-  const [apiKey, setApiKey] = useState("")
+  const [apiKey, setApiKey] = useState(getApiKey())
   const [fiatAmount, setFiatAmount] = useState("")
   const [fiatCurrency, setFiatCurrency] = useState("CRC")
   const [satAmount, setSatAmount] = useState("")
@@ -145,15 +146,6 @@ function Main({ client }) {
     })
   }
 
-  const getApiKey = () => {
-    const params = (new URL(document.location)).searchParams;
-    const key = params.get("key");
-
-    if(key && key.length > 0) {
-      setApiKey(key)
-    }
-  }
-
   const clearForm = () => {
     setFiatAmount("")
     setFiatCurrency("CRC")
@@ -223,8 +215,6 @@ function Main({ client }) {
   useEffect(() => {
     getPriceData()
     setInterval(getPriceData, 1000 * 120)
-
-    getApiKey()
   }, [])
 
   useEffect(() => {
