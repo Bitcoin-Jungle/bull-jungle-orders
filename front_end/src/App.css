@@ -10,7 +10,7 @@
   margin-bottom: 5px;
 }
 
-.paymentReqContainer {
+.paymentReqContainer, .billPayContainer {
   margin-top: 10px;
 }
 

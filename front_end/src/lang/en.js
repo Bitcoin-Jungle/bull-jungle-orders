@@ -24,7 +24,8 @@ const en = {
 	sellPaymentReqHelper: "Enter the SINPE Movil phone number you want to receive payment at",
 	buyPaymentReqHelper: "Enter a lightning invoice where you want to receive the bitcoin",
 
-	bjInvoiceGenerate: "to automatically generate an invoice for your Bitcoin Jungle wallet",
+	bitcoinJungleWallet: "Bitcoin Jungle Wallet",
+	lightningWallet: "Other Lightning Wallet",
 
 	paymentOptionsTitle: "Payment Options",
 	paymentOptionsInstructionBefore: "Before submitting the order, you must send",
@@ -45,7 +46,6 @@ const en = {
 
 	submitBtnTitle: "Create Order Now",
 
-	clickHere: "Click Here",
 	to: "to",
 
 

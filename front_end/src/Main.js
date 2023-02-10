@@ -48,6 +48,7 @@ function Main({ client }) {
   const [invoice, setInvoice] = useState("")
   const [showModal, setShowModal] = useState(false)
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
+  const [showPaymentReq, setShowPaymentReq] = useState(false)
 
   const fetchInvoice = () => {
     if(!fiatAmount) {
@@ -107,6 +108,7 @@ function Main({ client }) {
   }
 
   const generateUserInvoice = async () => {
+    setShowPaymentReq(false)
     const username = prompt("What is your Bitcoin Jungle Username?")
 
     try {
@@ -350,16 +352,27 @@ function Main({ client }) {
 
                   {action === 'BUY' &&
                     <div className="paymentReqContainer">
-                      <div className="mb-3">
-                        <label htmlFor="paymentReq" className="form-label">{localized.paymentReqTitle}</label>
-                        <div className="bj-wallet">
-                          <p><b><button className="btn btn-primary btn-sm" onClick={generateUserInvoice}>{localized.clickHere}</button> {localized.bjInvoiceGenerate}</b></p>
-                        </div>
-                        <textarea className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => setPaymentReq(e.target.value)}></textarea>
-                        <div className="form-text">
-                          {localized.buyPaymentReqHelper}                   
-                        </div>
 
+                      <div className="row action-buttons mb-3">
+                        <div className="mb-3">
+                          <label htmlFor="fiatAmount" className="form-label">{localized.paymentReqTitle}</label>
+                        </div>
+                        <div className="col">
+                         <button className={(paymentReq && !showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} onClick={generateUserInvoice}>{localized.bitcoinJungleWallet}</button>
+                        </div>
+                        <div className="col">
+                          <button className={(showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} onClick={setShowPaymentReq}>{localized.lightningWallet}</button>
+                        </div>
+                      </div>
+
+                      {showPaymentReq &&
+                        <div className="mb-3">
+                          <textarea className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => setPaymentReq(e.target.value)}></textarea>
+                          <div className="form-text">{localized.buyPaymentReqHelper}</div>
+                        </div>
+                      }
+
+                      {paymentReq &&
                         <div className="alert alert-info">
                           <p>
                             <b>{localized.paymentOptionsTitle}</b>
@@ -383,7 +396,7 @@ function Main({ client }) {
                             </div>
                           </p>
                         </div>
-                      </div>
+                      }
                     </div>
                   }
 
