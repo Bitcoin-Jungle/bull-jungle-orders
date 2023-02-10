@@ -6,14 +6,6 @@
   width: 100%;
 }
 
-.bj-wallet {
-  margin-bottom: 5px;
-}
-
-.paymentReqContainer, .billPayContainer {
-  margin-top: 10px;
-}
-
 @media (max-width: 450px) {
   .header h1 {
     font-size: calc(0.9rem + 1.5vw);
@@ -23,10 +15,6 @@
 .header select {
   font-size: initial;
   margin-top: 10px;
-}
-
-.submit-container {
-  margin-bottom: 10px;
 }
 
 .spinner-border {

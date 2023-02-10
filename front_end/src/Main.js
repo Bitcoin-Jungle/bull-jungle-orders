@@ -175,7 +175,7 @@ function Main({ client }) {
 
   const clearForm = () => {
     setFiatAmount("")
-    setFiatCurrency("")
+    setFiatCurrency("CRC")
     setSatAmount("")
     setAction("")
     setPaymentReq("")
@@ -185,6 +185,7 @@ function Main({ client }) {
     setBillerAccountNumber("")
     setPaymentIdentifier("")
     setInvoice("")
+    setShowPaymentReq(false)
   }
 
   const handleFormSubmit = async (e) => {
@@ -266,13 +267,11 @@ function Main({ client }) {
     }
   }, [showModal])
 
-  useEffect(() => {
-    if(action === 'BUY') {
-      setDisableButton(true)
-    } else {
-      setDisableButton(false)
-    }
-  }, [action])
+  const handleAction = (action) => {
+    clearForm()
+    setAction(action)
+    setDisableButton(true)
+  }
 
   const localized = localizeText(language)
 
@@ -297,28 +296,22 @@ function Main({ client }) {
       {apiKey &&
         <form id="addOrder" onSubmit={(e) => e.preventDefault()}>
 
-          <div className="row action-buttons">
-            <div className="mb-3">
-              <label htmlFor="fiatAmount" className="form-label">{localized.actionTitle}</label>
+          <div className="row action-buttons mb-3">
+            <div className="col">
+              <button className={(action === "BUY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => handleAction("BUY")}>{localized.buyBtn}</button>
             </div>
             <div className="col">
-              <button className={(action === "BUY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("BUY")}>{localized.buyBtn}</button>
+              <button className={(action === "SELL" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => handleAction("SELL")}>{localized.sellBtn}</button>
             </div>
             <div className="col">
-              <button className={(action === "SELL" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("SELL")}>{localized.sellBtn}</button>
-            </div>
-            <div className="col">
-              <button className={(action === "BILLPAY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => setAction("BILLPAY")}>{localized.billPayBtn}</button>
-            </div>
-            <div className="mb-3">
-              <div className="form-text">{localized.actionHelper}</div>
+              <button className={(action === "BILLPAY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => handleAction("BILLPAY")}>{localized.billPayBtn}</button>
             </div>
           </div>
 
           {action && 
             <div>
 
-              <div className="row">
+              <div className="row mb-3">
                 <div className="col">
                   <label htmlFor="fiatAmount" className="form-label">{localized.fiatAmountTitle}</label>
                   <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value)} />
@@ -336,26 +329,23 @@ function Main({ client }) {
 
                 <div className="col">
                   <label htmlFor="satAmount" className="form-label">{localized.satAmountTitle}</label>
-                  <input type="text" className="form-control" id="satAmount" value={satAmount} onChange={(e) => setSatAmount(e.target.value)} readOnly={true} />
+                  <input type="text" className="form-control" id="satAmount" value={satAmount} readOnly={true} />
                   <div className="form-text">{localized.satAmountHelper} <span style={{fontWeight: "bold"}} id="price-timestamp">{priceData.timestamp || priceData.message}</span></div>
                 </div>
-
               </div>
 
               {fiatAmount && fiatCurrency && satAmount &&
                 <div>
                   {action === 'SELL' &&
-                    <div className="paymentReqContainer">
-                      <div className="mb-3">
-                        <label htmlFor="paymentReq" className="form-label">{localized.paymentReqTitle}</label>
-                        <input className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => setPaymentReq(e.target.value)} />
-                        <div className="form-text">{localized.sellPaymentReqHelper}</div>
-                      </div>
+                    <div className="paymentReqContainer mb-3">
+                      <label htmlFor="paymentReq" className="form-label">{localized.paymentReqTitle}</label>
+                      <input className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => { setPaymentReq(e.target.value); setDisableButton(false) } }/>
+                      <div className="form-text">{localized.sellPaymentReqHelper}</div>
                     </div>
                   }
 
                   {action === 'BUY' &&
-                    <div className="paymentReqContainer">
+                    <div className="paymentReqContainer mb-3">
 
                       <div className="row action-buttons mb-3">
                         <div className="mb-3">
@@ -405,32 +395,32 @@ function Main({ client }) {
                   }
 
                   {action === 'BILLPAY' &&
-                    <div className="billPayContainer">
+                    <div className="paymentReqContainer mb-3">
                       <div className="mb-3">
                         <label htmlFor="billerCategory" className="form-label">{localized.billerCategoryTitle}</label>
-                        <input type="text" className="form-control" id="billerCategory" value={billerCategory} onChange={(e) => setBillerCategory(e.target.value)} />
+                        <input type="text" className="form-control" id="billerCategory" value={billerCategory} onChange={(e) => { setBillerCategory(e.target.value); setDisableButton(false) } }/>
                       </div>
 
                       <div className="mb-3">
                         <label htmlFor="billerService" className="form-label">{localized.billerServiceTitle}</label>
-                        <input type="text" className="form-control" id="billerService" value={billerService} onChange={(e) => setBillerService(e.target.value)} />
+                        <input type="text" className="form-control" id="billerService" value={billerService} onChange={(e) => { setBillerService(e.target.value); setDisableButton(false) } }/>
                       </div>
 
                       <div className="mb-3">
                         <label htmlFor="billerActionType" className="form-label">{localized.billerActionTypeTitle}</label>
-                        <input type="text" className="form-control" id="billerActionType" value={billerActionType} onChange={(e) => setBillerActionType(e.target.value)} />
+                        <input type="text" className="form-control" id="billerActionType" value={billerActionType} onChange={(e) => { setBillerActionType(e.target.value); setDisableButton(false) } }/>
                       </div>
 
                       <div className="mb-3">
                         <label htmlFor="billerAccountNumber" className="form-label">{localized.billerAccountNumberTitle}</label>
-                        <input type="text" className="form-control" id="billerAccountNumber" value={billerAccountNumber} onChange={(e) => setBillerAccountNumber(e.target.value)} />
+                        <input type="text" className="form-control" id="billerAccountNumber" value={billerAccountNumber} onChange={(e) =>{ setBillerAccountNumber(e.target.value); setDisableButton(false) } }/>
                       </div>
                     </div>
                   }
                 </div>
               }
 
-              <div className="submit-container">
+              <div className="submit-container mb-3">
                 <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton} onClick={handleFormSubmit}>{localized.submitBtnTitle}</button>
                 {loading &&
                   <div className="spinner-border" role="status">

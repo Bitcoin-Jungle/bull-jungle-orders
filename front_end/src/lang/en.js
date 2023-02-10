@@ -4,9 +4,6 @@ const en = {
 	apiKeyTitle: "API Key",
 	apiKeyHelper: "Enter your API Key here",
 
-	actionTitle: "Action",
-	actionHelper: "Select the action you wish to perform above",
-
 	buyBtn: "Buy BTC",
 	sellBtn: "Sell BTC",
 	billPayBtn: "Bill Pay",

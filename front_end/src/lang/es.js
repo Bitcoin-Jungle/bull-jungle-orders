@@ -4,9 +4,6 @@ const es = {
 	apiKeyTitle: "Contraseña",
 	apiKeyHelper: "Ingrese tu contraseña aquí",
 
-	actionTitle: "Acción",
-	actionHelper: "Seleccione la acción que desea realizar arriba",
-
 	buyBtn: "Compra BTC",
 	sellBtn: "Vende BTC",
 	billPayBtn: "Paga Factura",
