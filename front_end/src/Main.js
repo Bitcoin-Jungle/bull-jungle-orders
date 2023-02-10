@@ -50,6 +50,14 @@ function Main({ client }) {
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
   const [showPaymentReq, setShowPaymentReq] = useState(false)
 
+  const localized = localizeText(language)
+
+  const handleAction = (action) => {
+    clearForm()
+    setAction(action)
+    setDisableButton(true)
+  }
+
   const fetchInvoice = () => {
     if(!fiatAmount) {
       alert("fiatAmount is required.")
@@ -109,7 +117,7 @@ function Main({ client }) {
 
   const generateUserInvoice = async () => {
     setShowPaymentReq(false)
-    const username = prompt("What is your Bitcoin Jungle Username?")
+    const username = prompt(localized.bjUsernamePrompt)
 
     if(!username) {
       return
@@ -266,14 +274,6 @@ function Main({ client }) {
       document.querySelector('body').classList.remove('modal-open')
     }
   }, [showModal])
-
-  const handleAction = (action) => {
-    clearForm()
-    setAction(action)
-    setDisableButton(true)
-  }
-
-  const localized = localizeText(language)
 
   return (
     <div className="container">

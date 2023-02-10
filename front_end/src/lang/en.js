@@ -24,6 +24,8 @@ const en = {
 	bitcoinJungleWallet: "Bitcoin Jungle Wallet",
 	lightningWallet: "Other Lightning Wallet",
 
+	bjUsernamePrompt: "What is your Bitcoin Jungle username?",
+
 	paymentOptionsTitle: "Payment Options",
 	paymentOptionsInstructionBefore: "Before submitting the order, you must send",
 	paymentOptionsInstructionsAfter: "to one of the following options",
