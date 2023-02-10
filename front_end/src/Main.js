@@ -219,7 +219,12 @@ function Main({ client }) {
 
   useEffect(() => {
     const calculateSatAmount = () => {
-      if(!fiatAmount || !fiatCurrency || priceData.error || paymentReq) {
+      if(!fiatAmount || !fiatCurrency || priceData.error) {
+        setSatAmount("")
+        return
+      }
+
+      if(paymentReq) {
         return
       }
 
