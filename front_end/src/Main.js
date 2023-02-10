@@ -2,12 +2,7 @@ import './App.css'
 
 import { useState, useEffect } from 'react'
 import { QRCode } from "react-qrcode-logo"
-import {
-  gql,
-  useQuery,
-  useMutation,
-  useSubscription,
-} from "@apollo/client"
+import { gql } from "@apollo/client"
 
 import localizeText from './lang/index'
 
@@ -28,17 +23,6 @@ const LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT = gql`
       invoice {
         paymentRequest
       }
-    }
-  }
-`
-
-const LN_INVOICE_PAYMENT_STATUS = gql`
-  subscription lnInvoicePaymentStatus($input: LnInvoicePaymentStatusInput!) {
-    lnInvoicePaymentStatus(input: $input) {
-      errors {
-        message
-      }
-      status
     }
   }
 `
@@ -65,68 +49,86 @@ function Main({ client }) {
   const [showModal, setShowModal] = useState(false)
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
 
-  const { data: recipientData } = useQuery(RECIPIENT_WALLET_ID, {
-    variables: {
-      username: "lee2",
-    },
-  })
-
-  const { recipientWalletId } = recipientData || {recipientWalletId: null}
-
-  const loadInvoice = (data) => {
-    setInvoice(data.mutationData.invoice.paymentRequest)
-    setShowModal(true)
-    setLoading(false)
-  }
-
-  const loadUserInvoice = (data) => {
-    setPaymentReq(data.mutationData.invoice.paymentRequest)
-  }
-
-  const [createInvoice] = useMutation(LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT, {
-    onError: () => setLoading(false),
-    onCompleted: loadInvoice,
-  })
-
-  const [createUserInvoice] = useMutation(LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT, {
-    onError: () => setLoading(false),
-    onCompleted: loadUserInvoice,
-  })
-
-  useSubscription(LN_INVOICE_PAYMENT_STATUS, {
-    variables: {
-      input: {
-        paymentRequest: invoice,
-      },
-    },
-    onData: ({ data }) => {
-      if (data.data.lnInvoicePaymentStatus.status === "PAID") {
-        setShowModal(false)
-        submitOrder()
-      }
-    },
-  })
-
   const fetchInvoice = () => {
+    if(!fiatAmount) {
+      alert("fiatAmount is required.")
+      return false
+    }
+
+    if(!fiatCurrency) {
+      alert("fiatCurrency is required.")
+      return false
+    }
+
+    if(!satAmount) {
+      alert("satAmount is required.")
+      return false
+    }
+
+    if(!paymentReq) {
+      alert("Payment Destination is required.")
+      return false
+    }
+
     setLoading(true)
-    createInvoice({
-      variables: { walletId: recipientWalletId, amount: satAmount },
+    
+    fetch("/invoice", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        label: `${fiatAmount} ${fiatCurrency} (${satAmount} sats) to ${paymentReq}`,
+        description: `${fiatAmount} ${fiatCurrency} (${satAmount} sats) to ${paymentReq}`,
+        satAmount: satAmount,
+      })
     })
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        alert(data.message)
+        return
+      } else {
+        setInvoice(data.result.bolt11)
+        setShowModal(true)
+      }
+    })
+    .catch((err) => {
+      alert(err)
+    })
+    .finally(() => {
+      setLoading(false)
+    })
+
+    //later to confirm
+    // setShowModal(false)
+    // submitOrder()
   }
 
   const generateUserInvoice = async () => {
     const username = prompt("What is your Bitcoin Jungle Username?")
 
-    const response = await client.query({
-      query: RECIPIENT_WALLET_ID,
-      variables: {
-        username,
-      },
-    })
+    try {
+      const response = await client.query({
+        query: RECIPIENT_WALLET_ID,
+        variables: {
+          username,
+        },
+      })
 
-    createUserInvoice({
-      variables: { walletId: response.data.recipientWalletId, amount: satAmount },
-    })
+      const response2 = await client.mutate({
+        mutation: LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT,
+        variables: {
+          walletId: response.data.recipientWalletId,
+          amount: satAmount,
+        }
+      })
+
+      setPaymentReq(response2.data.mutationData.invoice.paymentRequest)
+    } catch(err) {
+      alert(err.toString())
+    }
   }
 
   const getPriceData = () => {
