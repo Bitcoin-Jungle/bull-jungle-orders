@@ -111,6 +111,10 @@ function Main({ client }) {
     setShowPaymentReq(false)
     const username = prompt("What is your Bitcoin Jungle Username?")
 
+    if(!username) {
+      return
+    }
+
     try {
       const response = await client.query({
         query: RECIPIENT_WALLET_ID,
