@@ -12,8 +12,6 @@ import {
   LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT,
 } from './utils/graphql'
 
-let interval
-
 function Main({ client }) {
   const [language, setLanguage] = useState('en')
 
@@ -86,7 +84,7 @@ function Main({ client }) {
       },
       body: JSON.stringify({
         apiKey: apiKey,
-        label: `${timestamp}`,
+        label: timestamp,
         description: `${fiatAmount} ${fiatCurrency} (${satAmount} sats) to ${paymentReq}`,
         satAmount: satAmount,
       })
@@ -100,7 +98,7 @@ function Main({ client }) {
         setInvoice(data.result.bolt11)
         setShowModal(true)
 
-        interval = setInterval(checkInvoice, 1000 * 1)
+        checkInvoice()
       }
     })
     .catch((err) => {
@@ -119,18 +117,20 @@ function Main({ client }) {
       },
       body: JSON.stringify({
         apiKey: apiKey,
-        label: `${timestamp}`,
+        label: timestamp,
       })
     })
     .then((res) => res.json())
-    .then((data) => {
+    .then(async (data) => {
       if(data.error) {
         alert(data.message || data.error.message)
         return
       } else if(data.result.status === 'paid') {
-        clearInterval(interval)
         setShowModal(false)
-        submitOrder()
+        submitOrder(data.result.bolt11, data.result.payment_hash)
+      } else {
+        await new Promise(r => setTimeout(r, 1000))
+        checkInvoice()
       }
     })
     .catch((err) => {
@@ -200,7 +200,7 @@ function Main({ client }) {
     setTimestamp(new Date().toISOString())
   }
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault()
 
     setTimestamp(new Date().toISOString())
@@ -212,8 +212,8 @@ function Main({ client }) {
     }
   }
 
-  const submitOrder = async () => {    
-    setLoading(true)    
+  const submitOrder = (myInvoice, myPaymentHash) => {    
+    setLoading(true)
     return fetch("/order", {
       "method": "POST",
       "headers": {
@@ -230,7 +230,8 @@ function Main({ client }) {
         billerService,
         billerActionType,
         billerAccountNumber,
-        invoice,
+        invoice: myInvoice,
+        paymentHash: myPaymentHash,
         paymentIdentifier,
         timestamp,
       })
@@ -252,6 +253,12 @@ function Main({ client }) {
     .finally(() => {
       setLoading(false)
     })
+  }
+
+  const hideModal = () => {
+    setShowModal(false)
+    setInvoice("")
+    setTimestamp(new Date().toISOString())
   }
 
   useEffect(() => {
@@ -437,7 +444,7 @@ function Main({ client }) {
 
       <Modal
         showModal={showModal}
-        setShowModal={setShowModal}
+        hideModal={hideModal}
         localized={localized}
         invoice={invoice} />
 

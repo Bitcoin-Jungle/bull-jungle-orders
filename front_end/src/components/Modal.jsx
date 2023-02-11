@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { QRCode } from "react-qrcode-logo"
 
-function Modal({ showModal, setShowModal, invoice, localized }) {
+function Modal({ showModal, hideModal, invoice, localized }) {
 
   useEffect(() => {
     if(showModal) {
@@ -29,7 +29,7 @@ function Modal({ showModal, setShowModal, invoice, localized }) {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">{localized.sellBtn}</h5>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}></button>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={hideModal}></button>
               </div>
               <div className="modal-body">
                 <p>{localized.invoiceHelperText}</p>
