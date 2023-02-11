@@ -38,6 +38,7 @@ app.post('/order', async (req, res) => {
   const satAmount  = (req.body.satAmount ? parseInt(req.body.satAmount.replace(/,/g, "").replace(/\./g, "")) : null)
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
+  const timestamp = (req.body.timestamp ? req.body.timestamp : new Date().toISOString())
 
   const paymentIdentifier = (req.body.paymentIdentifier && req.body.action === "BUY" ? req.body.paymentIdentifier : "")
   
@@ -167,7 +168,7 @@ app.post('/order', async (req, res) => {
   const sheet = doc.sheetsByIndex[0]
 
   const rowData = { 
-    "Date": new Date().toISOString(),
+    "Date": timestamp,
     "Type": type,
     "From Amount": fromAmount,
     "From Currency": fromCurrency,
@@ -238,11 +239,48 @@ app.post('/invoice', async (req, res) => {
   const invoiceData = {
     jsonrpc: "2.0",
     id: Math.floor(Math.random() * 1001).toString(),
-    method: "invoice",
+    method: "createInvoice",
     params: {
       label: label,
       description: description,
       msatoshi: parseInt(satAmount * 1000),
+    }
+  }
+
+  const response = await axios(invoice_endpoint_url, {
+    method: "POST",
+    auth: {
+      username: invoice_endpoint_user,
+      password: invoice_endpoint_password,
+    },
+    data: invoiceData,
+  })
+
+  return res.send(response.data)
+})
+
+app.post('/checkInvoice', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const label = req.body.label
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!label) {
+    return res.send({error: true, message: "Label is required"})
+  }
+
+  const invoiceData = {
+    jsonrpc: "2.0",
+    id: Math.floor(Math.random() * 1001).toString(),
+    method: "getInvoice",
+    params: {
+      label: label,
     }
   }
 

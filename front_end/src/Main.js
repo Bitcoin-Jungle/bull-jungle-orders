@@ -12,6 +12,8 @@ import {
   LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT,
 } from './utils/graphql'
 
+let interval
+
 function Main({ client }) {
   const [language, setLanguage] = useState('en')
 
@@ -34,6 +36,7 @@ function Main({ client }) {
   const [showModal, setShowModal] = useState(false)
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
   const [showPaymentReq, setShowPaymentReq] = useState(false)
+  const [timestamp, setTimestamp] = useState(new Date().toISOString())
 
   const localized = localizeText(language)
 
@@ -59,8 +62,18 @@ function Main({ client }) {
       return false
     }
 
-    if(!paymentReq) {
+    if(!action) {
+      alert("action is required.")
+      return false
+    }
+
+    if(action !== 'BILLPAY' && !paymentReq) {
       alert("Payment Destination is required.")
+      return false
+    }
+
+    if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
+      alert("When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber")
       return false
     }
 
@@ -73,7 +86,7 @@ function Main({ client }) {
       },
       body: JSON.stringify({
         apiKey: apiKey,
-        label: `${fiatAmount} ${fiatCurrency} (${satAmount} sats) to ${paymentReq}`,
+        label: `${timestamp}`,
         description: `${fiatAmount} ${fiatCurrency} (${satAmount} sats) to ${paymentReq}`,
         satAmount: satAmount,
       })
@@ -81,11 +94,13 @@ function Main({ client }) {
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
-        alert(data.message)
+        alert(data.message || data.error.message)
         return
       } else {
         setInvoice(data.result.bolt11)
         setShowModal(true)
+
+        interval = setInterval(checkInvoice, 1000 * 1)
       }
     })
     .catch((err) => {
@@ -94,10 +109,33 @@ function Main({ client }) {
     .finally(() => {
       setLoading(false)
     })
+  }
 
-    //later to confirm
-    // setShowModal(false)
-    // submitOrder()
+  const checkInvoice = async () => {
+    fetch("/checkInvoice", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        label: `${timestamp}`,
+      })
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        alert(data.message || data.error.message)
+        return
+      } else if(data.result.status === 'paid') {
+        clearInterval(interval)
+        setShowModal(false)
+        submitOrder()
+      }
+    })
+    .catch((err) => {
+      alert(err)
+    })
   }
 
   const generateUserInvoice = async () => {
@@ -159,10 +197,13 @@ function Main({ client }) {
     setPaymentIdentifier("")
     setInvoice("")
     setShowPaymentReq(false)
+    setTimestamp(new Date().toISOString())
   }
 
   const handleFormSubmit = async (e) => {
     e.preventDefault()
+
+    setTimestamp(new Date().toISOString())
 
     if(action === 'SELL' || action === 'BILLPAY') {
       fetchInvoice()
@@ -191,6 +232,7 @@ function Main({ client }) {
         billerAccountNumber,
         invoice,
         paymentIdentifier,
+        timestamp,
       })
     })
     .then((res) => res.json())
