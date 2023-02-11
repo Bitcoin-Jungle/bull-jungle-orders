@@ -163,15 +163,6 @@ app.post('/order', async (req, res) => {
 
   const priceData = await getPrice()
 
-  await doc.useServiceAccountAuth({
-    client_email: service_account_email,
-    private_key: service_account_json.private_key,
-  })
-
-  await doc.loadInfo()
-
-  const sheet = doc.sheetsByIndex[0]
-
   const rowData = { 
     "Date": timestamp,
     "Type": type,
@@ -194,23 +185,40 @@ app.post('/order', async (req, res) => {
 
   console.log('processed order data to', rowData)
 
-  const newRow = await sheet.addRow(rowData)
+  try {
+    await doc.useServiceAccountAuth({
+      client_email: service_account_email,
+      private_key: service_account_json.private_key,
+    })
 
-  let message = `🚨 New Order 🚨\n`
+    await doc.loadInfo()
 
-  Object.keys(rowData).forEach(key => {
-    let val = rowData[key]
+    const sheet = doc.sheetsByIndex[0]
 
-    if(val && val.length) {
-      if(val[0] === '=') {
-        val = formulaFreeAmount
+    const newRow = await sheet.addRow(rowData)
+  } catch(e) {
+    console.log('gsheet error', e)
+  }
+
+  try {
+    let message = `🚨 New Order 🚨\n`
+
+    Object.keys(rowData).forEach(key => {
+      let val = rowData[key]
+
+      if(val && val.length) {
+        if(val[0] === '=') {
+          val = formulaFreeAmount
+        }
+
+        message += `${key}: ${val}\n`
       }
+    })
 
-      message += `${key}: ${val}\n`
-    }
-  })
-
-  const resp = await bot.telegram.sendMessage(chat_id, message)
+    const resp = await bot.telegram.sendMessage(chat_id, message)
+  } catch(e) {
+    console.log('telegram error', e)
+  }
 
   console.log('order submitted successfully.')
 
@@ -291,16 +299,20 @@ app.post('/checkInvoice', async (req, res) => {
     }
   }
 
-  const response = await axios(invoice_endpoint_url, {
-    method: "POST",
-    auth: {
-      username: invoice_endpoint_user,
-      password: invoice_endpoint_password,
-    },
-    data: invoiceData,
-  })
+  try {
+    const response = await axios(invoice_endpoint_url, {
+      method: "POST",
+      auth: {
+        username: invoice_endpoint_user,
+        password: invoice_endpoint_password,
+      },
+      data: invoiceData,
+    })
 
-  return res.send(response.data)
+    return res.send(response.data)
+  } catch(e) {
+    return res.send({error: true, message: e.toString()})
+  }
 })
 
 app.get('/price', async (req, res) => {

@@ -33,6 +33,7 @@ function Main({ client }) {
   const [billerActionType, setBillerActionType] = useState("")
   const [billerAccountNumber, setBillerAccountNumber] = useState("")
   const [invoice, setInvoice] = useState("")
+  const [paymentHash, setPaymentHash] = useState("")
   const [showModal, setShowModal] = useState(false)
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
   const [showPaymentReq, setShowPaymentReq] = useState(false)
@@ -44,6 +45,14 @@ function Main({ client }) {
     clearForm()
     setAction(action)
     setDisableButton(true)
+  }
+
+  const handleModal = (action) => {
+    setShowModal(action)
+
+    if(!action) {
+      setTimestamp(new Date().toISOString())
+    }
   }
 
   const fetchInvoice = () => {
@@ -86,7 +95,7 @@ function Main({ client }) {
       },
       body: JSON.stringify({
         apiKey: apiKey,
-        label: `${timestamp}`,
+        label: timestamp,
         description: `${fiatAmount} ${fiatCurrency} (${satAmount} sats) to ${paymentReq}`,
         satAmount: satAmount,
       })
@@ -98,9 +107,8 @@ function Main({ client }) {
         return
       } else {
         setInvoice(data.result.bolt11)
+        setPaymentHash(data.result.payment_hash)
         setShowModal(true)
-
-        interval = setInterval(checkInvoice, 1000 * 1)
       }
     })
     .catch((err) => {
@@ -119,7 +127,7 @@ function Main({ client }) {
       },
       body: JSON.stringify({
         apiKey: apiKey,
-        label: `${timestamp}`,
+        label: timestamp,
       })
     })
     .then((res) => res.json())
@@ -128,7 +136,6 @@ function Main({ client }) {
         alert(data.message || data.error.message)
         return
       } else if(data.result.status === 'paid') {
-        clearInterval(interval)
         setShowModal(false)
         submitOrder()
       }
@@ -196,14 +203,13 @@ function Main({ client }) {
     setBillerAccountNumber("")
     setPaymentIdentifier("")
     setInvoice("")
+    setPaymentHash("")
     setShowPaymentReq(false)
     setTimestamp(new Date().toISOString())
   }
 
   const handleFormSubmit = async (e) => {
     e.preventDefault()
-
-    setTimestamp(new Date().toISOString())
 
     if(action === 'SELL' || action === 'BILLPAY') {
       fetchInvoice()
@@ -231,6 +237,7 @@ function Main({ client }) {
         billerActionType,
         billerAccountNumber,
         invoice,
+        paymentHash,
         paymentIdentifier,
         timestamp,
       })
@@ -276,6 +283,14 @@ function Main({ client }) {
 
     calculateSatAmount()
   }, [fiatAmount, fiatCurrency, priceData, satAmount, paymentReq])
+
+  useEffect(() => {
+    if(showModal && !interval) {
+      interval = setInterval(checkInvoice, 1000 * 1)
+    } else if (!showModal && interval) {
+      interval = clearInterval(interval)
+    }
+  }, [showModal])
 
   return (
     <div className="container">
@@ -437,7 +452,7 @@ function Main({ client }) {
 
       <Modal
         showModal={showModal}
-        setShowModal={setShowModal}
+        handleModal={handleModal}
         localized={localized}
         invoice={invoice} />
 
