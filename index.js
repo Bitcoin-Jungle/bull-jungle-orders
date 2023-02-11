@@ -39,7 +39,8 @@ app.post('/order', async (req, res) => {
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
   const timestamp = (req.body.timestamp ? req.body.timestamp : new Date().toISOString())
-
+  const invoice = (req.body.invoice ? req.body.invoice : null)
+  const paymentHash = (req.body.paymentHash ? req.body.paymentHash : null)
   const paymentIdentifier = (req.body.paymentIdentifier && req.body.action === "BUY" ? req.body.paymentIdentifier : "")
   
   const billerCategory = req.body.billerCategory
@@ -97,6 +98,10 @@ app.post('/order', async (req, res) => {
 
   if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
     return res.send({error: true, message: "When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber"})
+  }
+
+  if((action === 'SELL' || action === 'BILLPAY') && (!invoice || !paymentHash)) {
+    return res.send({error: true, message: "When action is SELL or BILLPAY, you must provide an invoice and payment hash."})
   }
 
   const fiatFormatter = new Intl.NumberFormat('en-US', {
@@ -181,6 +186,8 @@ app.post('/order', async (req, res) => {
     "Biller Service": billerService,
     "Biller Action Type": billerActionType,
     "Biller Account Number": billerAccountNumber,
+    "Settlement LN Invoice": invoice,
+    "Invoice Payment PreImage": paymentHash,
     "USD/CRC": priceData.USDCRC,
     "USD/CAD": priceData.USDCAD,
   }
