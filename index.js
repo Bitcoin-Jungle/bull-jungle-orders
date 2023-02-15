@@ -385,7 +385,7 @@ const getUsdCad = async () => {
    return {error: true, message: "Error fetching price"}
   }
 
-  const USDCAD = cadFiatResponse.data.rates.CAD
+  USDCAD = cadFiatResponse.data.rates.CAD
 
   console.log('set USDCAD to ', USDCAD)
 
