@@ -26,6 +26,8 @@ const app = express()
 
 const doc = new GoogleSpreadsheet(google_sheet_id);
 
+let USDCRC, USDCAD
+
 app.use(bodyParser.json())
 app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
 
@@ -100,8 +102,23 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber"})
   }
 
-  if((action === 'SELL' || action === 'BILLPAY') && (!invoice || !paymentHash)) {
-    return res.send({error: true, message: "When action is SELL or BILLPAY, you must provide an invoice and payment hash."})
+  if((action === 'SELL' || action === 'BILLPAY') && (!invoice || !paymentHash || !timestamp)) {
+    return res.send({error: true, message: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp."})
+  }
+
+  if(action === 'SELL' || action === 'BILLPAY') {
+    // the api has a rate limit
+    await new Promise(resolve => setTimeout(resolve, 300))
+
+    const invoice = await checkInvoice(timestamp)
+
+    if(invoice.error) {
+      return res.send({error: true, message: invoice.message})
+    }
+
+    if(!invoice.data || !invoice.data.result || !invoice.data.result.status || invoice.data.result.status !== 'paid') {
+      return res.send({error: true, message: "Invoice has not been paid."})
+    }
   }
 
   const fiatFormatter = new Intl.NumberFormat('en-US', {
@@ -290,6 +307,29 @@ app.post('/checkInvoice', async (req, res) => {
     return res.send({error: true, message: "Label is required"})
   }
 
+  const invoice = await checkInvoice(label)
+
+  if(invoice.success) {
+    return res.send(invoice.data)
+  }
+
+  return res.send(invoice)
+})
+
+app.get('/price', async (req, res) => {
+  const priceData = await getPrice()
+  return res.send(priceData)
+})
+
+app.get('/order', (req, res) => {
+  let uri = '/'
+  if(req.query.key) {
+    uri = '/?key=' + req.query.key
+  }
+  res.redirect(uri)
+})
+
+const checkInvoice = async (label) => {
   const invoiceData = {
     jsonrpc: "2.0",
     id: Math.floor(Math.random() * 1001).toString(),
@@ -309,24 +349,52 @@ app.post('/checkInvoice', async (req, res) => {
       data: invoiceData,
     })
 
-    return res.send(response.data)
+    if(response.data.error) {
+      return {error: true, message: response.error.message}
+    }
+
+    return {success: true, data: response.data}
+    
   } catch(e) {
-    return res.send({error: true, message: e.toString()})
+    return {error: true, message: e.toString()}
   }
-})
+}
 
-app.get('/price', async (req, res) => {
-  const priceData = await getPrice()
-  return res.send(priceData)
-})
+const getUsdCrc = async () => {
+  const fiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CRC`)
 
-app.get('/order', (req, res) => {
-  let uri = '/'
-  if(req.query.key) {
-    uri = '/?key=' + req.query.key
+  if(!fiatResponse || !fiatResponse.data || !fiatResponse.data.success || !fiatResponse.data.rates || !fiatResponse.data.rates || !fiatResponse.data.rates.CRC) {
+    return {error: true, message: "Error fetching price"}
   }
-  res.redirect(uri)
-})
+
+  USDCRC = fiatResponse.data.rates.CRC
+
+  console.log('set USDCRC to ', USDCRC)
+
+  return USDCRC
+}
+
+setInterval(getUsdCrc, 60 * 1000 * 240)
+
+getUsdCrc()
+
+const getUsdCad = async () => {
+  const cadFiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CAD`)
+
+  if(!cadFiatResponse || !cadFiatResponse.data || !cadFiatResponse.data.success || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates.CAD) {
+   return {error: true, message: "Error fetching price"}
+  }
+
+  const USDCAD = cadFiatResponse.data.rates.CAD
+
+  console.log('set USDCAD to ', USDCAD)
+
+  return USDCAD
+}
+
+setInterval(getUsdCad, 60 * 1000 * 240)
+
+getUsdCad()
 
 const getPrice = async () => {
   const response = await axios({
@@ -353,23 +421,7 @@ const getPrice = async () => {
 
   const BTCCRC = Math.round(((priceData.price.base / 10 ** priceData.price.offset) / 100))
 
-  const fiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CRC`)
-
-  if(!fiatResponse || !fiatResponse.data || !fiatResponse.data.success || !fiatResponse.data.rates || !fiatResponse.data.rates || !fiatResponse.data.rates.CRC) {
-    return {error: true, message: "Error fetching price"}
-  }
-
-  const USDCRC = fiatResponse.data.rates.CRC
-
   const BTCUSD = Number(BTCCRC / USDCRC).toFixed(2)
-
-  const cadFiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CAD`)
-
-  if(!cadFiatResponse || !cadFiatResponse.data || !cadFiatResponse.data.success || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates.CAD) {
-   return {error: true, message: "Error fetching price"}
-  }
-
-  const USDCAD = cadFiatResponse.data.rates.CAD
 
   return {BTCCRC, USDCRC, USDCAD, BTCUSD, timestamp}
 }
