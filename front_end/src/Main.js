@@ -218,7 +218,10 @@ function Main({ client }) {
     }
   }
 
-  const submitOrder = async () => {    
+  const submitOrder = async () => {
+    if(loading) {
+      return false
+    }
     setLoading(true)    
     return fetch("/order", {
       "method": "POST",
