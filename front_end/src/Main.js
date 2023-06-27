@@ -38,6 +38,7 @@ function Main({ client }) {
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
   const [showPaymentReq, setShowPaymentReq] = useState(false)
   const [timestamp, setTimestamp] = useState(new Date().toISOString())
+  const [phoneNumber, setPhoneNumber] = useState("")
 
   const localized = localizeText(language)
 
@@ -197,6 +198,7 @@ function Main({ client }) {
     setSatAmount("")
     setAction("")
     setPaymentReq("")
+    setPhoneNumber("")
     setBillerCategory("")
     setBillerService("")
     setBillerActionType("")
@@ -235,6 +237,7 @@ function Main({ client }) {
         satAmount,
         action,
         paymentReq,
+        phoneNumber,
         billerCategory,
         billerService,
         billerActionType,
@@ -356,7 +359,14 @@ function Main({ client }) {
 
               {fiatAmount && fiatCurrency && satAmount &&
                 <div>
-                  {action === 'SELL' &&
+
+                  <div className="mb-3">
+                    <label htmlFor="phoneNumber" className="form-label">{localized.phoneNumberTitle}</label>
+                    <input className="form-control" id="phoneNumber" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value) } }/>
+                    <div className="form-text">{localized.phoneNumberHelper}</div>
+                  </div>
+
+                  {action === 'SELL' && phoneNumber && 
                     <div className="paymentReqContainer mb-3">
                       <label htmlFor="paymentReq" className="form-label">{localized.paymentReqTitle}</label>
                       <input className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => { setPaymentReq(e.target.value); setDisableButton(false) } }/>
@@ -364,7 +374,7 @@ function Main({ client }) {
                     </div>
                   }
 
-                  {action === 'BUY' &&
+                  {action === 'BUY' && phoneNumber && 
                     <div className="paymentReqContainer mb-3">
 
                       <div className="row action-buttons mb-3">

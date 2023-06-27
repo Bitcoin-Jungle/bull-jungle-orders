@@ -17,6 +17,9 @@ const es = {
 	satAmountTitle: "Cantidad Sats",
 	satAmountHelper: "Tipo de cambio se actualiza a partir de",
 
+	phoneNumberTitle: "Número de teléfono",
+	phoneNumberHelper: "Ingresa su número de teléfono aqui",
+
 	paymentReqTitle: "Destino de pago",
 	sellPaymentReqHelper: "Ingresa el número de teléfono de SINPE Móvil al que deseas recibir el pago",
 	buyPaymentReqHelper: "Ingresa una factura lightning donde quieres recibir el bitcoin",

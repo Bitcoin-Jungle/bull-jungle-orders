@@ -17,6 +17,9 @@ const en = {
 	satAmountTitle: "Sat Amount",
 	satAmountHelper: "Exchange rate is updated as of",
 
+	phoneNumberTitle: "Phone Number",
+	phoneNumberHelper: "Enter your phone number here",
+
 	paymentReqTitle: "Payment Destination",
 	sellPaymentReqHelper: "Enter the SINPE Movil phone number you want to receive payment at",
 	buyPaymentReqHelper: "Enter a lightning invoice where you want to receive the bitcoin",

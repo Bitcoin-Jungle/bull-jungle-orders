@@ -40,6 +40,7 @@ app.post('/order', async (req, res) => {
   const satAmount  = (req.body.satAmount ? parseInt(req.body.satAmount.replace(/,/g, "").replace(/\./g, "")) : null)
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
+  const phoneNumber = (req.body.phoneNumber ? req.body.phoneNumber.replace(/[^\d]+/g, "").trim() : null)
   const timestamp = (req.body.timestamp ? req.body.timestamp : new Date().toISOString())
   const invoice = (req.body.invoice ? req.body.invoice : null)
   const paymentHash = (req.body.paymentHash ? req.body.paymentHash : null)
@@ -84,6 +85,14 @@ app.post('/order', async (req, res) => {
 
   if(!paymentReq) {
     return res.send({error: true, message: "paymentReq is required"})
+  }
+
+  if(!phoneNumber) {
+    return res.send({error: true, message: "phoneNumber is required"})
+  }
+
+  if(phoneNumber.length !== 8) {
+    return res.send({error: true, message: "phoneNumber must be 8 digits (Costa Rican)"})
   }
 
   if(action !== 'BUY' && action !== 'SELL' && action !== 'BILLPAY') {
@@ -210,31 +219,45 @@ app.post('/order', async (req, res) => {
 
     await doc.loadInfo()
 
-    const sheet = doc.sheetsByIndex[0]
+    try {
+      const userSheet = doc.sheetsByIndex[1]
 
-    const newRow = await sheet.addRow(rowData)
-  } catch(e) {
+      const users = await userSheet.getRows()
+      const user = users.find((el) => el['Phone Number'] === phoneNumber)
+      const lastUserId = (users.length ? users[users.length - 1]['Customer ID'] : 0)
+      const newUserId = parseInt(lastUserId) + 1
+
+      if(!user) {
+        const newUserRow = await userSheet.addRow({
+          "Date": timestamp,
+          "Customer ID": newUserId,
+          "Phone Number": phoneNumber,
+        })
+
+        rowData['User'] = newUserId
+      } else {
+        rowData['User'] = user['Customer ID']
+      }
+    } catch(e) {
+      console.log('gsheet error adding user', e)
+    }
+
+    try {
+      const sheet = doc.sheetsByIndex[0]
+
+      const newRow = await sheet.addRow(rowData)
+    } catch(e) {
+      console.log('gsheet error adding order', e)
+    }
+
+  } catch (e) {
     console.log('gsheet error', e)
   }
 
-  try {
-    let message = `🚨 New Order 🚨\n`
+  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
 
-    Object.keys(rowData).forEach(key => {
-      let val = rowData[key]
-
-      if(val && val.length) {
-        if(val[0] === '=') {
-          val = formulaFreeAmount
-        }
-
-        message += `${key}: ${val}\n`
-      }
-    })
-
-    const resp = await bot.telegram.sendMessage(chat_id, message)
-  } catch(e) {
-    console.log('telegram error', e)
+  if(!telegramMessage) {
+    await sendOrderToTelegram(rowData, formulaFreeAmount)
   }
 
   console.log('order submitted successfully.')
@@ -328,6 +351,116 @@ app.get('/order', (req, res) => {
   }
   res.redirect(uri)
 })
+
+app.get('/setCustomerIds', async (req, res) => {
+  const timestamp = (req.query.timestamp ? req.query.timestamp : new Date().toISOString())
+
+  try {
+    await doc.useServiceAccountAuth({
+      client_email: service_account_email,
+      private_key: service_account_json.private_key,
+    })
+
+    await doc.loadInfo()
+    try {
+      const txnsSheet = doc.sheetsByIndex[0]
+      const userSheet = doc.sheetsByIndex[1]
+
+      const txns = await txnsSheet.getRows()
+      const users = await userSheet.getRows()
+      let txn, phoneNumber, lastUserId
+
+      lastUserId = (users.length ? users[users.length - 1]['Customer ID'] : 1)
+
+      console.log('lastUserId', lastUserId)
+
+      for (var i = 0; i <= txns.length - 1; i++) {
+        txn = txns[i]
+
+        console.log('txn', txn['Date'])
+
+        switch(txn['Type']) {
+          case 'Sell':
+            phoneNumber = txn['Payment Destination'].replace(/[^0-9]/g, '').trim()
+            break;
+
+          default:
+            console.log('skip!', txn['Type'])
+            phoneNumber = null
+            break;
+        }
+
+        if(phoneNumber && phoneNumber.length) {
+          console.log('phone number', phoneNumber)
+
+          await new Promise(resolve => setTimeout(resolve, 500))
+
+          const userExists = users.find((el) => el['Phone Number'].replace(/[^0-9]/g, '').trim() === phoneNumber)
+
+          if(!userExists) {   
+            lastUserId = lastUserId++   
+
+            console.log('user doesnt exist, creating', lastUserId)
+
+            const newUserRow = await userSheet.addRow({
+              "Date": txn['Date'],
+              "Customer ID": lastUserId,
+              "Phone Number": phoneNumber,
+            })
+
+            users.push(newUserRow)
+
+            await new Promise(resolve => setTimeout(resolve, 1000))
+
+            txn['User'] = lastUserId++
+
+            await txn.save()
+
+            await new Promise(resolve => setTimeout(resolve, 1000))
+          } else {
+            console.log('user already exists', userExists['Customer ID'])
+
+            txn['User'] = userExists['Customer ID']
+
+            await txn.save()
+
+            await new Promise(resolve => setTimeout(resolve, 1000))
+          }
+        }
+      }
+    } catch(e) {
+      console.log('gsheet error adding order', e)
+    }
+  } catch (e) {
+    console.log('gsheet error', e)
+  }
+})
+
+const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
+  try {
+    let message = `🚨 New Order 🚨\n`
+
+    Object.keys(rowData).forEach(key => {
+      let val = rowData[key]
+
+      if(val && val.length) {
+        if(val[0] === '=') {
+          val = formulaFreeAmount
+        }
+
+        message += `${key}: ${val}\n`
+      }
+    })
+
+    const resp = await bot.telegram.sendMessage(chat_id, message)
+
+    return resp
+  } catch(e) {
+    console.log('telegram error', e)
+
+    return false
+  }
+}
 
 const checkInvoice = async (label) => {
   const invoiceData = {
