@@ -128,25 +128,13 @@ function Main({ client }) {
   }
 
   const generateUserInvoice = async () => {
-    setShowPaymentReq(false)
     setLoading(true)
-    let usernameToSend
-
-    if(username) {
-      usernameToSend = username
-    } else {
-      usernameToSend = prompt(localized.bjUsernamePrompt)
-
-      if(!usernameToSend) {
-        return
-      }
-    }
 
     try {
       const response = await client.query({
         query: RECIPIENT_WALLET_ID,
         variables: {
-          username: usernameToSend,
+          username,
         },
       })
 
@@ -163,6 +151,7 @@ function Main({ client }) {
     } catch(err) {
       alert(err.toString())
       setLoading(false)
+      setPaymentReq("")
     }
   }
 
@@ -423,19 +412,22 @@ function Main({ client }) {
                           {localized.step4Title}
                         </p>
                         <div className="row action-buttons mb-3">
-                          <div className="col">
-                           <button className={(paymentReq && !showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} disabled={loading} onClick={generateUserInvoice}>{localized.bitcoinJungleWallet}{(username ? ` (${username})` : '')}</button>
-                          </div>
-                          <div className="col">
-                            <button className={(showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} disabled={loading} onClick={setShowPaymentReq}>{localized.lightningWallet}</button>
+
+                          <div className="mb-3">
+                            <label htmlFor="username" className="form-label">{localized.bitcoinJungleWallet}</label>
+                            <div className="input-group">
+                              <input className="form-control" id="username" value={username} onChange={(e) => { setUsername(e.target.value); setPaymentReq("") } } />
+                              <div class="input-group-append">
+                                <span class="input-group-text" id="basic-addon2">
+                                  <button className="btn btn-success" onClick={generateUserInvoice}>
+                                    Confirm Username ➡️
+                                  </button>
+                                </span>
+                              </div>
+                            </div>
+                            <div className="form-text">{localized.bjUsernamePrompt}</div>
                           </div>
                         </div>
-                        {showPaymentReq &&
-                          <div className="mb-3">
-                            <textarea className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => setPaymentReq(e.target.value)}></textarea>
-                            <div className="form-text">{localized.buyPaymentReqHelper}</div>
-                          </div>
-                        }
                       </div>
 
                       {paymentReq &&

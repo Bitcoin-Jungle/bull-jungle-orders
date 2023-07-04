@@ -283,7 +283,7 @@ app.post('/order', async (req, res) => {
 
   ordersInFlight[timestamp].status = 'complete'
 
-  res.send({success: true})
+  return res.send({success: true})
 })
 
 app.post('/invoice', async (req, res) => {
