@@ -127,32 +127,6 @@ function Main({ client }) {
     })
   }
 
-  const checkInvoice = async () => {
-    fetch("/checkInvoice", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8"
-      },
-      body: JSON.stringify({
-        apiKey: apiKey,
-        label: timestamp,
-      })
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      if(data.error) {
-        alert(data.message || data.error.message)
-        return
-      } else if(data.result.status === 'paid') {
-        setShowModal(false)
-        submitOrder()
-      }
-    })
-    .catch((err) => {
-      alert(err)
-    })
-  }
-
   const generateUserInvoice = async () => {
     setShowPaymentReq(false)
     setLoading(true)
@@ -268,20 +242,26 @@ function Main({ client }) {
     })
     .then((res) => res.json())
     .then((data) => {
+      setLoading(false)
+
       if(data.error) {
         alert(data.message)
         return
+      } else if(data.inFlight) {
+        setTimeout(() => {
+          submitOrder()
+        }, 1000)
       } else {
         alert("Order created successfully!")
+        clearForm()
+        setShowModal(false)
       }
-
-      clearForm()
     })
     .catch((err) => {
-      alert(err)
-    })
-    .finally(() => {
       setLoading(false)
+      setTimeout(() => {
+        submitOrder()
+      }, 1000)
     })
   }
 
@@ -318,10 +298,11 @@ function Main({ client }) {
   }, [fiatAmount, fiatCurrency, priceData, satAmount, paymentReq])
 
   useEffect(() => {
-    if(showModal && !interval) {
-      interval = setInterval(checkInvoice, 1000 * 1)
-    } else if (!showModal && interval) {
-      interval = clearInterval(interval)
+    if(showModal) {
+      submitOrder()
+    } else {
+      setInvoice("")
+      setPaymentHash("")
     }
   }, [showModal])
 

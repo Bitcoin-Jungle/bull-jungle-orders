@@ -26,6 +26,8 @@ const app = express()
 
 const doc = new GoogleSpreadsheet(google_sheet_id);
 
+const ordersInFlight = {}
+
 let USDCRC, USDCAD
 
 app.use(bodyParser.json())
@@ -53,6 +55,14 @@ app.post('/order', async (req, res) => {
 
   if(action === 'BILLPAY') {
     paymentReq = 'Bill Payment'
+  }
+
+  if(ordersInFlight[timestamp]) {
+    if(ordersInFlight[timestamp].status === 'complete') {
+      return res.send({success: true})
+    } else if(ordersInFlight[timestamp].status === 'in-flight') {
+      return res.send({inFlight: true})
+    }
   }
 
   if(!apiKey) {
@@ -91,10 +101,6 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "phoneNumber is required"})
   }
 
-  if(phoneNumber.length !== 8) {
-    return res.send({error: true, message: "phoneNumber must be 8 digits (Costa Rican)"})
-  }
-
   if(action !== 'BUY' && action !== 'SELL' && action !== 'BILLPAY') {
     return res.send({error: true, message: "action should be buy or sell or billpay"})
   }
@@ -115,25 +121,34 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp."})
   }
 
-  if(action === 'SELL' || action === 'BILLPAY') {
-    // the api has a rate limit
-    await new Promise(resolve => setTimeout(resolve, 300))
-
-    const invoice = await checkInvoice(timestamp)
-
-    if(invoice.error) {
-      return res.send({error: true, message: invoice.message})
-    }
-
-    if(!invoice.data || !invoice.data.result || !invoice.data.result.status || invoice.data.result.status !== 'paid') {
-      return res.send({error: true, message: "Invoice has not been paid."})
-    }
-  }
-
   const priceData = await getPrice()
 
   if((satAmount / 100000000) * priceData['BTCCAD'] >= 995) {
     return res.send({error: true, message: "There is a per transaction limit of $1000 CAD"})
+  }
+
+  ordersInFlight[timestamp] = {
+    status: 'in-flight',
+  }
+
+  if(action === 'SELL' || action === 'BILLPAY') {
+    let invoicePaid
+    for (var i = 0; i < 100; i++) {
+      console.log('checking invoice', i, timestamp)
+      await new Promise(resolve => setTimeout(resolve, 2500))
+
+      invoicePaid = await checkInvoice(timestamp)
+
+      if(invoicePaid) {
+        console.log('invoice paid', timestamp)
+        break
+      }
+    }
+
+    if(!invoicePaid) {
+      delete ordersInFlight[timestamp]
+      return res.send({error: true, message: "Invoice has not been paid. Please try your order again."})
+    }
   }
 
   const fiatFormatter = new Intl.NumberFormat('en-US', {
@@ -266,6 +281,8 @@ app.post('/order', async (req, res) => {
 
   console.log('order submitted successfully.')
 
+  ordersInFlight[timestamp].status = 'complete'
+
   res.send({success: true})
 })
 
@@ -316,31 +333,6 @@ app.post('/invoice', async (req, res) => {
   })
 
   return res.send(response.data)
-})
-
-app.post('/checkInvoice', async (req, res) => {
-  const apiKey = req.body.apiKey
-  const label = req.body.label
-
-  if(!apiKey) {
-    return res.send({error: true, message: "apiKey is required"})
-  }
-
-  if(apiKey !== api_key) {
-    return res.send({error: true, message: "apiKey is incorrect"})
-  }
-
-  if(!label) {
-    return res.send({error: true, message: "Label is required"})
-  }
-
-  const invoice = await checkInvoice(label)
-
-  if(invoice.success) {
-    return res.send(invoice.data)
-  }
-
-  return res.send(invoice)
 })
 
 app.get('/price', async (req, res) => {
@@ -486,14 +478,15 @@ const checkInvoice = async (label) => {
       data: invoiceData,
     })
 
-    if(response.data.error) {
-      return {error: true, message: response.error.message}
+    if(response.data.result.status === 'paid') {
+      return true
     }
 
-    return {success: true, data: response.data}
+    return false
     
   } catch(e) {
-    return {error: true, message: e.toString()}
+    console.log('error checking invoice', e)
+    return false
   }
 }
 
