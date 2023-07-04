@@ -34,8 +34,6 @@ app.use(bodyParser.json())
 app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
 
 app.post('/order', async (req, res) => {
-  console.log('order received', req.body)
-
   const apiKey = req.body.apiKey
   const fiatAmount = (req.body.fiatAmount ? parseFloat(req.body.fiatAmount.replace(/,/g, "")) : null)
   const fiatCurrency = (req.body.fiatCurrency ? req.body.fiatCurrency.toUpperCase() : null)
@@ -64,6 +62,8 @@ app.post('/order', async (req, res) => {
       return res.send({inFlight: true})
     }
   }
+
+  console.log('order received', req.body)
 
   if(!apiKey) {
     return res.send({error: true, message: "apiKey is required"})

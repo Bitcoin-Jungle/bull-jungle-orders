@@ -8,10 +8,10 @@ const en = {
 	sellBtn: "Sell BTC",
 	billPayBtn: "Bill Pay",
 
-	fiatAmountTitle: "Currency Amount",
+	fiatAmountTitle: "Amount",
 	fiatAmountHelper: "Enter the amount in your desired currency",
 
-	fiatCurrencyTitle: "Currency Type",
+	fiatCurrencyTitle: "Currency",
 	fiatCurrencyHelper: "Select the desired currency",
 
 	satAmountTitle: "Sat Amount",
