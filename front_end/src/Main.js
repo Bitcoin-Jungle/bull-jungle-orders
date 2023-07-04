@@ -353,7 +353,7 @@ function Main({ client }) {
               <div className="row mb-3">
                 <div className="col">
                   <label htmlFor="fiatAmount" className="form-label">{localized.fiatAmountTitle}</label>
-                  <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value)} />
+                  <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
                   <div className="form-text">{localized.fiatAmountHelper}</div>
                 </div>
 
