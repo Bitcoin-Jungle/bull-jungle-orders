@@ -359,9 +359,9 @@ function Main({ client }) {
               <div className="col">
                 <button className={(action === "SELL" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => handleAction("SELL")}>{localized.sellBtn}</button>
               </div>
-              <div className="col">
+              {/*<div className="col">
                 <button className={(action === "BILLPAY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => handleAction("BILLPAY")}>{localized.billPayBtn}</button>
-              </div>
+              </div>*/}
             </div>
           </div>
 
@@ -493,25 +493,32 @@ function Main({ client }) {
                   }
 
                   {action === 'BILLPAY' &&
-                    <div className="paymentReqContainer mb-3">
-                      <div className="mb-3">
-                        <label htmlFor="billerCategory" className="form-label">{localized.billerCategoryTitle}</label>
-                        <input type="text" className="form-control" id="billerCategory" value={billerCategory} onChange={(e) => { setBillerCategory(e.target.value); setDisableButton(false) } }/>
-                      </div>
+                    <div className="well">
+                      <p>
+                        <b>{localized.step} 4</b>
+                        {" "}
+                        {localized.step4Title}
+                      </p>
+                      <div className="paymentReqContainer mb-3">
+                        <div className="mb-3">
+                          <label htmlFor="billerCategory" className="form-label">{localized.billerCategoryTitle}</label>
+                          <input type="text" className="form-control" id="billerCategory" value={billerCategory} onChange={(e) => { setBillerCategory(e.target.value); setDisableButton(false) } }/>
+                        </div>
 
-                      <div className="mb-3">
-                        <label htmlFor="billerService" className="form-label">{localized.billerServiceTitle}</label>
-                        <input type="text" className="form-control" id="billerService" value={billerService} onChange={(e) => { setBillerService(e.target.value); setDisableButton(false) } }/>
-                      </div>
+                        <div className="mb-3">
+                          <label htmlFor="billerService" className="form-label">{localized.billerServiceTitle}</label>
+                          <input type="text" className="form-control" id="billerService" value={billerService} onChange={(e) => { setBillerService(e.target.value); setDisableButton(false) } }/>
+                        </div>
 
-                      <div className="mb-3">
-                        <label htmlFor="billerActionType" className="form-label">{localized.billerActionTypeTitle}</label>
-                        <input type="text" className="form-control" id="billerActionType" value={billerActionType} onChange={(e) => { setBillerActionType(e.target.value); setDisableButton(false) } }/>
-                      </div>
+                        <div className="mb-3">
+                          <label htmlFor="billerActionType" className="form-label">{localized.billerActionTypeTitle}</label>
+                          <input type="text" className="form-control" id="billerActionType" value={billerActionType} onChange={(e) => { setBillerActionType(e.target.value); setDisableButton(false) } }/>
+                        </div>
 
-                      <div className="mb-3">
-                        <label htmlFor="billerAccountNumber" className="form-label">{localized.billerAccountNumberTitle}</label>
-                        <input type="text" className="form-control" id="billerAccountNumber" value={billerAccountNumber} onChange={(e) =>{ setBillerAccountNumber(e.target.value); setDisableButton(false) } }/>
+                        <div className="mb-3">
+                          <label htmlFor="billerAccountNumber" className="form-label">{localized.billerAccountNumberTitle}</label>
+                          <input type="text" className="form-control" id="billerAccountNumber" value={billerAccountNumber} onChange={(e) =>{ setBillerAccountNumber(e.target.value); setDisableButton(false) } }/>
+                        </div>
                       </div>
                     </div>
                   }
