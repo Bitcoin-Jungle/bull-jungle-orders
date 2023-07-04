@@ -155,6 +155,7 @@ function Main({ client }) {
 
   const generateUserInvoice = async () => {
     setShowPaymentReq(false)
+    setLoading(true)
     let usernameToSend
 
     if(username) {
@@ -184,8 +185,10 @@ function Main({ client }) {
       })
 
       setPaymentReq(response2.data.mutationData.invoice.paymentRequest)
+      setLoading(false)
     } catch(err) {
       alert(err.toString())
+      setLoading(false)
     }
   }
 
@@ -410,10 +413,10 @@ function Main({ client }) {
                           <label htmlFor="fiatAmount" className="form-label">{localized.paymentReqTitle}</label>
                         </div>
                         <div className="col">
-                         <button className={(paymentReq && !showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} onClick={generateUserInvoice}>{localized.bitcoinJungleWallet}{(username ? ` (${username})` : '')}</button>
+                         <button className={(paymentReq && !showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} disabled={loading} onClick={generateUserInvoice}>{localized.bitcoinJungleWallet}{(username ? ` (${username})` : '')}</button>
                         </div>
                         <div className="col">
-                          <button className={(showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} onClick={setShowPaymentReq}>{localized.lightningWallet}</button>
+                          <button className={(showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} disabled={loading} onClick={setShowPaymentReq}>{localized.lightningWallet}</button>
                         </div>
                       </div>
 

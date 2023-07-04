@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { QRCode } from "react-qrcode-logo"
 
+import { isFromBJ } from '../utils/index'
+
 function Modal({ showModal, handleModal, invoice, localized }) {
 
   useEffect(() => {
@@ -16,11 +18,13 @@ function Modal({ showModal, handleModal, invoice, localized }) {
       navigator.clipboard.writeText(invoice)
       setTimeout(() => {
         alert("Invoice copied to clipboard")
-      }, 750)
+      }, 250)
     } catch(e) {
 
     }
   }
+
+  const aHref = (isFromBJ() ? `bitcoinjungle://${invoice}` : `lightning:${invoice}`)
 
   return (
     <>
@@ -33,11 +37,11 @@ function Modal({ showModal, handleModal, invoice, localized }) {
               </div>
               <div className="modal-body">
                 <p>{localized.invoiceHelperText}</p>
-                <a href={`lightning:${invoice}`}>
+                <a href={aHref}>
                   <QRCode
                       value={invoice}
                       size={320}
-                      logoImage={"https://pay.bitcoinjungle.app/BJQRLogo.png"}
+                      logoImage={"/BJQRLogo.png"}
                       logoWidth={100}
                   />
                 </a>

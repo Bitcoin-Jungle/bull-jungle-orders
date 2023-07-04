@@ -1,5 +1,5 @@
 const es = {
-	title: "Nueva Orden para Bull Jungle",
+	title: "Enviar & Recibir con SINPE Móvil",
 
 	apiKeyTitle: "Contraseña",
 	apiKeyHelper: "Ingrese tu contraseña aquí",

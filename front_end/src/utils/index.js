@@ -31,4 +31,15 @@ const getUsername = () => {
   return ""
 }
 
-export { getApiKey, getPhoneNumber, getUsername }
+const isFromBJ = () => {
+  const params = (new URL(document.location)).searchParams;
+  const key = params.get("fromBJ");
+
+  if(key && key.length > 0) {
+    return true
+  }
+
+  return false
+}
+
+export { getApiKey, getPhoneNumber, getUsername, isFromBJ }
