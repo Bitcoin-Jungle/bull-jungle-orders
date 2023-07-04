@@ -33,7 +33,6 @@ function Modal({ showModal, handleModal, invoice, localized }) {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">{localized.sellBtn}</h5>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => handleModal(false)}></button>
               </div>
               <div className="modal-body">
                 <p>{localized.invoiceHelperText}</p>
