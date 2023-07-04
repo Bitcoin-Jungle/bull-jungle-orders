@@ -3,7 +3,7 @@ import './App.css'
 import { useState, useEffect } from 'react'
 
 import localizeText from './lang/index'
-import { getApiKey, getPhoneNumber } from './utils/index'
+import { getApiKey, getPhoneNumber, getUsername } from './utils/index'
 
 import Modal from './components/Modal'
 
@@ -39,6 +39,7 @@ function Main({ client }) {
   const [showPaymentReq, setShowPaymentReq] = useState(false)
   const [timestamp, setTimestamp] = useState(new Date().toISOString())
   const [phoneNumber, setPhoneNumber] = useState(getPhoneNumber())
+  const [username, setUsername] = useState(getUsername())
   const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
 
   const localized = localizeText(language)
@@ -154,17 +155,23 @@ function Main({ client }) {
 
   const generateUserInvoice = async () => {
     setShowPaymentReq(false)
-    const username = prompt(localized.bjUsernamePrompt)
+    let usernameToSend
 
-    if(!username) {
-      return
+    if(username) {
+      usernameToSend = username
+    } else {
+      usernameToSend = prompt(localized.bjUsernamePrompt)
+
+      if(!usernameToSend) {
+        return
+      }
     }
 
     try {
       const response = await client.query({
         query: RECIPIENT_WALLET_ID,
         variables: {
-          username,
+          username: usernameToSend,
         },
       })
 
@@ -205,6 +212,7 @@ function Main({ client }) {
     setAction("")
     setPaymentReq("")
     setPhoneNumber(getPhoneNumber())
+    setUsername(getUsername())
     setBillerCategory("")
     setBillerService("")
     setBillerActionType("")
@@ -402,7 +410,7 @@ function Main({ client }) {
                           <label htmlFor="fiatAmount" className="form-label">{localized.paymentReqTitle}</label>
                         </div>
                         <div className="col">
-                         <button className={(paymentReq && !showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} onClick={generateUserInvoice}>{localized.bitcoinJungleWallet}</button>
+                         <button className={(paymentReq && !showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} onClick={generateUserInvoice}>{localized.bitcoinJungleWallet}{(username ? ` (${username})` : '')}</button>
                         </div>
                         <div className="col">
                           <button className={(showPaymentReq ? "btn btn-primary" : "btn btn-secondary")} onClick={setShowPaymentReq}>{localized.lightningWallet}</button>
@@ -423,9 +431,9 @@ function Main({ client }) {
                             <br />
                             <span>{localized.paymentOptionsInstructionBefore} {fiatAmount} {fiatCurrency} {localized.paymentOptionsInstructionsAfter}:</span>
                             <ul>
-                              <li>Sinpe Móvil {localized.to} 7157-3637</li>
-                              <li>CR60090100001970028841 ({localized.crcAccount})</li>
-                              <li>CR33090100001970028842 ({localized.usdAccount})</li>
+                              <li>Sinpe Móvil {localized.to} 8783-3773</li>
+                              <li>CR06090100002792137502 ({localized.crcAccount})</li>
+                              <li>CR76090100002792137503 ({localized.usdAccount})</li>
                             </ul>
                             
                             <div className="mb-3">

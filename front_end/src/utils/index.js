@@ -20,4 +20,15 @@ const getPhoneNumber = () => {
   return ""
 }
 
-export { getApiKey, getPhoneNumber }
+const getUsername = () => {
+  const params = (new URL(document.location)).searchParams;
+  const key = params.get("username");
+
+  if(key && key.length > 0) {
+    return key
+  }
+
+  return ""
+}
+
+export { getApiKey, getPhoneNumber, getUsername }
