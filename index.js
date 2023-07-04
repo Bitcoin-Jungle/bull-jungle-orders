@@ -1,4 +1,5 @@
 import express from "express"
+import compression from 'compression'
 import { Telegraf } from "telegraf"
 import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv'
@@ -31,6 +32,7 @@ const ordersInFlight = {}
 let USDCRC, USDCAD
 
 app.use(bodyParser.json())
+app.use(compression())
 app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
 
 app.post('/order', async (req, res) => {
