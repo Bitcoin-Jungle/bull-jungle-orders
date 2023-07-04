@@ -8,11 +8,11 @@ const es = {
 	sellBtn: "Vende BTC",
 	billPayBtn: "Paga Factura",
 
-	fiatAmountTitle: "Cantidad Fiat",
-	fiatAmountHelper: "Ingrese la cantidad en fiat",
+	fiatAmountTitle: "Monto",
+	fiatAmountHelper: "Ingrese el monto",
 
 	fiatCurrencyTitle: "Tipo Moneda",
-	fiatCurrencyHelper: "Ingrese el tipo de moneda",
+	fiatCurrencyHelper: "Seleccione el tipo de moneda",
 
 	satAmountTitle: "Cantidad Sats",
 	satAmountHelper: "Tipo de cambio se actualiza a partir de",
@@ -20,7 +20,6 @@ const es = {
 	phoneNumberTitle: "Número de teléfono",
 	phoneNumberHelper: "Ingresa su número de teléfono aqui",
 
-	paymentReqTitle: "Destino de pago",
 	sellPaymentReqHelper: "Ingresa el número de teléfono de SINPE Móvil al que deseas recibir el pago",
 	buyPaymentReqHelper: "Ingresa una factura lightning donde quieres recibir el bitcoin",
 
@@ -51,6 +50,18 @@ const es = {
 	to: "a",
 
 	overPerTxnLimit: "El límite por transacción es de $1000 CAD.",
+
+	step: "Paso",
+
+	step1Title: "Seleccione qué acción le gustaría tomar.",
+	step2Title: "Ingrese una cantidad (en dólares o colones) que le gustaría",
+	step3Title: "Ingrese su número de teléfono para que podamos comunicarnos con usted en caso de cualquier problema.",
+	step4Title: "Ingrese los detalles del destino del pago.",
+	step5Title: "Revise la información a continuación y envíe su pago antes de enviar este pedido.",
+	
+	buy: "comprar",
+	sell: "vender",
+	billpay: "pagar factura",
 
 }
 
