@@ -3,11 +3,11 @@ import es from './es'
 
 const localizeText = (lang) => {
 
-	if(lang === 'en') {
+	if(lang.indexOf('en') === 0) {
 		return en
 	}
 
-	if(lang === 'es') {
+	if(lang.indexOf('es') === 0) {
 		return es
 	}
 

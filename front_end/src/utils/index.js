@@ -9,4 +9,15 @@ const getApiKey = () => {
   return ""
 }
 
-export { getApiKey }
+const getPhoneNumber = () => {
+  const params = (new URL(document.location)).searchParams;
+  const key = params.get("phone");
+
+  if(key && key.length > 0) {
+    return key
+  }
+
+  return ""
+}
+
+export { getApiKey, getPhoneNumber }

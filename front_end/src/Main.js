@@ -3,7 +3,7 @@ import './App.css'
 import { useState, useEffect } from 'react'
 
 import localizeText from './lang/index'
-import { getApiKey } from './utils/index'
+import { getApiKey, getPhoneNumber } from './utils/index'
 
 import Modal from './components/Modal'
 
@@ -15,7 +15,7 @@ import {
 let interval
 
 function Main({ client }) {
-  const [language, setLanguage] = useState('en')
+  const [language, setLanguage] = useState(navigator.language || navigator.userLanguage || 'en')
 
   const [loading, setLoading] = useState(false)
   const [disableButton, setDisableButton] = useState(false)
@@ -38,7 +38,7 @@ function Main({ client }) {
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
   const [showPaymentReq, setShowPaymentReq] = useState(false)
   const [timestamp, setTimestamp] = useState(new Date().toISOString())
-  const [phoneNumber, setPhoneNumber] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState(getPhoneNumber())
   const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
 
   const localized = localizeText(language)
@@ -204,7 +204,7 @@ function Main({ client }) {
     setSatAmount("")
     setAction("")
     setPaymentReq("")
-    setPhoneNumber("")
+    setPhoneNumber(getPhoneNumber())
     setBillerCategory("")
     setBillerService("")
     setBillerActionType("")
