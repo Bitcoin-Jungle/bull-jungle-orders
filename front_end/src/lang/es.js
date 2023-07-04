@@ -50,6 +50,7 @@ const es = {
 
 	to: "a",
 
+	overPerTxnLimit: "El límite por transacción es de $1000 CAD.",
 
 }
 

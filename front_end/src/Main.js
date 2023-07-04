@@ -39,6 +39,7 @@ function Main({ client }) {
   const [showPaymentReq, setShowPaymentReq] = useState(false)
   const [timestamp, setTimestamp] = useState(new Date().toISOString())
   const [phoneNumber, setPhoneNumber] = useState("")
+  const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
 
   const localized = localizeText(language)
 
@@ -84,6 +85,11 @@ function Main({ client }) {
 
     if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
       alert("When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber")
+      return false
+    }
+
+    if(overPerTxnLimit) {
+      alert(localized.overPerTxnLimit)
       return false
     }
 
@@ -208,6 +214,7 @@ function Main({ client }) {
     setPaymentHash("")
     setShowPaymentReq(false)
     setTimestamp(new Date().toISOString())
+    setOverPerTxnLimit(false)
   }
 
   const handleFormSubmit = async (e) => {
@@ -276,6 +283,7 @@ function Main({ client }) {
     const calculateSatAmount = () => {
       if(!fiatAmount || !fiatCurrency || priceData.error) {
         setSatAmount("")
+        setOverPerTxnLimit(false)
         return
       }
 
@@ -283,8 +291,16 @@ function Main({ client }) {
         return
       }
 
-      const satAmount = parseFloat(fiatAmount) / parseFloat(priceData[`BTC${fiatCurrency}`]) * 100000000
+      const btcAmount = parseFloat(fiatAmount) / parseFloat(priceData[`BTC${fiatCurrency}`])
+      const satAmount = btcAmount * 100000000
+
+      if(btcAmount * priceData['BTCCAD'] >= 995) {
+        setOverPerTxnLimit(true)
+        return
+      }
+      
       setSatAmount(""+Math.round(satAmount))
+      setOverPerTxnLimit(false)
     }
 
     calculateSatAmount()
@@ -357,7 +373,11 @@ function Main({ client }) {
                 </div>
               </div>
 
-              {fiatAmount && fiatCurrency && satAmount &&
+              {overPerTxnLimit &&
+                <div className="alert alert-danger">{localized.overPerTxnLimit}</div>
+              }
+
+              {fiatAmount && fiatCurrency && satAmount && !overPerTxnLimit && 
                 <div>
 
                   <div className="mb-3">
@@ -451,7 +471,7 @@ function Main({ client }) {
               }
 
               <div className="submit-container mb-3">
-                <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton} onClick={handleFormSubmit}>{localized.submitBtnTitle}</button>
+                <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton || overPerTxnLimit} onClick={handleFormSubmit}>{localized.submitBtnTitle}</button>
                 {loading &&
                   <div className="spinner-border" role="status">
                     <span className="visually-hidden">Loading...</span>

@@ -130,6 +130,12 @@ app.post('/order', async (req, res) => {
     }
   }
 
+  const priceData = await getPrice()
+
+  if((satAmount / 100000000) * priceData['BTCCAD'] >= 995) {
+    return res.send({error: true, message: "There is a per transaction limit of $1000 CAD"})
+  }
+
   const fiatFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: fiatCurrency,
@@ -186,8 +192,6 @@ app.post('/order', async (req, res) => {
       console.log('no buy nor sell uh-oh')
       break;
   }
-
-  const priceData = await getPrice()
 
   const rowData = { 
     "Date": timestamp,
@@ -556,7 +560,9 @@ const getPrice = async () => {
 
   const BTCUSD = Number(BTCCRC / USDCRC).toFixed(2)
 
-  return {BTCCRC, USDCRC, USDCAD, BTCUSD, timestamp}
+  const BTCCAD = Number(BTCUSD * USDCAD).toFixed(2)
+
+  return {BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD, timestamp}
 }
 
 app.listen(port, () => console.log("Listening on port", port))

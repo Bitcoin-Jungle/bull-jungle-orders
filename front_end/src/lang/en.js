@@ -50,6 +50,8 @@ const en = {
 
 	to: "to",
 
+	overPerTxnLimit: "The per transaction limit is $1000 CAD.",
+
 
 }
 
