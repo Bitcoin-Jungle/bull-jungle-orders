@@ -436,8 +436,8 @@ function Main({ client }) {
                         <span>= {satAmount} satoshis</span>
                       }
 
-                      {!satAmount && 
-                        <button className="btn btn-warning btn-sm" onClick={() => calculateSatAmount(true)}>Continue...</button>
+                      {!satAmount && !overPerTxnLimit &&
+                        <button className="btn btn-warning btn-sm" onClick={() => calculateSatAmount(true)}>{localized.continue}</button>
                       }                      
                     </div>
                   </div>
@@ -498,8 +498,8 @@ function Main({ client }) {
                                   <input className="form-control" id="username" value={username} onChange={(e) => { setUsername(e.target.value); setPaymentReq("") } } />
                                   <div class="input-group-append">
                                     <span class="input-group-text" id="basic-addon2">
-                                      <button className="btn btn-success btn-sm" onClick={generateUserInvoice}>
-                                        Confirm Username ➡️
+                                      <button className="btn btn-success fs-6 btn-small" onClick={generateUserInvoice}>
+                                        {localized.confirm} ➡️
                                       </button>
                                     </span>
                                   </div>

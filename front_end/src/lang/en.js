@@ -63,6 +63,9 @@ const en = {
 	sell: "sell",
 	billpay: "pay bill",
 
+	continue: "Continue...",
+	confirm: "Confirm",
+
 
 }
 

@@ -63,6 +63,9 @@ const es = {
 	sell: "vender",
 	billpay: "pagar factura",
 
+	continue: "Continuar...",
+	confirm: "Confirmar",
+
 }
 
 export default es
