@@ -21,6 +21,7 @@ const exchange_rate_api_key = process.env.exchange_rate_api_key
 const invoice_endpoint_url = process.env.invoice_endpoint_url
 const invoice_endpoint_user = process.env.invoice_endpoint_user
 const invoice_endpoint_password = process.env.invoice_endpoint_password
+const price_data_url = process.env.price_data_url
 
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
@@ -29,7 +30,7 @@ const doc = new GoogleSpreadsheet(google_sheet_id);
 
 const ordersInFlight = {}
 
-let USDCRC, USDCAD
+let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
 
 app.use(bodyParser.json())
 app.use(compression())
@@ -342,6 +343,11 @@ app.get('/price', async (req, res) => {
   return res.send(priceData)
 })
 
+app.get('/ticker', async (req, res) => {
+  const tickerData = await getTicker()
+  return res.send(tickerData)
+})
+
 app.get('/order', (req, res) => {
   let uri = '/'
   if(req.query.key) {
@@ -492,16 +498,31 @@ const checkInvoice = async (label) => {
   }
 }
 
+const getBullPrice = async (from, to) => {
+  return await axios({
+    method: "POST",
+    url: price_data_url,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: {
+      "id": new Date().toISOString(),
+      "jsonrpc": "2.0",
+      "method": "getRate",
+      "params": {
+        "to": to,
+        "from": from
+      }
+    }
+  })
+}
+
 const getUsdCrc = async () => {
-  const fiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CRC`)
+  const response = await getBullPrice("USD", "CRC")
 
-  if(!fiatResponse || !fiatResponse.data || !fiatResponse.data.success || !fiatResponse.data.rates || !fiatResponse.data.rates || !fiatResponse.data.rates.CRC) {
-    return {error: true, message: "Error fetching price"}
-  }
+  USDCRC = response.data.result
 
-  USDCRC = fiatResponse.data.rates.CRC
-
-  console.log('set USDCRC to ', USDCRC)
+  console.log('set USDCRC to', USDCRC)
 
   return USDCRC
 }
@@ -528,6 +549,48 @@ setInterval(getUsdCad, 60 * 1000 * 240)
 
 getUsdCad()
 
+const getBtcCrc = async () => {
+  const response = await getBullPrice("BTC", "CRC")
+
+  BTCCRC = response.data.result
+
+  console.log('set BTCCRC to', BTCCRC)
+
+  return BTCCRC
+}
+
+setInterval(getBtcCrc, 60 * 1000)
+
+getBtcCrc()
+
+const getBtcUsd = async () => {
+  const response = await getBullPrice("BTC", "USD")
+
+  BTCUSD = response.data.result
+
+  console.log('set BTCUSD to', BTCUSD)
+
+  return BTCUSD
+}
+
+setInterval(getBtcUsd, 60 * 1000)
+
+getBtcUsd()
+
+const getBtcCad = async () => {
+  const response = await getBullPrice("BTC", "CAD")
+
+  BTCCAD = response.data.result
+
+  console.log('set BTCCAD to', BTCCAD)
+
+  return BTCCAD
+}
+
+setInterval(getBtcCad, 60 * 1000)
+
+getBtcCad()
+
 const getPrice = async () => {
   const response = await axios({
     method: "POST",
@@ -553,11 +616,24 @@ const getPrice = async () => {
 
   const BTCCRC = Math.round(((priceData.price.base / 10 ** priceData.price.offset) / 100))
 
-  const BTCUSD = Number(BTCCRC / USDCRC).toFixed(2)
+  const BTCUSD = Number(BTCCRC / USDCRC.indexPrice).toFixed(2)
 
   const BTCCAD = Number(BTCUSD * USDCAD).toFixed(2)
 
-  return {BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD, timestamp}
+  return {BTCCRC, USDCRC: USDCRC.indexPrice, USDCAD, BTCUSD, BTCCAD, timestamp}
+}
+
+const getTicker = async () => {
+  const timestamp = new Date().toISOString()
+
+  return {
+    BTCCRC,
+    USDCRC,
+    USDCAD,
+    BTCUSD,
+    BTCCAD,
+    timestamp,
+  }
 }
 
 app.listen(port, () => console.log("Listening on port", port))
