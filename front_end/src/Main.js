@@ -280,6 +280,7 @@ function Main({ client }) {
       setSatAmount(""+Math.round(satAmount))
     } else if(setSat === false) {
       setSatAmount("")
+      setPaymentReq("")
     }
     
     setOverPerTxnLimit(false)
@@ -439,12 +440,12 @@ function Main({ client }) {
                       {!satAmount && !overPerTxnLimit &&
                         <button className="btn btn-warning btn-sm" onClick={() => calculateSatAmount(true)}>{localized.continue}</button>
                       }                      
+
+                      {overPerTxnLimit &&
+                        <div className="alert alert-danger">{localized.overPerTxnLimit}</div>
+                      }
                     </div>
                   </div>
-
-                  {overPerTxnLimit &&
-                    <div className="alert alert-danger">{localized.overPerTxnLimit}</div>
-                  }
                 </div>
 
                 {fiatAmount && fiatCurrency && satAmount && !overPerTxnLimit && 
