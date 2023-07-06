@@ -4,8 +4,8 @@ const en = {
 	apiKeyTitle: "API Key",
 	apiKeyHelper: "Enter your API Key here",
 
-	buyBtn: "Buy BTC",
-	sellBtn: "Sell BTC",
+	buyBtn: "Buy Bitcoin",
+	sellBtn: "Sell Bitcoin",
 	billPayBtn: "Bill Pay",
 
 	fiatAmountTitle: "Amount",
