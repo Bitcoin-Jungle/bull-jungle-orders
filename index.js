@@ -22,6 +22,7 @@ const invoice_endpoint_url = process.env.invoice_endpoint_url
 const invoice_endpoint_user = process.env.invoice_endpoint_user
 const invoice_endpoint_password = process.env.invoice_endpoint_password
 const price_data_url = process.env.price_data_url
+const username_allowlist = process.env.username_allowlist.split(',')
 
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
@@ -34,6 +35,18 @@ let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
 
 app.use(bodyParser.json())
 app.use(compression())
+app.use((req, res, next) => {
+  if(req.path === '/') {
+    const isBj = !!res.req.headers['x-bj-wallet']
+    const username = res.req.query.username
+
+    if(isBj && username && username_allowlist.indexOf(username) < 0) {
+      return res.status(403).send('<h1>COMING SOON!</h1>')
+    }
+  }
+
+  next()
+})
 app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
 
 app.post('/order', async (req, res) => {
@@ -506,7 +519,7 @@ const getBullPrice = async (from, to) => {
       "Content-Type": "application/json"
     },
     data: {
-      "id": new Date().toISOString(),
+      "id": Math.floor(Math.random() * 1001).toString(),
       "jsonrpc": "2.0",
       "method": "getRate",
       "params": {
