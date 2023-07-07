@@ -460,7 +460,7 @@ const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
     Object.keys(rowData).forEach(key => {
       let val = rowData[key]
 
-      if(val && val.length) {
+      if(val && val.toString().length) {
         if(val[0] === '=') {
           val = formulaFreeAmount
         }
