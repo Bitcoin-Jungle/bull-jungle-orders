@@ -66,6 +66,8 @@ const en = {
 	continue: "Continue...",
 	confirm: "Confirm",
 
+	terms: "Terms & Conditions",
+
 
 }
 

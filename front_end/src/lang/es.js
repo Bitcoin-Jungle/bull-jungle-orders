@@ -66,6 +66,8 @@ const es = {
 	continue: "Continuar...",
 	confirm: "Confirmar",
 
+	terms: "Términos y condiciones",
+
 }
 
 export default es

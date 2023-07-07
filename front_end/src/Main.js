@@ -600,6 +600,14 @@ function Main({ client }) {
         }
       </div>
 
+      <footer className="mt-3 mb-1">
+        <div className="container">
+          <span className="text-muted">
+            <a href="https://bullbitcoin.com/faq/Costa%2520Rica" target="_blank">{localized.terms}</a>
+          </span>
+        </div>
+      </footer>
+
       <Modal
         showModal={showModal && !window.ReactNativeWebView}
         handleModal={handleModal}
