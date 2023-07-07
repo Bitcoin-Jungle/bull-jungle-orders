@@ -364,7 +364,11 @@ function Main({ client }) {
         </div>
       }
 
-      <div className="container d-flex min-vh-100">
+      <div className="text-center mt-3 mb-3">
+        <img src="/bull-bitcoin-banner-logo.png" className="bull-logo" />
+      </div>
+
+      <div className="container d-flex">
         {apiKey &&
           <form id="addOrder" className="d-flex flex-grow-1 justify-content-center align-items-center" onSubmit={(e) => e.preventDefault()}>
 

@@ -17,6 +17,11 @@
   .header select {
     margin-top: 0px !important;
   }
+
+  .bull-logo {
+    height: 100px;
+    width: auto !important;
+  }
 }
 
 .header select {
@@ -42,4 +47,8 @@ p {
 
 .submit-container {
   margin-top: 1rem;
+}
+
+.bull-logo {
+  width: 250px;
 }
