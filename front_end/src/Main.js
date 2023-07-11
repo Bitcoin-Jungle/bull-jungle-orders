@@ -268,7 +268,16 @@ function Main({ client }) {
       return
     }
 
-    const btcAmount = parseFloat(fiatAmount) / parseFloat(priceData[`BTC${fiatCurrency}`])
+    const indexRate = parseFloat(priceData[`BTC${fiatCurrency}`])
+    let txnRate = indexRate
+
+    if(action === "SELL") {
+      txnRate = indexRate * 1.02
+    } else if (action === "BILLPAY") {
+      txnRate = indexRate * 1.02
+    }
+
+    const btcAmount = parseFloat(fiatAmount / txnRate)
     const satAmount = btcAmount * 100000000
 
     if(btcAmount * priceData['BTCCAD'] >= 995) {
