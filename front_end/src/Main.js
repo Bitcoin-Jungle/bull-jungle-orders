@@ -272,9 +272,9 @@ function Main({ client }) {
     let txnRate = indexRate
 
     if(action === "SELL") {
-      txnRate = indexRate * 1.02
+      txnRate = indexRate * 0.98
     } else if (action === "BILLPAY") {
-      txnRate = indexRate * 1.02
+      txnRate = indexRate * 0.98
     }
 
     const btcAmount = parseFloat(fiatAmount / txnRate)
