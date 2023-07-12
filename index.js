@@ -512,22 +512,30 @@ const checkInvoice = async (label) => {
 }
 
 const getBullPrice = async (from, to) => {
-  return await axios({
-    method: "POST",
-    url: price_data_url,
-    headers: {
-      "Content-Type": "application/json"
-    },
-    data: {
-      "id": Math.floor(Math.random() * 1001).toString(),
-      "jsonrpc": "2.0",
-      "method": "getRate",
-      "params": {
-        "to": to,
-        "from": from
+  try {
+    const response = await axios({
+      method: "POST",
+      url: price_data_url,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: {
+        "id": Math.floor(Math.random() * 1001).toString(),
+        "jsonrpc": "2.0",
+        "method": "getRate",
+        "params": {
+          "to": to,
+          "from": from
+        }
       }
-    }
-  })
+    })
+
+    return response
+  } catch(e) {
+    console.log('error getBullPrice', from, to)
+    await new Promise(resolve => setTimeout(resolve, 5000))
+    return await getBullPrice(from, to)
+  }
 }
 
 const getUsdCrc = async () => {
@@ -545,16 +553,21 @@ setInterval(getUsdCrc, 60 * 1000 * 240)
 getUsdCrc()
 
 const getUsdCad = async () => {
-  const cadFiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CAD`)
+  try {
+    const cadFiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CAD`)
 
-  if(!cadFiatResponse || !cadFiatResponse.data || !cadFiatResponse.data.success || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates.CAD) {
-   return {error: true, message: "Error fetching price"}
+    if(!cadFiatResponse || !cadFiatResponse.data || !cadFiatResponse.data.success || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates || !cadFiatResponse.data.rates.CAD) {
+     return {error: true, message: "Error fetching price"}
+    }
+
+    USDCAD = cadFiatResponse.data.rates.CAD
+
+    console.log('set USDCAD to ', USDCAD)
+  } catch(e) {
+    console.log('error setting USDCAD', e)
+    setTimeout(getUsdCad, 5000)
   }
-
-  USDCAD = cadFiatResponse.data.rates.CAD
-
-  console.log('set USDCAD to ', USDCAD)
-
+  
   return USDCAD
 }
 
@@ -605,35 +618,39 @@ setInterval(getBtcCad, 60 * 1000)
 getBtcCad()
 
 const getPrice = async () => {
-  const response = await axios({
-    method: "POST",
-    url: "https://api.mainnet.bitcoinjungle.app/graphql",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    data: {
-      query: "query BtcPriceList($range: PriceGraphRange!) {\n  btcPriceList(range: $range) {\n    price {\n      base\n      currencyUnit\n      formattedAmount\n      offset\n    }\n    timestamp\n  }\n}",
-      variables: {
-        range: "ONE_DAY"
+  try {
+    const response = await axios({
+      method: "POST",
+      url: "https://api.mainnet.bitcoinjungle.app/graphql",
+      headers: {
+        "Content-Type": "application/json"
       },
-      operationName: "BtcPriceList"
-    }
-  })
+      data: {
+        query: "query BtcPriceList($range: PriceGraphRange!) {\n  btcPriceList(range: $range) {\n    price {\n      base\n      currencyUnit\n      formattedAmount\n      offset\n    }\n    timestamp\n  }\n}",
+        variables: {
+          range: "ONE_DAY"
+        },
+        operationName: "BtcPriceList"
+      }
+    })
 
-  if(!response || !response.data || !response.data.data || !response.data.data.btcPriceList || !response.data.data.btcPriceList.length) {
+    if(!response || !response.data || !response.data.data || !response.data.data.btcPriceList || !response.data.data.btcPriceList.length) {
+      return {error: true, message: "Error fetching price"}
+    }
+
+    const priceData = response.data.data.btcPriceList.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
+    const timestamp = new Date(priceData.timestamp * 1000).toISOString()
+
+    const BTCCRC = Math.round(((priceData.price.base / 10 ** priceData.price.offset) / 100))
+
+    const BTCUSD = Number(BTCCRC / USDCRC.indexPrice).toFixed(2)
+
+    const BTCCAD = Number(BTCUSD * USDCAD).toFixed(2)
+
+    return {BTCCRC, USDCRC: USDCRC.indexPrice, USDCAD, BTCUSD, BTCCAD, timestamp}
+  } catch(e) {
     return {error: true, message: "Error fetching price"}
   }
-
-  const priceData = response.data.data.btcPriceList.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
-  const timestamp = new Date(priceData.timestamp * 1000).toISOString()
-
-  const BTCCRC = Math.round(((priceData.price.base / 10 ** priceData.price.offset) / 100))
-
-  const BTCUSD = Number(BTCCRC / USDCRC.indexPrice).toFixed(2)
-
-  const BTCCAD = Number(BTCUSD * USDCAD).toFixed(2)
-
-  return {BTCCRC, USDCRC: USDCRC.indexPrice, USDCAD, BTCUSD, BTCCAD, timestamp}
 }
 
 const getTicker = async () => {
