@@ -40,7 +40,7 @@ app.use((req, res, next) => {
     const isBj = !!res.req.headers['x-bj-wallet']
     const username = res.req.query.username
 
-    if(isBj && username && username_allowlist.indexOf(username) < 0) {
+    if(isBj && username && username_allowlist.length > 1 && username_allowlist.indexOf(username) < 0) {
       return res.status(403).send('<h1>COMING SOON!</h1>')
     }
   }
