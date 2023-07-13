@@ -539,14 +539,33 @@ const getBullPrice = async (from, to) => {
 }
 
 const getUsdCrc = async () => {
-  const response = await getBullPrice("USD", "CRC")
+  try {
+    const crcFiatResponse = await axios.get(`https://api.exchangeratesapi.io/v1/latest?access_key=${exchange_rate_api_key}&base=USD&symbols=CRC`)
 
-  USDCRC = response.data.result
+    if(!crcFiatResponse || !crcFiatResponse.data || !crcFiatResponse.data.success || !crcFiatResponse.data.rates || !crcFiatResponse.data.rates || !crcFiatResponse.data.rates.CRC) {
+     return {error: true, message: "Error fetching price"}
+    }
 
-  console.log('set USDCRC to', USDCRC)
+    USDCRC = {indexPrice: crcFiatResponse.data.rates.CRC}
+
+    console.log('set USDCRC to ', USDCRC)
+  } catch(e) {
+    console.log('error setting USDCRC', e)
+    setTimeout(getUsdCrc, 5000)
+  }
 
   return USDCRC
 }
+
+// const getUsdCrc = async () => {
+//   const response = await getBullPrice("USD", "CRC")
+
+//   USDCRC = response.data.result
+
+//   console.log('set USDCRC to', USDCRC)
+
+//   return USDCRC
+// }
 
 setInterval(getUsdCrc, 60 * 1000 * 240)
 
