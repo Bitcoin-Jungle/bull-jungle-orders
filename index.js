@@ -956,4 +956,5 @@ const sendEmail = async (bitcoinJungleUsername) => {
   }
 }
 
-app.listen(port, () => console.log("Listening on port", port))
+const server = app.listen(port, () => console.log("Listening on port", port))
+server.setTimeout(1000 * 60 * 9)
