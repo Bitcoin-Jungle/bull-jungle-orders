@@ -474,6 +474,10 @@ app.get('/approveUser', async (req, res) => {
   const apiKey = req.body.apiKey || req.query.apiKey
   const bitcoinJungleUsername = req.body.bitcoinJungleUsername || req.query.bitcoinJungleUsername
 
+  if(req.headers['user-agent'].indexOf('TelegramBot') !== -1) {
+    return res.send({error: true, message: "no bots"})
+  }
+
   if(!apiKey) {
     return res.send({error: true, message: "apiKey is required"})
   }
