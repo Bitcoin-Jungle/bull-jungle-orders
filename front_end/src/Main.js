@@ -564,7 +564,7 @@ function Main({ client }) {
                                 
                                 <div className="mb-3">
                                   <label htmlFor="paymentIdentifier" className="form-label">{localized.paymentIdentifierTitle}</label>
-                                  <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => setPaymentIdentifier(e.target.value)} />
+                                  <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => setPaymentIdentifier(e.target.value.replace(/[^0-9]/gi, ''))} />
                                 </div>
 
                                 <br />

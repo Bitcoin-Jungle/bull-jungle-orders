@@ -150,6 +150,10 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "Payment Identifier is required when BUY action is set"})
   }
 
+  if(action === 'BUY' && paymentIdentifier && paymentIdentifier.replace(/[^0-9]/gi, '').trim().length !== 25) {
+    return res.send({error: true, message: "Payment Identifier must be 25 digits"})
+  }
+
   if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
     return res.send({error: true, message: "When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber"})
   }
