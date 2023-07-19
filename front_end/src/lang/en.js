@@ -56,6 +56,7 @@ const en = {
 	to: "to",
 
 	overPerTxnLimit: "The per transaction limit is $1000 CAD.",
+	underPerTxnMinimum: "The minimum per transaction is ₡5.000 CRC",
 
 	step: "Step",
 

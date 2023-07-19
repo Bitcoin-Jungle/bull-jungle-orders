@@ -42,6 +42,7 @@ function Main({ client }) {
   const [phoneNumber, setPhoneNumber] = useState(getPhoneNumber())
   const [username, setUsername] = useState(getUsername())
   const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
+  const [underPerTxnMinimum, setUnderPerTxnMinimum] = useState(false)
 
   const localized = localizeText(language)
 
@@ -92,6 +93,11 @@ function Main({ client }) {
 
     if(overPerTxnLimit) {
       alert(localized.overPerTxnLimit)
+      return false
+    }
+
+    if(underPerTxnMinimum) {
+      alert(localized.underPerTxnMinimum)
       return false
     }
 
@@ -189,6 +195,7 @@ function Main({ client }) {
     setPaymentHash("")
     setTimestamp(new Date().toISOString())
     setOverPerTxnLimit(false)
+    setUnderPerTxnMinimum(false)
   }
 
   const handleFormSubmit = async (e) => {
@@ -263,6 +270,7 @@ function Main({ client }) {
     if(!fiatAmount || !fiatCurrency || priceData.error) {
       setSatAmount("")
       setOverPerTxnLimit(false)
+      setUnderPerTxnMinimum(false)
       return
     }
 
@@ -282,6 +290,11 @@ function Main({ client }) {
       setOverPerTxnLimit(true)
       return
     }
+
+    if(btcAmount * priceData['BTCCRC'] < 5000) {
+      setUnderPerTxnMinimum(true)
+      return
+    }
     
     if(setSat) {
       setSatAmount(""+Math.round(satAmount))
@@ -291,6 +304,7 @@ function Main({ client }) {
     }
     
     setOverPerTxnLimit(false)
+    setUnderPerTxnMinimum(false)
   }
 
   const toggleLoadingOn = () => setLoading(true)
@@ -448,13 +462,21 @@ function Main({ client }) {
                         <span>= {satAmount} satoshis</span>
                       }
 
-                      {!satAmount && !overPerTxnLimit &&
-                        <button className="btn btn-warning btn-sm" onClick={() => calculateSatAmount(true)}>{localized.continue}</button>
-                      }                      
+                      {!satAmount &&
+                        <button className="btn btn-warning btn-sm" onClick={() => calculateSatAmount(true)} disabled={overPerTxnLimit || underPerTxnMinimum}>
+                          {overPerTxnLimit &&
+                            <>{localized.overPerTxnLimit}</>
+                          }
 
-                      {overPerTxnLimit &&
-                        <div className="alert alert-danger">{localized.overPerTxnLimit}</div>
-                      }
+                          {underPerTxnMinimum &&
+                            <>{localized.underPerTxnMinimum}</>
+                          }
+
+                          {!overPerTxnLimit && !underPerTxnMinimum && 
+                            <>{localized.continue}</>
+                          }
+                        </button>
+                      }                      
                     </div>
                   </div>
                 </div>
