@@ -884,7 +884,7 @@ const sendEmail = async (bitcoinJungleUsername) => {
     to: 'sinpeadd@bitcoinjungle.app',
     from: 'noreply@bitcoinjungle.app',
     subject: 'User requesting access to SINPE system',
-    html: `Please click <a href="https://orders.bitcoinjungle.app/approveUser?username=${bitcoinJungleUsername}&apiKey=${admin_api_key}">here</a> to approve this request for ${bitcoinJungleUsername}.`
+    html: `Please click <a href="https://orders.bitcoinjungle.app/approveUser?bitcoinJungleUsername=${bitcoinJungleUsername}&apiKey=${admin_api_key}">here</a> to approve this request for ${bitcoinJungleUsername}.`
   }
 
   try {
