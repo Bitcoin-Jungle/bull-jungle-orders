@@ -154,6 +154,14 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "Payment Identifier must be 25 digits"})
   }
 
+  if(action === 'BUY') {
+    const paymentIdentifierExists = await getPaymentIdentifier(db, paymentIdentifier)
+
+    if(paymentIdentifierExists) {
+      return res.send({error: true, message: "Payment Identifier has already been used for another order."})
+    }
+  }
+
   if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
     return res.send({error: true, message: "When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber"})
   }
@@ -323,6 +331,10 @@ app.post('/order', async (req, res) => {
   console.log('order submitted successfully.')
 
   ordersInFlight[timestamp].status = 'complete'
+
+  if(action === "BUY") {
+    await addPaymentIdentifier(db, paymentIdentifier)
+  }
 
   return res.send({success: true})
 })
@@ -888,11 +900,33 @@ const approveUser = async (db, bitcoinJungleUsername) => {
 }
 
 const deactivateUser = async (db, bitcoinJungleUsername) => {
-  const timestamp = Math.floor(Date.now() / 1000)
   try {
     return await db.run(
       "UPDATE users SET approved = false WHERE bitcoinJungleUsername = ?", 
       [bitcoinJungleUsername]
+    )
+  } catch {
+    return false
+  }
+}
+
+const addPaymentIdentifier = async (db, identifier) => {
+  try {
+    return await db.run(
+      "INSERT INTO payment_identifiers (identifier) VALUES (?)", 
+      [identifier]
+    )
+  } catch(e) {
+    console.log(e)
+    return false
+  }
+}
+
+const getPaymentIdentifier = async (db, identifier) => {
+  try {
+    return await db.get(
+      "SELECT * FROM payment_identifiers WHERE identifier = ?", 
+      [identifier]
     )
   } catch {
     return false

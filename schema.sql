@@ -4,3 +4,8 @@ CREATE TABLE users (
 	approved BOOLEAN NOT NULL DEFAULT FALSE,
 	timestamp INT
 );
+
+CREATE TABLE payment_identifiers (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	identifier TEXT
+);
