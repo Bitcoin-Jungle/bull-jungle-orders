@@ -42,8 +42,6 @@ const db = await open({
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
 
-const doc = new GoogleSpreadsheet(google_sheet_id);
-
 const ordersInFlight = {}
 
 let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
@@ -280,12 +278,18 @@ app.post('/order', async (req, res) => {
   console.log('processed order data to', rowData)
 
   try {
+    const doc = new GoogleSpreadsheet(google_sheet_id);
+
+    console.log('load service account')
+
     await doc.useServiceAccountAuth({
       client_email: service_account_email,
       private_key: service_account_json.private_key,
     })
 
     await doc.loadInfo()
+
+    console.log('load doc info')
 
     try {
       const userSheet = doc.sheetsByIndex[1]
@@ -296,6 +300,8 @@ app.post('/order', async (req, res) => {
       const newUserId = parseInt(lastUserId) + 1
 
       if(!user) {
+        console.log('adding new user')
+
         const newUserRow = await userSheet.addRow({
           "Date": timestamp,
           "Customer ID": newUserId,
@@ -304,6 +310,8 @@ app.post('/order', async (req, res) => {
 
         rowData['User'] = newUserId
       } else {
+        console.log('found existing user')
+
         rowData['User'] = user['Customer ID']
       }
     } catch(e) {
@@ -312,6 +320,8 @@ app.post('/order', async (req, res) => {
 
     try {
       const sheet = doc.sheetsByIndex[0]
+
+      console.log('adding order to sheet')
 
       const newRow = await sheet.addRow(rowData)
     } catch(e) {
@@ -322,6 +332,8 @@ app.post('/order', async (req, res) => {
     console.log('gsheet error', e)
   }
 
+  console.log('sending tg message')
+  
   const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
 
   if(!telegramMessage) {
@@ -540,6 +552,9 @@ app.get('/setCustomerIds', async (req, res) => {
   const timestamp = (req.query.timestamp ? req.query.timestamp : new Date().toISOString())
 
   try {
+
+    const doc = new GoogleSpreadsheet(google_sheet_id);
+
     await doc.useServiceAccountAuth({
       client_email: service_account_email,
       private_key: service_account_json.private_key,
