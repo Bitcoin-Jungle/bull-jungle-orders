@@ -4,6 +4,12 @@ const es = {
 	apiKeyTitle: "Contraseña",
 	apiKeyHelper: "Ingrese tu contraseña aquí",
 
+	registerTitle: "¡Bienvenido!",
+	registerSubtext1: "Parece que esta es tu primera vez aquí.",
+	registerSubtext2: "Solicite acceso haciendo clic en el botón de abajo.",
+	registerBtn: "¡Solicitar acceso ahora!",
+	registerSuccess: "Gracias por solicitar acceso. Revisaremos tu solicitud en breve. ¡Vuelve aquí más tarde!",
+
 	buyBtn: "Compra BTC",
 	sellBtn: "Vende BTC",
 	billPayBtn: "Paga Factura",

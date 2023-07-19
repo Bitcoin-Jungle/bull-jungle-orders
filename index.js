@@ -6,6 +6,11 @@ import * as dotenv from 'dotenv'
 import { GoogleSpreadsheet } from 'google-spreadsheet'
 import axios from 'axios'
 import serveStatic from 'serve-static'
+import { open } from 'sqlite'
+import sqlite3 from 'sqlite3'
+import { MailService } from "@sendgrid/mail"
+
+const sendgridClient = new MailService()
 
 dotenv.config()
 
@@ -22,7 +27,17 @@ const invoice_endpoint_url = process.env.invoice_endpoint_url
 const invoice_endpoint_user = process.env.invoice_endpoint_user
 const invoice_endpoint_password = process.env.invoice_endpoint_password
 const price_data_url = process.env.price_data_url
-const username_allowlist = process.env.username_allowlist.split(',')
+const db_location = process.env.db_location
+const admin_api_key = process.env.admin_api_key
+const sendgrid_api_key = process.env.sendgrid_api_key
+
+sendgridClient.setApiKey(sendgrid_api_key)
+
+// connect to the db
+const db = await open({
+  filename: db_location,
+  driver: sqlite3.Database
+})
 
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
@@ -35,13 +50,19 @@ let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
 
 app.use(bodyParser.json())
 app.use(compression())
-app.use((req, res, next) => {
-  if(req.path === '/') {
+app.use(async (req, res, next) => {
+  if(req.path === '/' && !req.query.registered) {
     const isBj = !!res.req.headers['x-bj-wallet']
     const username = res.req.query.username
 
-    if(isBj && username && username_allowlist.length > 1 && username_allowlist.indexOf(username) < 0) {
-      return res.status(403).send('<h1>COMING SOON!</h1>')
+    if(isBj && username) {
+      const userRegistered = await getUser(db, username)
+
+      if(!userRegistered || !userRegistered.approved) {
+        return res.redirect('/?' + new URLSearchParams({...req.query, registered: false}).toString())
+      } else {
+        return res.redirect('/?' + new URLSearchParams({...req.query, registered: true}).toString())
+      }
     }
   }
 
@@ -369,6 +390,131 @@ app.get('/order', (req, res) => {
   res.redirect(uri)
 })
 
+app.get('/user', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const bitcoinJungleUsername = req.query.bitcoinJungleUsername
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!bitcoinJungleUsername) {
+    return res.send({error: true, message: "username is required"})
+  }
+
+  const user = await getUser(db, bitcoinJungleUsername)
+
+  if(!user) {
+    return res.send({error: true, message: "username doesn't exist"})
+  }
+
+  return res.send({success: true, data: user})
+})
+
+app.post('/addUser', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const bitcoinJungleUsername = req.body.bitcoinJungleUsername
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!bitcoinJungleUsername) {
+    return res.send({error: true, message: "username is required"})
+  }
+
+  const userExists = await getUser(db, bitcoinJungleUsername)
+
+  if(userExists) {
+    if(userExists.approved) {
+      return res.send({error: true, message: "username exists already"})
+    }
+
+    if(!userExists.approved) {
+      return res.send({error: true, message: "username exists, not yet approved"})
+    }
+  }
+
+  const user = await addUser(db, bitcoinJungleUsername)
+  const email = await sendEmail(bitcoinJungleUsername)
+
+  if(!user) {
+    return res.send({error: true, message: "error adding user"})
+  }
+
+  return res.send({success: true})
+})
+
+app.get('/approveUser', async (req, res) => {
+  const apiKey = req.body.apiKey || req.query.apiKey
+  const bitcoinJungleUsername = req.body.bitcoinJungleUsername || req.query.bitcoinJungleUsername
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!bitcoinJungleUsername) {
+    return res.send({error: true, message: "username is required"})
+  }
+
+  const user = await getUser(db, bitcoinJungleUsername)
+
+  if(!user) {
+    return res.send({error: true, message: "username does not exist"})
+  }
+
+  const update = await approveUser(db, bitcoinJungleUsername)
+
+  if(!update) {
+    return res.send({error: true, message: "error approving user"})
+  }
+
+  return res.send({success: true})
+})
+
+app.post('/deactivateUser', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const bitcoinJungleUsername = req.body.bitcoinJungleUsername
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!bitcoinJungleUsername) {
+    return res.send({error: true, message: "username is required"})
+  }
+
+  const user = await getUser(db, bitcoinJungleUsername)
+
+  if(!user) {
+    return res.send({error: true, message: "username does not exist"})
+  }
+
+  const update = await deactivateUser(db, bitcoinJungleUsername)
+
+  if(!update) {
+    return res.send({error: true, message: "error deactivating user"})
+  }
+
+  return res.send({success: true})
+})
+
 app.get('/setCustomerIds', async (req, res) => {
   const timestamp = (req.query.timestamp ? req.query.timestamp : new Date().toISOString())
 
@@ -682,6 +828,73 @@ const getTicker = async () => {
     BTCUSD,
     BTCCAD,
     timestamp,
+  }
+}
+
+const getUser = async (db, bitcoinJungleUsername) => {
+  try {
+    return await db.get(
+      "SELECT * FROM users WHERE bitcoinJungleUsername = ?", 
+      [bitcoinJungleUsername]
+    )
+  } catch {
+    return false
+  }
+}
+
+const addUser = async (db, bitcoinJungleUsername) => {
+  const timestamp = Math.floor(Date.now() / 1000)
+  try {
+    return await db.run(
+      "INSERT INTO users (bitcoinJungleUsername, approved, timestamp) VALUES (?, ?, ?)", 
+      [bitcoinJungleUsername, false, timestamp]
+    )
+  } catch(e) {
+    console.log(e)
+    return false
+  }
+}
+
+const approveUser = async (db, bitcoinJungleUsername) => {
+  const timestamp = Math.floor(Date.now() / 1000)
+  try {
+    return await db.run(
+      "UPDATE users SET approved = true WHERE bitcoinJungleUsername = ?", 
+      [bitcoinJungleUsername]
+    )
+  } catch {
+    return false
+  }
+}
+
+const deactivateUser = async (db, bitcoinJungleUsername) => {
+  const timestamp = Math.floor(Date.now() / 1000)
+  try {
+    return await db.run(
+      "UPDATE users SET approved = false WHERE bitcoinJungleUsername = ?", 
+      [bitcoinJungleUsername]
+    )
+  } catch {
+    return false
+  }
+}
+
+const sendEmail = async (bitcoinJungleUsername) => {
+  const msg = {
+    to: 'sinpeadd@bitcoinjungle.app',
+    from: 'noreply@bitcoinjungle.app',
+    subject: 'User requesting access to SINPE system',
+    html: `Please click <a href="https://orders.bitcoinjungle.app/approveUser?username=${bitcoinJungleUsername}&apiKey=${admin_api_key}">here</a> to approve this request for ${bitcoinJungleUsername}.`
+  }
+
+  try {
+    const send = await sendgridClient.send(msg)
+
+    console.log(send)
+
+    return true
+  } catch {
+    return false
   }
 }
 

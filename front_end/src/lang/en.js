@@ -4,6 +4,12 @@ const en = {
 	apiKeyTitle: "API Key",
 	apiKeyHelper: "Enter your API Key here",
 
+	registerTitle: "Welcome!",
+	registerSubtext1: "It looks like this is your first time here.",
+	registerSubtext2: "Please request access by clicking the button below.",
+	registerBtn: "Request Access Now!",
+	registerSuccess: "Thanks for requesting access. We will review your request shortly. Check back here later!",
+
 	buyBtn: "Buy Bitcoin",
 	sellBtn: "Sell Bitcoin",
 	billPayBtn: "Bill Pay",
@@ -36,7 +42,7 @@ const en = {
 	usdAccount: "USD Account",
 	
 	paymentIdentifierTitle: "Payment Reference #",
-	paymentConfirmationLabel: "I have sent the payent with the above reference number",
+	paymentConfirmationLabel: "I have sent the payment with the above reference number",
 
 	billerCategoryTitle: "Biller Category",
 	billerServiceTitle: "Biller Service",

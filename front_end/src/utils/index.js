@@ -53,4 +53,15 @@ const isFromBJ = () => {
   return false
 }
 
-export { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ }
+const isRegistered = () => {
+  const params = (new URL(document.location)).searchParams;
+  const key = params.get("registered");
+
+  if(key && key.length > 0 && key !== "false") {
+    return true
+  }
+
+  return false
+}
+
+export { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ, isRegistered }
