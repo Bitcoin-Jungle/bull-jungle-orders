@@ -1,6 +1,6 @@
 CREATE TABLE users (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	bitcoinJungleUsername TEXT,
+	bitcoinJungleUsername TEXT UNIQUE,
 	approved BOOLEAN NOT NULL DEFAULT FALSE,
 	timestamp INT
 );
