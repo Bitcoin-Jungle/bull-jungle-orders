@@ -445,7 +445,8 @@ app.post('/addUser', async (req, res) => {
 
   const user = await addUser(db, bitcoinJungleUsername)
   const email = await sendEmail(bitcoinJungleUsername)
-
+  const tgMsg = await sendUserAddMessage(bitcoinJungleUsername)
+  
   if(!user) {
     return res.send({error: true, message: "error adding user"})
   }
@@ -616,6 +617,21 @@ const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
     })
 
     const resp = await bot.telegram.sendMessage(chat_id, message)
+
+    return resp
+  } catch(e) {
+    console.log('telegram error', e)
+
+    return false
+  }
+}
+
+const sendUserAddMessage = async (bitcoinJungleUsername) => {
+  try {
+    let message = `New User Requesting Access: ${bitcoinJungleUsername}\n`
+    message += `Click [here](https://orders.bitcoinjungle.app/approveUser?bitcoinJungleUsername=${bitcoinJungleUsername}&apiKey=${admin_api_key}) to approve this new user`
+
+    const resp = await bot.telegram.sendMessage(chat_id, message, {parse_mode: 'MarkdownV2'})
 
     return resp
   } catch(e) {
