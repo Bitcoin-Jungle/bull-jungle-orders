@@ -33,6 +33,18 @@ const db = await open({
   driver: sqlite3.Database
 })
 
+const doc = new GoogleSpreadsheet(google_sheet_id);
+await doc.useServiceAccountAuth(service_account_json)
+await doc.loadInfo()
+
+console.log('loaded doc', doc.title)
+
+setInterval(async () => {
+  console.log('refreshing service account token')
+  await doc.useServiceAccountAuth(service_account_json)
+  console.log('refreshed')
+}, 1000 * 60 * 15)
+
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
 
@@ -272,59 +284,42 @@ app.post('/order', async (req, res) => {
   console.log('processed order data to', rowData)
 
   try {
-    const doc = new GoogleSpreadsheet(google_sheet_id);
+    const phoneUser = await getPhoneNumber(db, phoneNumber)
 
-    console.log('load service account')
+    if(!phoneUser) {
+      console.log('adding new phoneUser')
 
-    await doc.useServiceAccountAuth({
-      client_email: service_account_email,
-      private_key: service_account_json.private_key,
-    })
+      await addPhoneNumber(db, phoneNumber)
+      const newUser = await getPhoneNumber(db, phoneNumber)
 
-    await doc.loadInfo()
+      const userSheet = doc.sheetsByIndex[1]
+      await userSheet.addRow({
+        "Date": timestamp,
+        "Customer ID": newUser.id,
+        "Phone Number": phoneNumber,
+      })
 
-    console.log('load doc info')
+      rowData['User'] = newUser.id
+    } else {
+      console.log('found existing phoneUser')
 
-    try {
-      const phoneUser = await getPhoneNumber(db, phoneNumber)
-
-      if(!phoneUser) {
-        console.log('adding new phoneUser')
-
-        await addPhoneNumber(db, phoneNumber)
-        const newUser = await getPhoneNumber(db, phoneNumber)
-
-        const userSheet = doc.sheetsByIndex[1]
-        await userSheet.addRow({
-          "Date": timestamp,
-          "Customer ID": newUser.id,
-          "Phone Number": phoneNumber,
-        })
-
-        rowData['User'] = newUser.id
-      } else {
-        console.log('found existing phoneUser')
-
-        rowData['User'] = phoneUser.id
-      }
-    } catch(e) {
-      console.log('error finding phoneUser', e)
+      rowData['User'] = phoneUser.id
     }
-
-    try {
-      const sheet = doc.sheetsByIndex[0]
-
-      console.log('adding order to sheet')
-
-      const newRow = await sheet.addRow(rowData)
-    } catch(e) {
-      console.log('gsheet error adding order', e)
-    }
-
-  } catch (e) {
-    console.log('gsheet error', e)
+  } catch(e) {
+    console.log('error finding phoneUser', e)
   }
 
+  try {
+    const sheet = doc.sheetsByIndex[0]
+
+    console.log('adding order to sheet')
+
+    const newRow = await sheet.addRow(rowData)
+  } catch(e) {
+    console.log('gsheet error adding order', e)
+  }
+
+ 
   console.log('sending tg message')
   
   const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
