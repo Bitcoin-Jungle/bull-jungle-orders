@@ -50,12 +50,6 @@ await doc.loadInfo()
 
 console.log('loaded doc', doc.title)
 
-setInterval(async () => {
-  console.log('refreshing service account token')
-  await doc.useServiceAccountAuth(service_account_json)
-  console.log('refreshed')
-}, 1000 * 60 * 15)
-
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
 
