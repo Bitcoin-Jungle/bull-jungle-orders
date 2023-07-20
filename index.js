@@ -8,9 +8,6 @@ import axios from 'axios'
 import serveStatic from 'serve-static'
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
-import { MailService } from "@sendgrid/mail"
-
-const sendgridClient = new MailService()
 
 dotenv.config()
 
@@ -29,9 +26,6 @@ const invoice_endpoint_password = process.env.invoice_endpoint_password
 const price_data_url = process.env.price_data_url
 const db_location = process.env.db_location
 const admin_api_key = process.env.admin_api_key
-const sendgrid_api_key = process.env.sendgrid_api_key
-
-sendgridClient.setApiKey(sendgrid_api_key)
 
 // connect to the db
 const db = await open({
@@ -472,7 +466,6 @@ app.post('/addUser', async (req, res) => {
   }
 
   const user = await addUser(db, bitcoinJungleUsername)
-  const email = await sendEmail(bitcoinJungleUsername)
   const tgMsg = await sendUserAddMessage(bitcoinJungleUsername)
   
   if(!user) {
@@ -546,93 +539,6 @@ app.post('/deactivateUser', async (req, res) => {
   }
 
   return res.send({success: true})
-})
-
-app.get('/setCustomerIds', async (req, res) => {
-  const timestamp = (req.query.timestamp ? req.query.timestamp : new Date().toISOString())
-
-  try {
-
-    const doc = new GoogleSpreadsheet(google_sheet_id);
-
-    await doc.useServiceAccountAuth({
-      client_email: service_account_email,
-      private_key: service_account_json.private_key,
-    })
-
-    await doc.loadInfo()
-    try {
-      const txnsSheet = doc.sheetsByIndex[0]
-      const userSheet = doc.sheetsByIndex[1]
-
-      const txns = await txnsSheet.getRows()
-      const users = await userSheet.getRows()
-      let txn, phoneNumber, lastUserId
-
-      lastUserId = (users.length ? users[users.length - 1]['Customer ID'] : 1)
-
-      console.log('lastUserId', lastUserId)
-
-      for (var i = 0; i <= txns.length - 1; i++) {
-        txn = txns[i]
-
-        console.log('txn', txn['Date'])
-
-        switch(txn['Type']) {
-          case 'Sell':
-            phoneNumber = txn['Payment Destination'].replace(/[^0-9]/g, '').trim()
-            break;
-
-          default:
-            console.log('skip!', txn['Type'])
-            phoneNumber = null
-            break;
-        }
-
-        if(phoneNumber && phoneNumber.length) {
-          console.log('phone number', phoneNumber)
-
-          await new Promise(resolve => setTimeout(resolve, 500))
-
-          const userExists = users.find((el) => el['Phone Number'].replace(/[^0-9]/g, '').trim() === phoneNumber)
-
-          if(!userExists) {   
-            lastUserId = lastUserId++   
-
-            console.log('user doesnt exist, creating', lastUserId)
-
-            const newUserRow = await userSheet.addRow({
-              "Date": txn['Date'],
-              "Customer ID": lastUserId,
-              "Phone Number": phoneNumber,
-            })
-
-            users.push(newUserRow)
-
-            await new Promise(resolve => setTimeout(resolve, 1000))
-
-            txn['User'] = lastUserId++
-
-            await txn.save()
-
-            await new Promise(resolve => setTimeout(resolve, 1000))
-          } else {
-            console.log('user already exists', userExists['Customer ID'])
-
-            txn['User'] = userExists['Customer ID']
-
-            await txn.save()
-
-            await new Promise(resolve => setTimeout(resolve, 1000))
-          }
-        }
-      }
-    } catch(e) {
-      console.log('gsheet error adding order', e)
-    }
-  } catch (e) {
-    console.log('gsheet error', e)
-  }
 })
 
 const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
@@ -947,25 +853,6 @@ const getPaymentIdentifier = async (db, identifier) => {
       "SELECT * FROM payment_identifiers WHERE identifier = ?", 
       [identifier]
     )
-  } catch {
-    return false
-  }
-}
-
-const sendEmail = async (bitcoinJungleUsername) => {
-  const msg = {
-    to: 'sinpeadd@bitcoinjungle.app',
-    from: 'noreply@bitcoinjungle.app',
-    subject: 'User requesting access to SINPE system',
-    html: `Please click <a href="https://orders.bitcoinjungle.app/approveUser?bitcoinJungleUsername=${bitcoinJungleUsername}&apiKey=${admin_api_key}">here</a> to approve this request for ${bitcoinJungleUsername}.`
-  }
-
-  try {
-    const send = await sendgridClient.send(msg)
-
-    console.log(send)
-
-    return true
   } catch {
     return false
   }
