@@ -7,5 +7,5 @@ CREATE TABLE users (
 
 CREATE TABLE payment_identifiers (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	identifier TEXT
+	identifier TEXT UNIQUE
 );
