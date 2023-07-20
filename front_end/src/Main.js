@@ -291,7 +291,7 @@ function Main({ client }) {
       return
     }
 
-    if(btcAmount * priceData['BTCCRC'] < 5000) {
+    if(btcAmount * priceData['BTCCRC'] < 2000) {
       setUnderPerTxnMinimum(true)
       return
     }
