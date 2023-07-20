@@ -286,30 +286,29 @@ app.post('/order', async (req, res) => {
     console.log('load doc info')
 
     try {
-      const userSheet = doc.sheetsByIndex[1]
+      const phoneUser = await getPhoneNumber(db, phoneNumber)
 
-      const users = await userSheet.getRows()
-      const user = users.find((el) => el['Phone Number'] === phoneNumber)
-      const lastUserId = (users.length ? users[users.length - 1]['Customer ID'] : 0)
-      const newUserId = parseInt(lastUserId) + 1
+      if(!phoneUser) {
+        console.log('adding new phoneUser')
 
-      if(!user) {
-        console.log('adding new user')
+        await addPhoneNumber(db, phoneNumber)
+        const newUser = await getPhoneNumber(db, phoneNumber)
 
-        const newUserRow = await userSheet.addRow({
+        const userSheet = doc.sheetsByIndex[1]
+        await userSheet.addRow({
           "Date": timestamp,
-          "Customer ID": newUserId,
+          "Customer ID": newUser.id,
           "Phone Number": phoneNumber,
         })
 
-        rowData['User'] = newUserId
+        rowData['User'] = newUser.id
       } else {
-        console.log('found existing user')
+        console.log('found existing phoneUser')
 
-        rowData['User'] = user['Customer ID']
+        rowData['User'] = phoneUser.id
       }
     } catch(e) {
-      console.log('gsheet error adding user', e)
+      console.log('error finding phoneUser', e)
     }
 
     try {
@@ -852,6 +851,28 @@ const getPaymentIdentifier = async (db, identifier) => {
     return await db.get(
       "SELECT * FROM payment_identifiers WHERE identifier = ?", 
       [identifier]
+    )
+  } catch {
+    return false
+  }
+}
+
+const getPhoneNumber = async (db, phoneNumber) => {
+  try {
+    return await db.get(
+      "SELECT * FROM phone_numbers WHERE phoneNumber = ?", 
+      [phoneNumber]
+    )
+  } catch {
+    return false
+  }
+}
+
+const addPhoneNumber = async (db, phoneNumber) => {
+  try {
+    return await db.run(
+      "INSERT INTO phone_numbers (phoneNumber) VALUES (?)", 
+      [phoneNumber]
     )
   } catch {
     return false

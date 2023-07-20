@@ -9,3 +9,8 @@ CREATE TABLE payment_identifiers (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	identifier TEXT UNIQUE
 );
+
+CREATE TABLE phone_numbers (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	phoneNumber TEXT UNIQUE
+);
