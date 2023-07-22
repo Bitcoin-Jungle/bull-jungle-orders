@@ -10,6 +10,7 @@ import serveStatic from 'serve-static'
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
 import ibantools from 'ibantools'
+import { EventEmitter } from 'events'
 
 dotenv.config()
 
@@ -54,9 +55,27 @@ console.log('loaded doc', doc.title)
 const bot = new Telegraf(telegram_bot_token)
 const app = express()
 
+const googleSheetEventHandler = new EventEmitter()
+
 const ordersInFlight = {}
 
 let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
+
+googleSheetEventHandler.on('addRow', async (rowData) => {
+  try {
+    const sheet = doc.sheetsByIndex[0]
+
+    console.log('adding order to sheet')
+
+    const newRow = await sheet.addRow(rowData, {insert: true})
+
+    console.log('order added to sheet')
+
+    return
+  } catch(e) {
+    console.log('gsheet error adding order', e)
+  }
+})
 
 app.use(bodyParser.json())
 app.use(compression())
@@ -346,15 +365,7 @@ app.post('/order', async (req, res) => {
     await addPaymentIdentifier(db, paymentIdentifier)
   }
 
-  try {
-    const sheet = doc.sheetsByIndex[0]
-
-    console.log('adding order to sheet')
-
-    const newRow = await sheet.addRow(rowData, {insert: true})
-  } catch(e) {
-    console.log('gsheet error adding order', e)
-  }
+  googleSheetEventHandler.emit('addRow', rowData)
 
   console.log('order submitted successfully.')
 
