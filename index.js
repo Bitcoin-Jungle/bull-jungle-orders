@@ -311,11 +311,16 @@ app.post('/order', async (req, res) => {
       const newUser = await getPhoneNumber(db, phoneNumber)
 
       const userSheet = doc.sheetsByIndex[1]
-      await userSheet.addRow({
-        "Date": timestamp,
-        "Customer ID": newUser.id,
-        "Phone Number": phoneNumber,
-      })
+      await userSheet.addRow(
+        {
+          "Date": timestamp,
+          "Customer ID": newUser.id,
+          "Phone Number": phoneNumber,
+        },
+        {
+          insert: true,
+        }
+      )
 
       rowData['User'] = newUser.id
     } else {
@@ -340,7 +345,7 @@ app.post('/order', async (req, res) => {
 
     console.log('adding order to sheet')
 
-    const newRow = await sheet.addRow(rowData)
+    const newRow = await sheet.addRow(rowData, {insert: true})
   } catch(e) {
     console.log('gsheet error adding order', e)
   }
