@@ -52,3 +52,7 @@ p {
 .bull-logo {
   width: 250px;
 }
+
+.container.d-flex {
+  max-width: 600px;
+}

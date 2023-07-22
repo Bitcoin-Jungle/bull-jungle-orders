@@ -11,6 +11,8 @@ import {
   LN_INVOICE_CREATE_ON_BEHALF_OF_RECIPIENT,
 } from './utils/graphql'
 
+const ibantools = require("ibantools")
+
 function Main({ client }) {
   const submitOrderRef = useRef()
   const toggleLoadingOnRef = useRef()
@@ -99,6 +101,26 @@ function Main({ client }) {
     if(underPerTxnMinimum) {
       alert(localized.underPerTxnMinimum)
       return false
+    }
+
+    if(action !== 'BILLPAY') {
+      const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(paymentReq))
+      const isValidSinpe = paymentReq.replace(/[^0-9]/gi, '').trim().length === 8
+
+      if(!isValidIban && fiatCurrency === 'USD') {
+        alert("When selecting USD currency, the payment destination must be an IBAN Account.")
+        return false
+      }
+
+      if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 100000) {
+        alert("When selecting CRC currency in amounts greater than 99.000, the payment destination must be an IBAN Account.")
+        return false
+      }
+
+      if(!isValidIban && !isValidSinpe) {
+       alert("When action is SELL, you must provide a valid IBAN Account Number or SINPE Movil Phone Number.")
+       return false
+      }
     }
 
     setLoading(true)
@@ -288,11 +310,15 @@ function Main({ client }) {
 
     if(btcAmount * priceData['BTCCAD'] >= 995) {
       setOverPerTxnLimit(true)
+      setSatAmount("")
+      setPaymentReq("")
       return
     }
 
     if(btcAmount * priceData['BTCCRC'] < 2000) {
       setUnderPerTxnMinimum(true)
+      setSatAmount("")
+      setPaymentReq("")
       return
     }
     
@@ -338,7 +364,15 @@ function Main({ client }) {
 
   useEffect(() => {
     calculateSatAmount(false)
-  }, [fiatAmount, fiatCurrency, priceData])
+  }, [fiatAmount, fiatCurrency])
+
+  useEffect(() => {
+    if(action === "BUY" && paymentReq === "") {
+      calculateSatAmount(true)
+    } else if(invoice === "") {
+      calculateSatAmount(true)
+    }
+  }, [priceData])
 
   useEffect(() => {
     if(window.ReactNativeWebView && username && satAmount && action === 'BUY') {
@@ -459,7 +493,49 @@ function Main({ client }) {
                       <div className="form-text">{localized.satAmountHelper} <span style={{fontWeight: "bold"}} id="price-timestamp">{priceData.timestamp || priceData.message}</span></div>
                       */}
                       {satAmount &&
-                        <span>= {satAmount} satoshis</span>
+                        <span>
+                          {
+                            Number(fiatAmount).toLocaleString(
+                              (language === 'es' ? 'es-CR' : 'en-US'), 
+                              {
+                                currency: fiatCurrency,
+                                style: "decimal",
+                                maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                              }
+                            )
+                          }
+                          {" " + fiatCurrency + " "} 
+                          = 
+                          {" "}
+                          {
+                            Number(satAmount).toLocaleString(
+                              (language === 'es' ? 'es-CR' : 'en-US'), 
+                              {
+                                style: "decimal",
+                                maximumFractionDigits: 0,
+                                minimumFractionDigits: 0,
+                              }
+                            )
+                          }
+                          {" "}
+                          satoshis
+                          {" "}
+                          (1 BTC = {" "}
+                            {
+                              Number((fiatAmount / satAmount) * 100000000).toLocaleString(
+                                (language === 'es' ? 'es-CR' : 'en-US'), 
+                                {
+                                  currency: fiatCurrency,
+                                  style: "decimal",
+                                  maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                  minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                }
+                              )
+                            }
+                            {" " + fiatCurrency}
+                          )
+                        </span>
                       }
 
                       {!satAmount &&

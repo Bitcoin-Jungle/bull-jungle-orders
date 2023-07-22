@@ -26,7 +26,7 @@ const en = {
 	phoneNumberTitle: "Phone Number",
 	phoneNumberHelper: "Enter your phone number here",
 
-	sellPaymentReqHelper: "Enter the SINPE Móvil phone number you want to receive payment at",
+	sellPaymentReqHelper: "Enter the SINPE Móvil phone number or IBAN account number you want to receive payment at",
 	buyPaymentReqHelper: "Enter a lightning invoice where you want to receive the bitcoin",
 
 	bitcoinJungleWallet: "Bitcoin Jungle Wallet",

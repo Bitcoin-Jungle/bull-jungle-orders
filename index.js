@@ -9,6 +9,7 @@ import axios from 'axios'
 import serveStatic from 'serve-static'
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
+import ibantools from 'ibantools'
 
 dotenv.config()
 
@@ -179,6 +180,24 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, message: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp."})
   }
 
+  if(action === 'SELL') {
+    const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(paymentReq))
+    const isValidSinpe = paymentReq.replace(/[^0-9]/gi, '').trim().length === 8
+
+    if(!isValidIban && fiatCurrency === 'USD') {
+      return res.send({error: true, message: "When selecting USD currency, the payment destination must be an IBAN Account."})
+    }
+
+    if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 100000) {
+      alert("When selecting CRC currency in amounts greater than 99.000, the payment destination must be an IBAN Account.")
+      return false
+    }
+
+    if(!isValidIban && !isValidSinpe) {
+      return res.send({error: true, message: "When action is SELL, you must provide a valid IBAN Account Number or SINPE Movil Phone Number."})
+    }
+  }
+
   const priceData = await getPrice()
 
   if((satAmount / 100000000) * priceData['BTCCAD'] >= 995) {
@@ -208,11 +227,6 @@ app.post('/order', async (req, res) => {
       return res.send({error: true, message: "Invoice has not been paid. Please try your order again."})
     }
   }
-
-  const fiatFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: fiatCurrency,
-  })
 
   const satAmountFormatted = Number(satAmount).toLocaleString()
   const fiatAmountFormatted = Number(fiatAmount).toLocaleString()
