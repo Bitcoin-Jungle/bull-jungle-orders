@@ -113,71 +113,71 @@ app.post('/order', async (req, res) => {
   console.log('order received', req.body)
 
   if(!apiKey) {
-    return res.send({error: true, message: "apiKey is required"})
+    return res.send({error: true, type: "apiKeyRequired"})
   }
 
   if(apiKey !== api_key) {
-    return res.send({error: true, message: "apiKey is incorrect"})
+    return res.send({error: true, type: "apiKeyIncorrect"})
   }
 
   if(!fiatAmount) {
-    return res.send({error: true, message: "fiatAmount is required"})
+    return res.send({error: true, type: "fiatAmountRequired"})
   }
 
   if(!fiatCurrency) {
-    return res.send({error: true, message: "fiatCurrency is required"})
+    return res.send({error: true, type:"fiatCurrencyRequired"})
   }
 
   if(fiatCurrency !== 'USD' && fiatCurrency !== 'CRC') {
-    return res.send({error: true, message: "fiatCurrency must be USD or CRC"})
+    return res.send({error: true, type: "invalidFiatCurrency"})
   }
 
   if(!satAmount) {
-    return res.send({error: true, message: "satAmount is required"})
+    return res.send({error: true, type: "satAmountRequired"})
   }
 
   if(!action) {
-    return res.send({error: true, message: "action is required"})
+    return res.send({error: true, type: "actionRequired"})
   }
 
   if(!paymentReq) {
-    return res.send({error: true, message: "paymentReq is required"})
+    return res.send({error: true, type: "paymentReqRequired"})
   }
 
   if(!phoneNumber) {
-    return res.send({error: true, message: "phoneNumber is required"})
+    return res.send({error: true, type: "phoneNumbeRequired"})
   }
 
   if(action !== 'BUY' && action !== 'SELL' && action !== 'BILLPAY') {
-    return res.send({error: true, message: "action should be buy or sell or billpay"})
+    return res.send({error: true, type: "invalidAction"})
   }
 
   if(action === 'BUY' && paymentReq.toLowerCase().indexOf('lnbc') !== 0) {
-    return res.send({error: true, message: "paymentReq must start with lnbc when buying"})
+    return res.send({error: true, type: "invalidPaymentReqBuy"})
   }
 
   if(action === 'BUY' && !paymentIdentifier) {
-    return res.send({error: true, message: "Payment Identifier is required when BUY action is set"})
+    return res.send({error: true, type: "paymentIdentifierRequired"})
   }
 
   if(action === 'BUY' && paymentIdentifier && paymentIdentifier.replace(/[^0-9]/gi, '').trim().length !== 25) {
-    return res.send({error: true, message: "Payment Identifier must be 25 digits"})
+    return res.send({error: true, type: "invalidPaymentIdentifier"})
   }
 
   if(action === 'BUY') {
     const paymentIdentifierExists = await getPaymentIdentifier(db, paymentIdentifier)
 
     if(paymentIdentifierExists) {
-      return res.send({error: true, message: "Payment Identifier has already been used for another order."})
+      return res.send({error: true, type: "paymentIdentifierUsed"})
     }
   }
 
   if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
-    return res.send({error: true, message: "When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber"})
+    return res.send({error: true, type: "invalidBillPaySettings"})
   }
 
   if((action === 'SELL' || action === 'BILLPAY') && (!invoice || !paymentHash || !timestamp)) {
-    return res.send({error: true, message: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp."})
+    return res.send({error: true, type: "invalidInvoice"})
   }
 
   if(action === 'SELL') {
@@ -185,23 +185,22 @@ app.post('/order', async (req, res) => {
     const isValidSinpe = paymentReq.replace(/[^0-9]/gi, '').trim().length === 8
 
     if(!isValidIban && fiatCurrency === 'USD') {
-      return res.send({error: true, message: "When selecting USD currency, the payment destination must be an IBAN Account."})
+      return res.send({error: true, type: "usdIbanRequired"})
     }
 
     if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 100000) {
-      alert("When selecting CRC currency in amounts greater than 99.000, the payment destination must be an IBAN Account.")
-      return false
+      return res.send({error: true, type: "crcIbanRequired"})
     }
 
     if(!isValidIban && !isValidSinpe) {
-      return res.send({error: true, message: "When action is SELL, you must provide a valid IBAN Account Number or SINPE Movil Phone Number."})
+      return res.send({error: true, type: "invalidPaymentReqSell"})
     }
   }
 
   const priceData = await getPrice()
 
   if((satAmount / 100000000) * priceData['BTCCAD'] >= 995) {
-    return res.send({error: true, message: "There is a per transaction limit of $1000 CAD"})
+    return res.send({error: true, type: "invalidFiatAmount"})
   }
 
   ordersInFlight[timestamp] = {
@@ -224,7 +223,7 @@ app.post('/order', async (req, res) => {
 
     if(!invoicePaid) {
       delete ordersInFlight[timestamp]
-      return res.send({error: true, message: "Invoice has not been paid. Please try your order again."})
+      return res.send({error: true, type: "invoiceNotPaid"})
     }
   }
 
@@ -365,11 +364,11 @@ app.post('/invoice', async (req, res) => {
   const satAmount = req.body.satAmount
 
   if(!apiKey) {
-    return res.send({error: true, message: "apiKey is required"})
+    return res.send({error: true, type: "apiKeyRequired"})
   }
 
   if(apiKey !== api_key) {
-    return res.send({error: true, message: "apiKey is incorrect"})
+    return res.send({error: true, type: "apiKeyIncorrect"})
   }
 
   if(!label) {
@@ -381,7 +380,7 @@ app.post('/invoice', async (req, res) => {
   }
 
   if(!satAmount) {
-    return res.send({error: true, message: "satAmount is required"})
+    return res.send({error: true, type: "satAmountRequired"})
   }
 
   const invoiceData = {

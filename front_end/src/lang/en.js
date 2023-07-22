@@ -75,7 +75,31 @@ const en = {
 
 	terms: "Terms & Conditions",
 
+	orderSuccess: "Order submitted successfully. We will review and process it shortly. Please contact us on WhatsApp with any questions.",
 
+	errors: {
+		apiKeyRequired: "API Key is required.",
+		apiKeyIncorrect: "API Key is incorrect.",
+		fiatAmountRequired: "Currency Amount is required.",
+		fiatCurrencyRequired: "Currency is required.",
+		invalidFiatCurrency: "Currency must be USD or CRC.",
+		satAmountRequired: "BTC Amount is required.",
+		actionRequired: "Action is required.",
+		paymentReqRequired: "Payment Destination is required.",
+		invalidBillPaySettings: "You must provide a biller category, service, action, & account number to pay a bill.",
+		phoneNumberRequired: "A phone number is required.",
+		invalidAction: "Action must be BUY, SELL, or BILL PAY.",
+		invalidPaymentReqBuy: "Payment Destination must start with lnbc.",
+		paymentIdentifierRequired: "Payment Identifier is required.",
+		invalidPaymentIdentifier: "Payment Identifier must be 25 digits. If you cannot provide this, please provide any reference number you can and add extra 0s.",
+		paymentIdentifierUsed: "This Payment Identifier has already been used on another order.",
+		usdIbanRequired: "When selecting USD currency, the payment destination must be an IBAN Account.",
+		crcIbanRequired: "When selecting CRC currency in amounts greater than 99.000, the payment destination must be an IBAN Account.",
+		invalidPaymentReqSell: "You must provide a valid IBAN Account Number or SINPE Movil Phone Number.",
+		invalidInvoice: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp.",
+		invalidFiatAmount: "There is a per transaction limit of $1000 CAD.",
+		invoiceNotPaid: "Invoice has not been paid. Please try your order again.",
+	},
 }
 
 export default en

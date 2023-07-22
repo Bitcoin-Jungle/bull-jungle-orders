@@ -75,6 +75,32 @@ const es = {
 
 	terms: "Términos y condiciones",
 
+	orderSuccess: "Pedido enviado con éxito. Lo revisaremos y procesaremos en breve. Contáctenos por WhatsApp si tiene alguna pregunta.",
+
+	errors: {
+		apiKeyRequired: "Se requiere la clave API.",
+		apiKeyIncorrect: "La clave API es incorrecta.",
+		fiatAmountRequired: "Se requiere el monto de la moneda.",
+		fiatCurrencyRequired: "Se requiere moneda.",
+		invalidFiatCurrency: "La moneda debe ser USD o CRC.",
+		satAmountRequired: "Se requiere la cantidad de BTC.",
+		actionRequired: "Se requiere acción.",
+		paymentReqRequired: "Se requiere el destino del pago.",
+		invalidBillPaySettings: "Debe proporcionar una categoría de facturador, servicio, acción y número de cuenta para pagar una factura.",
+		phoneNumberRequired: "Se requiere un número de teléfono.",
+		invalidAction: "La acción debe ser COMPRAR, VENDER o PAGAR FACTURA.",
+		invalidPaymentReqBuy: "El destino del pago debe comenzar con lnbc.",
+		paymentIdentifierRequired: "Se requiere el identificador de pago.",
+		invalidPaymentIdentifier: "El identificador de pago debe tener 25 dígitos. Si no puede proporcionarlo, proporcione cualquier número de referencia que pueda y agregue 0 adicionales.",
+		paymentIdentifierUsed: "Este identificador de pago ya se usó en otro pedido.",
+		usdIbanRequired: "Al seleccionar la moneda USD, el destino del pago debe ser una cuenta IBAN.",
+		crcIbanRequired: "Al seleccionar moneda CRC en montos superiores a 99.000, el destino del pago debe ser una Cuenta IBAN.",
+		invalidPaymentReqSell: "Debe proporcionar un número de cuenta IBAN válido o un número de teléfono móvil SINPE.",
+		invalidInvoice: "Cuando la acción es VENDER o FACTURAR, debe proporcionar una factura y un hash de pago y una marca de tiempo.",
+		invalidFiatAmount: "Hay un límite por transacción de $1000 CAD.",
+		invoiceNotPaid: "La factura no ha sido pagada. Intente realizar su pedido de nuevo.",
+	},
+
 }
 
 export default es

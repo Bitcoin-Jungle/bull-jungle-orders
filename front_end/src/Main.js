@@ -64,32 +64,32 @@ function Main({ client }) {
 
   const fetchInvoice = () => {
     if(!fiatAmount) {
-      alert("fiatAmount is required.")
+      alert(localized.errors.fiatAmountRequired)
       return false
     }
 
     if(!fiatCurrency) {
-      alert("fiatCurrency is required.")
+      alert(localized.errors.fiatCurrencyRequired)
       return false
     }
 
     if(!satAmount) {
-      alert("satAmount is required.")
+      alert(localized.errors.satAmountRequired)
       return false
     }
 
     if(!action) {
-      alert("action is required.")
+      alert(localized.errors.actionRequired)
       return false
     }
 
-    if(action !== 'BILLPAY' && !paymentReq) {
-      alert("Payment Destination is required.")
+    if(!paymentReq) {
+      alert(localized.errors.paymentReqRequired)
       return false
     }
 
     if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
-      alert("When action is BILLPAY, you must provide billerCategory, billerService, billerActionType, billerAccountNumber")
+      alert(localized.errors.invalidBillPaySettings)
       return false
     }
 
@@ -103,22 +103,22 @@ function Main({ client }) {
       return false
     }
 
-    if(action !== 'BILLPAY') {
+    if(action === 'SELL') {
       const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(paymentReq))
       const isValidSinpe = paymentReq.replace(/[^0-9]/gi, '').trim().length === 8
 
       if(!isValidIban && fiatCurrency === 'USD') {
-        alert("When selecting USD currency, the payment destination must be an IBAN Account.")
+        alert(localized.errors.usdIbanRequired)
         return false
       }
 
       if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 100000) {
-        alert("When selecting CRC currency in amounts greater than 99.000, the payment destination must be an IBAN Account.")
+        alert(localized.errors.crcIbanRequired)
         return false
       }
 
       if(!isValidIban && !isValidSinpe) {
-       alert("When action is SELL, you must provide a valid IBAN Account Number or SINPE Movil Phone Number.")
+       alert(localized.errors.invalidPaymentReqSell)
        return false
       }
     }
@@ -140,7 +140,7 @@ function Main({ client }) {
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
-        alert(data.message || data.error.message)
+        alert(localized.errors[data.type] || data.error.message)
         return
       } else {
         setInvoice(data.result.bolt11)
@@ -263,7 +263,7 @@ function Main({ client }) {
       setLoading(false)
 
       if(data.error) {
-        alert(data.message)
+        alert(localized.errors[data.type])
         return
       } else if(data.inFlight) {
         setTimeout(() => {
@@ -273,7 +273,7 @@ function Main({ client }) {
         if(window.ReactNativeWebView) {
           window.ReactNativeWebView.postMessage(JSON.stringify({action: "complete"}))
         } else {
-          alert("Order created successfully!")
+          alert(localized.orderSuccess)
         }
 
         clearForm()
