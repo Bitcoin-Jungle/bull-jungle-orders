@@ -520,7 +520,7 @@ function Main({ client }) {
                           }
                           {" "}
                           satoshis
-                          {" "}
+                          <br />
                           (1 BTC = {" "}
                             {
                               Number((fiatAmount / satAmount) * 100000000).toLocaleString(

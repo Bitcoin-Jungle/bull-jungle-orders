@@ -327,6 +327,14 @@ app.post('/order', async (req, res) => {
     console.log('error finding phoneUser', e)
   }
 
+  console.log('sending tg message')
+  
+  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
+
+  if(!telegramMessage) {
+    await sendOrderToTelegram(rowData, formulaFreeAmount)
+  }
+
   try {
     const sheet = doc.sheetsByIndex[0]
 
@@ -335,15 +343,6 @@ app.post('/order', async (req, res) => {
     const newRow = await sheet.addRow(rowData)
   } catch(e) {
     console.log('gsheet error adding order', e)
-  }
-
- 
-  console.log('sending tg message')
-  
-  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
-
-  if(!telegramMessage) {
-    await sendOrderToTelegram(rowData, formulaFreeAmount)
   }
 
   console.log('order submitted successfully.')
