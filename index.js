@@ -340,6 +340,12 @@ app.post('/order', async (req, res) => {
     await sendOrderToTelegram(rowData, formulaFreeAmount)
   }
 
+  ordersInFlight[timestamp].status = 'complete'
+
+  if(action === "BUY") {
+    await addPaymentIdentifier(db, paymentIdentifier)
+  }
+
   try {
     const sheet = doc.sheetsByIndex[0]
 
@@ -351,12 +357,6 @@ app.post('/order', async (req, res) => {
   }
 
   console.log('order submitted successfully.')
-
-  ordersInFlight[timestamp].status = 'complete'
-
-  if(action === "BUY") {
-    await addPaymentIdentifier(db, paymentIdentifier)
-  }
 
   return res.send({success: true})
 })
