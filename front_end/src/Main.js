@@ -309,7 +309,7 @@ function Main({ client }) {
       return
     }
 
-    if(btcAmount * priceData['BTCCRC'] < 2000) {
+    if(Math.round(btcAmount * priceData['BTCCRC']) < 2000) {
       setUnderPerTxnMinimum(true)
       setSatAmount("")
       setPaymentReq("")
