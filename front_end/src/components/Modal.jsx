@@ -1,55 +1,33 @@
 import { useEffect } from 'react'
-import { QRCode } from "react-qrcode-logo"
 
-import { isFromBJ } from '../utils/index'
-
-function Modal({ showModal, handleModal, invoice, localized }) {
+function Modal({ children, toggle, showModal }) {
 
   useEffect(() => {
     if(showModal) {
       document.querySelector('body').classList.add('modal-open')
+      if(toggle) {
+        window.addEventListener("mousedown", handleClose)
+      }
     } else {
       document.querySelector('body').classList.remove('modal-open')
+      if(toggle) {
+        window.removeEventListener("mousedown", handleClose)
+      }
     }
   }, [showModal])
 
-  const copyToClipboard = () => {
-    try {
-      navigator.clipboard.writeText(invoice)
-      setTimeout(() => {
-        alert("Invoice copied to clipboard")
-      }, 250)
-    } catch(e) {
-
+  const handleClose = () => {
+    if(showModal && toggle) {
+      toggle(false)
     }
   }
-
-  const aHref = (isFromBJ() ? `bitcoinjungle://${invoice}` : `lightning:${invoice}`)
 
   return (
     <>
       <div className="modal fade show" role="dialog" style={{display: (showModal ? "block" : "none")}} tabIndex="-1" aria-hidden="true">
         <div className="modal-dialog">
             <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{localized.sellBtn}</h5>
-              </div>
-              <div className="modal-body">
-                <p>{localized.invoiceHelperText}</p>
-                <a href={aHref}>
-                  <QRCode
-                      value={invoice}
-                      size={320}
-                      logoImage={"/BJQRLogo.png"}
-                      logoWidth={100}
-                  />
-                </a>
-                <div>
-                  <button className="btn btn-primary" onClick={copyToClipboard}>
-                      Copy Invoice
-                  </button>
-                </div>
-              </div>
+              {showModal && children}
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ } from '.
 
 import { SendReceiveIcon } from './components/SendReceiveIcon'
 import Modal from './components/Modal'
+import Invoice from './components/Invoice'
 
 import { 
   RECIPIENT_WALLET_ID, 
@@ -38,7 +39,8 @@ function Main({ client }) {
   const [billerAccountNumber, setBillerAccountNumber] = useState("")
   const [invoice, setInvoice] = useState("")
   const [paymentHash, setPaymentHash] = useState("")
-  const [showModal, setShowModal] = useState(false)
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
   const [timestamp, setTimestamp] = useState(new Date().toISOString())
   const [phoneNumber, setPhoneNumber] = useState(getPhoneNumber())
@@ -52,14 +54,6 @@ function Main({ client }) {
     clearForm()
     setAction(action)
     setDisableButton(true)
-  }
-
-  const handleModal = (action) => {
-    setShowModal(action)
-
-    if(!action) {
-      setTimestamp(new Date().toISOString())
-    }
   }
 
   const fetchInvoice = () => {
@@ -145,7 +139,7 @@ function Main({ client }) {
       } else {
         setInvoice(data.result.bolt11)
         setPaymentHash(data.result.payment_hash)
-        setShowModal(true)
+        setShowInvoiceModal(true)
       }
     })
     .catch((err) => {
@@ -277,7 +271,7 @@ function Main({ client }) {
         }
 
         clearForm()
-        setShowModal(false)
+        setShowInvoiceModal(false)
       }
     })
     .catch((err) => {
@@ -381,7 +375,7 @@ function Main({ client }) {
   }, [satAmount, fiatCurrency, username, action])
 
   useEffect(() => {
-    if(showModal) {
+    if(showInvoiceModal) {
       if(window.ReactNativeWebView) {
         window.ReactNativeWebView.postMessage(JSON.stringify({action: "invoice", bolt11: invoice}))
         // setTimeout(() => {
@@ -394,7 +388,7 @@ function Main({ client }) {
       setInvoice("")
       setPaymentHash("")
     }
-  }, [showModal])
+  }, [showInvoiceModal])
 
   return (
     <div>
@@ -708,17 +702,28 @@ function Main({ client }) {
       <footer className="mt-3 mb-1">
         <div className="container">
           <span className="text-muted">
-            <a href="https://bullbitcoin.com/faq/Costa%2520Rica" target="_blank">{localized.terms}</a>
+            <a 
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                setShowTermsModal(true)
+              }}
+            >
+              {localized.terms}
+            </a>
           </span>
         </div>
       </footer>
 
-      <Modal
-        showModal={showModal && !window.ReactNativeWebView}
-        handleModal={handleModal}
-        localized={localized}
-        invoice={invoice} />
+      <Modal showModal={showInvoiceModal && !window.ReactNativeWebView}>
+        <Invoice 
+          localized={localized}
+          invoice={invoice} />
+      </Modal>
 
+      <Modal showModal={showTermsModal} toggle={setShowTermsModal}>
+        <iframe src="https://bullbitcoin.com/faq/Costa%2520Rica#about-faq--1473451305" title={localized.terms} style={{height: "80vh"}} />
+      </Modal>
     </div>
   )
 }
