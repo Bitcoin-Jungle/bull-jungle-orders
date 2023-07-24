@@ -56,25 +56,34 @@ const bot = new Telegraf(telegram_bot_token)
 const app = express()
 
 const googleSheetEventHandler = new EventEmitter()
-
-const ordersInFlight = {}
+const telegramEventHandler = new EventEmitter()
 
 let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
 
-googleSheetEventHandler.on('addRow', async (rowData) => {
-  try {
-    const sheet = doc.sheetsByIndex[0]
+googleSheetEventHandler.on('addRow', async ({rowData, sheet: sheetIndex}) => {
+  console.log('adding row to sheet ' + sheetIndex)
 
-    console.log('adding order to sheet')
+  const added = await addRowToSheet(rowData, sheetIndex)
 
-    const newRow = await sheet.addRow(rowData, {insert: true})
-
-    console.log('order added to sheet')
-
-    return
-  } catch(e) {
-    console.log('gsheet error adding order', e)
+  if(!added) {
+    await new Promise(resolve => setTimeout(resolve, 1000 * 10))
+    return await addRowToSheet(rowData, sheetIndex)
   }
+
+  return true
+})
+
+telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount}) => {
+  console.log('sending tg message')
+  
+  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
+
+  if(!telegramMessage) {
+    await new Promise(resolve => setTimeout(resolve, 1000 * 10))
+    await sendOrderToTelegram(rowData, formulaFreeAmount)
+  }
+
+  return true
 })
 
 app.use(bodyParser.json())
@@ -121,10 +130,14 @@ app.post('/order', async (req, res) => {
     paymentReq = 'Bill Payment'
   }
 
-  if(ordersInFlight[timestamp]) {
-    if(ordersInFlight[timestamp].status === 'complete') {
+  const orderInFlight = await getOrder(db, timestamp)
+
+  if(orderInFlight) {
+    if(orderInFlight.status === 'complete') {
       return res.send({success: true})
-    } else if(ordersInFlight[timestamp].status === 'in-flight') {
+    }
+
+    if(orderInFlight.status === 'in-flight') {
       return res.send({inFlight: true})
     }
   }
@@ -222,9 +235,7 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, type: "invalidFiatAmount"})
   }
 
-  ordersInFlight[timestamp] = {
-    status: 'in-flight',
-  }
+  await addOrder(db, timestamp)
 
   if(action === 'SELL' || action === 'BILLPAY') {
     let invoicePaid
@@ -241,7 +252,7 @@ app.post('/order', async (req, res) => {
     }
 
     if(!invoicePaid) {
-      delete ordersInFlight[timestamp]
+      await deleteOrder(db, timestamp)
       return res.send({error: true, type: "invoiceNotPaid"})
     }
   }
@@ -320,6 +331,8 @@ app.post('/order', async (req, res) => {
 
   console.log('processed order data to', rowData)
 
+  await updateOrderData(db, timestamp, rowData)
+
   try {
     const phoneUser = await getPhoneNumber(db, phoneNumber)
 
@@ -329,15 +342,15 @@ app.post('/order', async (req, res) => {
       await addPhoneNumber(db, phoneNumber)
       const newUser = await getPhoneNumber(db, phoneNumber)
 
-      const userSheet = doc.sheetsByIndex[1]
-      await userSheet.addRow(
+      googleSheetEventHandler.emit(
+        'addRow', 
         {
-          "Date": timestamp,
-          "Customer ID": newUser.id,
-          "Phone Number": phoneNumber,
-        },
-        {
-          insert: true,
+          rowData: {
+            "Date": timestamp,
+            "Customer ID": newUser.id,
+            "Phone Number": phoneNumber,
+          },
+          sheet: 1,
         }
       )
 
@@ -351,21 +364,28 @@ app.post('/order', async (req, res) => {
     console.log('error finding phoneUser', e)
   }
 
-  console.log('sending tg message')
-  
-  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
-
-  if(!telegramMessage) {
-    await sendOrderToTelegram(rowData, formulaFreeAmount)
-  }
-
-  ordersInFlight[timestamp].status = 'complete'
-
   if(action === "BUY") {
     await addPaymentIdentifier(db, paymentIdentifier)
   }
 
-  googleSheetEventHandler.emit('addRow', rowData)
+  await updateOrderData(db, timestamp, rowData)
+  await updateOrderStatus(db, timestamp, 'complete')
+
+  telegramEventHandler.emit(
+    'sendMessage',
+    {
+      rowData,
+      formulaFreeAmount,
+    }
+  )
+
+  googleSheetEventHandler.emit(
+    'addRow', 
+    {
+      rowData,
+      sheet: 0,
+    }
+  )
 
   console.log('order submitted successfully.')
 
@@ -589,6 +609,24 @@ const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
     return resp
   } catch(e) {
     console.log('telegram error', e)
+
+    return false
+  }
+}
+
+const addRowToSheet = async (rowData, sheetIndex) => {
+  try {
+    const sheet = doc.sheetsByIndex[sheetIndex]
+
+    await new Promise(resolve => setTimeout(resolve, (Math.floor(Math.random() * 6) + 1) * 1000))
+
+    const newRow = await sheet.addRow(rowData, {insert: true})
+
+    console.log('row added to sheet ' + sheetIndex)
+
+    return true
+  } catch(e) {
+    console.log('gsheet error adding to sheet ' + sheetIndex, e)
 
     return false
   }
@@ -903,6 +941,78 @@ const addPhoneNumber = async (db, phoneNumber) => {
       [phoneNumber]
     )
   } catch {
+    return false
+  }
+}
+
+const addOrder = async (db, timestamp) => {
+  try {
+    return await db.run(
+      "INSERT INTO orders (timestamp, status, data) VALUES (?, ?, ?)",
+      [
+        timestamp,
+        "in-flight",
+        JSON.stringify({})
+      ]
+    )
+  } catch(e) {
+    console.log('addOrder error', e)
+    return false
+  }
+}
+
+const getOrder = async (db, timestamp) => {
+  try {
+    return await db.get(
+      "SELECT * FROM orders WHERE timestamp = ?", 
+      [timestamp]
+    )
+  }catch(e) {
+    console.log('getOrder error', e)
+    return false
+  }
+}
+
+const updateOrderStatus = async (db, timestamp, status) => {
+  try {
+    return await db.run(
+      "UPDATE orders SET status = ? WHERE timestamp = ?",
+      [
+        status,
+        timestamp,
+      ]
+    )
+  } catch(e) {
+    console.log('updateOrderStatus error', e)
+    return false
+  }
+}
+
+const updateOrderData = async (db, timestamp, data) => {
+  try {
+    return await db.run(
+      "UPDATE orders SET data = ? WHERE timestamp = ?",
+      [
+        JSON.stringify(data),
+        timestamp,
+      ]
+    )
+  } catch(e) {
+    console.log('updateOrderData error', e)
+    return false
+  }
+}
+
+const deleteOrder = async (db, timestamp) => {
+  try {
+    return await db.run(
+      "DELETE FROM orders WHERE timestamp = ?",
+      [
+        timestamp,
+      ]
+    )
+  } catch(e) {
+    console.log('deleteOrder error', e)
     return false
   }
 }

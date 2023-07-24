@@ -14,3 +14,10 @@ CREATE TABLE phone_numbers (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	phoneNumber TEXT UNIQUE
 );
+
+CREATE TABLE orders (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	timestamp TEXT UNIQUE,
+	status TEXT,
+	data TEXT
+);
