@@ -41,8 +41,9 @@ const es = {
 	crcAccount: "Cuenta CRC",
 	usdAccount: "Cuenta USD",
 	
-	paymentIdentifierTitle: "Número de Referencia del Pago",
-	paymentConfirmationLabel: "Ya he enviado el pago con este número de referencia",
+	paymentIdentifierTitle: "Número de Comprobante del Pago",
+	paymentIdentifierHelper: "Por lo general, recibirá un número de comprobante de pago de 25 dígitos. Si su banco no proporciona esto, ingrese el número proporcionado por su banco. Tenga en cuenta que esto puede causar retrasos.",
+	paymentConfirmationLabel: "Ya he enviado el pago con este número de comprobante",
 	
 	billerCategoryTitle: "Categoría del facturador",
 	billerServiceTitle: "Servicio de facturación",
@@ -90,9 +91,8 @@ const es = {
 		phoneNumberRequired: "Se requiere un número de teléfono.",
 		invalidAction: "La acción debe ser COMPRAR, VENDER o PAGAR FACTURA.",
 		invalidPaymentReqBuy: "El destino del pago debe comenzar con lnbc.",
-		paymentIdentifierRequired: "Se requiere el identificador de pago.",
-		invalidPaymentIdentifier: "El identificador de pago debe tener 25 dígitos. Si no puede proporcionarlo, proporcione cualquier número de referencia que pueda y agregue 0 adicionales.",
-		paymentIdentifierUsed: "Este identificador de pago ya se usó en otro pedido.",
+		paymentIdentifierRequired: "Se requiere el número de comprobante del pago.",
+		paymentIdentifierUsed: "Este comprobante de pago ya se usó en otro pedido.",
 		usdIbanRequired: "Al seleccionar la moneda USD, el destino del pago debe ser una cuenta IBAN.",
 		crcIbanRequired: "Al seleccionar moneda CRC en montos superiores a 99.000, el destino del pago debe ser una Cuenta IBAN.",
 		invalidPaymentReqSell: "Debe proporcionar un número de cuenta IBAN válido o un número de teléfono móvil SINPE.",

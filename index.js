@@ -192,10 +192,6 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, type: "paymentIdentifierRequired"})
   }
 
-  if(action === 'BUY' && paymentIdentifier && paymentIdentifier.replace(/[^0-9]/gi, '').trim().length !== 25) {
-    return res.send({error: true, type: "invalidPaymentIdentifier"})
-  }
-
   if(action === 'BUY') {
     const paymentIdentifierExists = await getPaymentIdentifier(db, paymentIdentifier)
 

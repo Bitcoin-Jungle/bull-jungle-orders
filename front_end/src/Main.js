@@ -327,6 +327,23 @@ function Main({ client }) {
     setUnderPerTxnMinimum(false)
   }
 
+  const checkPaymentIdentifier = async (e) => {
+    const isCurrentlyChecked = !e.target.checked
+
+    if(isCurrentlyChecked) {
+      setDisableButton(true)
+    } else if(paymentIdentifier.length !== 25) {
+      const conf = window.confirm(localized.paymentIdentifierHelper)
+      if(conf) {
+        setDisableButton(false)
+      } else {
+        setDisableButton(true)
+      }
+    } else {
+      setDisableButton(false)
+    }
+  }
+
   const toggleLoadingOn = () => setLoading(true)
   const toggleLoadingOff = () => setLoading(false)
 
@@ -634,12 +651,18 @@ function Main({ client }) {
                                 
                                 <div className="mb-3">
                                   <label htmlFor="paymentIdentifier" className="form-label">{localized.paymentIdentifierTitle}</label>
-                                  <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => setPaymentIdentifier(e.target.value.replace(/[^0-9]/gi, ''))} />
+                                  <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => {
+                                    setDisableButton(true)
+                                    setPaymentIdentifier(e.target.value.replace(/[^0-9]/gi, ''))
+                                  }} />
+                                  {paymentIdentifier.length > 0 && paymentIdentifier.length !== 25 &&
+                                    <div className="form-text">{localized.paymentIdentifierHelper}</div>
+                                  }
                                 </div>
 
                                 <br />
                                 <div className="form-check form-switch">
-                                  <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckbox" onChange={(e) => setDisableButton(!e.target.checked)} />
+                                  <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckbox" onChange={(e) => {checkPaymentIdentifier(e)}} checked={!disableButton} />
                                   <label className="form-check-label" for="buyConfirmationCheckbox">{localized.paymentConfirmationLabel}</label>
                                 </div>
                               </p>
@@ -679,19 +702,20 @@ function Main({ client }) {
                         </div>
                       </div>
                     }
+
+                    <div className="well">
+                      <div className="submit-container mb-3">
+                        <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton || overPerTxnLimit} onClick={handleFormSubmit}>{localized.submitBtnTitle}</button>
+                        {loading &&
+                          <div className="spinner-border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+
                   </div>
                 }
-
-                <div className="well">
-                  <div className="submit-container mb-3">
-                    <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton || overPerTxnLimit} onClick={handleFormSubmit}>{localized.submitBtnTitle}</button>
-                    {loading &&
-                      <div className="spinner-border" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    }
-                  </div>
-                </div>
 
               </div>
             }

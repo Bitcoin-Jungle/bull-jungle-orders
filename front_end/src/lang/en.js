@@ -42,6 +42,7 @@ const en = {
 	usdAccount: "USD Account",
 	
 	paymentIdentifierTitle: "Payment Reference #",
+	paymentIdentifierHelper: "Typically you will receive a 25 digit payment reference number. If your bank does not provide this, please enter the number provided by your bank. Please note, this may cause delays.",
 	paymentConfirmationLabel: "I have sent the payment with the above reference number",
 
 	billerCategoryTitle: "Biller Category",
@@ -90,9 +91,8 @@ const en = {
 		phoneNumberRequired: "A phone number is required.",
 		invalidAction: "Action must be BUY, SELL, or BILL PAY.",
 		invalidPaymentReqBuy: "Payment Destination must start with lnbc.",
-		paymentIdentifierRequired: "Payment Identifier is required.",
-		invalidPaymentIdentifier: "Payment Identifier must be 25 digits. If you cannot provide this, please provide any reference number you can and add extra 0s.",
-		paymentIdentifierUsed: "This Payment Identifier has already been used on another order.",
+		paymentIdentifierRequired: "Payment Reference is required.",
+		paymentIdentifierUsed: "This Payment Reference has already been used on another order.",
 		usdIbanRequired: "When selecting USD currency, the payment destination must be an IBAN Account.",
 		crcIbanRequired: "When selecting CRC currency in amounts greater than 99.000, the payment destination must be an IBAN Account.",
 		invalidPaymentReqSell: "You must provide a valid IBAN Account Number or SINPE Movil Phone Number.",
