@@ -265,7 +265,7 @@ function Main({ client }) {
         }, 1000)
       } else {
         if(window.ReactNativeWebView) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({action: "complete"}))
+          window.ReactNativeWebView.postMessage(JSON.stringify({action: "complete", message: localized.orderSuccess}))
         } else {
           alert(localized.orderSuccess)
         }
@@ -370,6 +370,13 @@ function Main({ client }) {
 
     window.addEventListener("invoiceCreated", (e) => {
       invoiceCreatedRef.current(e.detail.bolt11)
+    })
+
+    window.addEventListener("resetTimestamp", (e) => {
+      setTimestamp(new Date().toISOString())
+      setInvoice("")
+      setPaymentHash("")
+      setShowInvoiceModal(false)
     })
   }, [])
 
