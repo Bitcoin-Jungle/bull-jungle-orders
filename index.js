@@ -216,7 +216,7 @@ app.post('/order', async (req, res) => {
       return res.send({error: true, type: "usdIbanRequired"})
     }
 
-    if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 100000) {
+    if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 15000) {
       return res.send({error: true, type: "crcIbanRequired"})
     }
 

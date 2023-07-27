@@ -94,7 +94,7 @@ const en = {
 		paymentIdentifierRequired: "Payment Reference is required.",
 		paymentIdentifierUsed: "This Payment Reference has already been used on another order.",
 		usdIbanRequired: "When selecting USD currency, the payment destination must be an IBAN Account.",
-		crcIbanRequired: "When selecting CRC currency in amounts greater than 99.000, the payment destination must be an IBAN Account.",
+		crcIbanRequired: "When selecting CRC currency in amounts greater than 15.000, the payment destination must be an IBAN Account.",
 		invalidPaymentReqSell: "You must provide a valid IBAN Account Number or SINPE Movil Phone Number.",
 		invalidInvoice: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp.",
 		invalidFiatAmount: "There is a per transaction limit of $1000 CAD.",

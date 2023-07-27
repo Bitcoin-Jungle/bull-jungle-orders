@@ -106,7 +106,7 @@ function Main({ client }) {
         return false
       }
 
-      if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 100000) {
+      if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 15000) {
         alert(localized.errors.crcIbanRequired)
         return false
       }
