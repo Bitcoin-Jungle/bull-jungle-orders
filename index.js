@@ -584,6 +584,26 @@ app.post('/deactivateUser', async (req, res) => {
   return res.send({success: true})
 })
 
+app.post('/addToSheet', async (req, res) => {
+  const timestamp = req.body.timestamp
+
+  if(!timestamp) {
+    return res.send({error: true, message: "timestamp is required"})
+  }
+
+  const order = await getOrder(db, timestamp)
+
+  if(!order) {
+    return res.send({error: true, message: "order not found"})
+  }
+
+  const data = JSON.parse(order.data)
+
+  const added = await addRowToSheet(data, 0)
+
+  return res.send({success: true})
+})
+
 const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
   try {
     let message = `🚨 New Order 🚨\n`
