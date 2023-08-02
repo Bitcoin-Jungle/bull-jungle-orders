@@ -2,6 +2,7 @@ import express from "express"
 import compression from 'compression'
 import { Telegraf } from "telegraf"
 import bodyParser from 'body-parser'
+import cors from 'cors'
 import * as dotenv from 'dotenv'
 import { GoogleSpreadsheet } from 'google-spreadsheet'
 import { JWT } from 'google-auth-library'
@@ -29,6 +30,10 @@ const invoice_endpoint_password = process.env.invoice_endpoint_password
 const price_data_url = process.env.price_data_url
 const db_location = process.env.db_location
 const admin_api_key = process.env.admin_api_key
+
+const corsOptions = {
+  origin: process.env.NODE_ENV !== "production" ? 'http://localhost:3001' : 'https://orders.bitcoinjungle.app',
+}
 
 // connect to the db
 const db = await open({
@@ -88,9 +93,10 @@ telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount}) => {
 
 app.use(bodyParser.json())
 app.use(compression())
+app.use(cors(corsOptions))
 app.use(async (req, res, next) => {
   if(req.path === '/' && !req.query.registered) {
-    const isBj = !!res.req.headers['x-bj-wallet']
+    const isBj = !!res.req.headers['x-bj-wallet'] || !!req.query.fromBJ
     const username = res.req.query.username
 
     if(isBj && username) {

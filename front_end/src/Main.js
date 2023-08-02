@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 import localizeText from './lang/index'
-import { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ } from './utils/index'
+import { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ, isInIframe } from './utils/index'
 
 import { SendReceiveIcon } from './components/SendReceiveIcon'
 import Modal from './components/Modal'
@@ -339,6 +339,13 @@ function Main({ client }) {
     }
   }
 
+  const resetTimestamp = () => {
+    setTimestamp(new Date().toISOString())
+    setInvoice("")
+    setPaymentHash("")
+    setShowInvoiceModal(false)
+  }
+
   const toggleLoadingOn = () => setLoading(true)
   const toggleLoadingOff = () => setLoading(false)
 
@@ -368,10 +375,34 @@ function Main({ client }) {
     })
 
     window.addEventListener("resetTimestamp", (e) => {
-      setTimestamp(new Date().toISOString())
-      setInvoice("")
-      setPaymentHash("")
-      setShowInvoiceModal(false)
+      resetTimestamp()
+    })
+
+    window.addEventListener("message", (e) => {
+      const data = JSON.parse(e.data)
+
+      switch(data.action) {
+        case "submitOrder": 
+          submitOrderRef.current()
+          break;
+
+        case "toggleLoadingOn":
+          toggleLoadingOnRef.current()
+          break;
+
+        case "toggleLoadingOff":
+          toggleLoadingOffRef.current()
+          break;
+
+        case "invoiceCreated":
+          invoiceCreatedRef.current(data.bolt11)
+          break;
+
+        case "resetTimestamp":
+          resetTimestamp()
+          break;
+      }
+
     })
   }, [])
 
@@ -390,7 +421,11 @@ function Main({ client }) {
   useEffect(() => {
     if(window.ReactNativeWebView && username && satAmount && action === 'BUY') {
       window.ReactNativeWebView.postMessage(JSON.stringify({action: "createInvoice", satAmount: satAmount}))
+    } else if(isInIframe() && username && satAmount && action === 'BUY') {
+      window.top.postMessage(JSON.stringify({action: "createInvoice", satAmount: satAmount}), "*")
     }
+
+
   }, [satAmount, fiatCurrency, username, action])
 
   useEffect(() => {
@@ -400,6 +435,8 @@ function Main({ client }) {
         // setTimeout(() => {
         //   submitOrder()
         // }, 500)
+      } else if(isInIframe()) {
+        window.top.postMessage(JSON.stringify({action: "invoice", bolt11: invoice}), "*")
       } else {
         submitOrder()
       }
@@ -741,7 +778,7 @@ function Main({ client }) {
         </div>
       </footer>
 
-      <Modal showModal={showInvoiceModal && !window.ReactNativeWebView}>
+      <Modal showModal={showInvoiceModal && !window.ReactNativeWebView && !isInIframe()}>
         <Invoice 
           localized={localized}
           invoice={invoice} />

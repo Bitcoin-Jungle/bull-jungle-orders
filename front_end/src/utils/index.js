@@ -64,4 +64,12 @@ const isRegistered = () => {
   return false
 }
 
-export { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ, isRegistered }
+const isInIframe = () => {
+  try {
+      return window.self !== window.top;
+  } catch (e) {
+      return true;
+  }
+}
+
+export { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ, isRegistered, isInIframe }
