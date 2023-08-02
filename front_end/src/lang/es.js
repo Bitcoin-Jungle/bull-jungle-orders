@@ -94,7 +94,6 @@ const es = {
 		paymentIdentifierRequired: "Se requiere el número de comprobante del pago.",
 		paymentIdentifierUsed: "Este comprobante de pago ya se usó en otro pedido.",
 		usdIbanRequired: "Al seleccionar la moneda USD, el destino del pago debe ser una cuenta IBAN.",
-		crcIbanRequired: "Al seleccionar moneda CRC en montos superiores a 15.000, el destino del pago debe ser una Cuenta IBAN.",
 		invalidPaymentReqSell: "Debe proporcionar un número de cuenta IBAN válido o un número de teléfono móvil SINPE.",
 		invalidInvoice: "Cuando la acción es VENDER o FACTURAR, debe proporcionar una factura y un hash de pago y una marca de tiempo.",
 		invalidFiatAmount: "Hay un límite por transacción de $1000 CAD.",

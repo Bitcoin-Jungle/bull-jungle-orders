@@ -106,11 +106,6 @@ function Main({ client }) {
         return false
       }
 
-      if(!isValidIban && fiatCurrency === 'CRC' && fiatAmount >= 15000) {
-        alert(localized.errors.crcIbanRequired)
-        return false
-      }
-
       if(!isValidIban && !isValidSinpe) {
        alert(localized.errors.invalidPaymentReqSell)
        return false
