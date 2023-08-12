@@ -45,7 +45,7 @@ function Register({ clearForm }) {
   return (
     <div>
       <div className="text-center mt-3 mb-3">
-        <img src="/bull-bitcoin-banner-logo.png" className="bull-logo" />
+        <img src="/bull-bitcoin-banner-logo.png" className="bull-logo small" />
       </div>
       <div className="container d-flex">
         <form id="addOrder" className="d-flex flex-grow-1 justify-content-center align-items-center" onSubmit={(e) => e.preventDefault()}>

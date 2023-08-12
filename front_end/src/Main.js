@@ -477,7 +477,7 @@ function Main({ client, registeredUser }) {
       }
 
       <div className="text-center mt-3 mb-3">
-        <img src="/bull-bitcoin-banner-logo.png" className="bull-logo" />
+        <img src="/bull-bitcoin-banner-logo.png" className={`bull-logo ${action ? "small" : ""}`} />
       </div>
 
       <div className="container d-flex">
