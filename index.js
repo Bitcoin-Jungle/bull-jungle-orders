@@ -506,7 +506,7 @@ app.post('/addUser', async (req, res) => {
     }
 
     if(!userExists.approved) {
-      return res.send({error: true, message: "username exists, not yet approved"})
+      return res.send({error: true, type: "pendingApproval"})
     }
   }
 

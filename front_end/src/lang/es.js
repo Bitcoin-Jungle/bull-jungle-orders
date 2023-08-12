@@ -9,6 +9,7 @@ const es = {
 	registerSubtext2: "Solicite acceso haciendo clic en el botón de abajo.",
 	registerBtn: "¡Solicitar acceso ahora!",
 	registerSuccess: "Gracias por solicitar acceso. Revisaremos tu solicitud en breve. ¡Vuelve aquí más tarde!",
+	goBackBtn: "Regresar",
 
 	buyBtn: "Compra BTC",
 	sellBtn: "Vende BTC",
@@ -98,6 +99,7 @@ const es = {
 		invalidInvoice: "Cuando la acción es VENDER o FACTURAR, debe proporcionar una factura y un hash de pago y una marca de tiempo.",
 		invalidFiatAmount: "Hay un límite por transacción de $1000 CAD.",
 		invoiceNotPaid: "La factura no ha sido pagada. Intente realizar su pedido de nuevo.",
+		pendingApproval: "Su solicitud está pendiente. Si ha pasado un tiempo y no ha escuchado nada de nosotros, intente contactarnos en WhatsApp.",
 	},
 
 }

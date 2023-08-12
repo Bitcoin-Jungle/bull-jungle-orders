@@ -1,7 +1,6 @@
 import './App.css'
 
 import Main from './Main'
-import Register from './Register'
 
 import { isRegistered, isFromBJ } from './utils'
 
@@ -25,15 +24,9 @@ function App() {
   const registeredUser = isRegistered()
   const fromBj = isFromBJ()
 
-  if(fromBj && !registeredUser) {
-    return (
-      <Register />
-    )
-  }
-  
   return (
     <ApolloProvider client={client}>
-      <Main client={client} />
+      <Main client={client} registeredUser={registeredUser} />
     </ApolloProvider>
   )
 }

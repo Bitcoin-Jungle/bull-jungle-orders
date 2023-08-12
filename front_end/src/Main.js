@@ -6,6 +6,7 @@ import { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ, isInIfra
 import { SendReceiveIcon } from './components/SendReceiveIcon'
 import Modal from './components/Modal'
 import Invoice from './components/Invoice'
+import Register from './Register'
 
 import { 
   RECIPIENT_WALLET_ID, 
@@ -14,7 +15,7 @@ import {
 
 const ibantools = require("ibantools")
 
-function Main({ client }) {
+function Main({ client, registeredUser }) {
   const submitOrderRef = useRef()
   const toggleLoadingOnRef = useRef()
   const toggleLoadingOffRef = useRef()
@@ -446,6 +447,12 @@ function Main({ client }) {
     }
   }, [showInvoiceModal])
 
+  if(action === 'BUY' && !registeredUser) {
+    return (
+      <Register clearForm={clearForm} />
+    )
+  }
+
   return (
     <div>
       {!isFromBJ() &&
@@ -640,7 +647,7 @@ function Main({ client }) {
                       </div>
                     }
 
-                    {action === 'BUY' && phoneNumber && 
+                    {action === 'BUY' && phoneNumber && registeredUser &&
                       <div className="paymentReqContainer mb-3">
 
                         {!isFromBJ() && 

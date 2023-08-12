@@ -4,9 +4,11 @@ import localizeText from './lang/index'
 
 import { getApiKey, getUsername, getLanguage } from './utils/index'
 
-function Register() {
+function Register({ clearForm }) {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+
+  const username = getUsername()
 
   const localized = localizeText(getLanguage())
 
@@ -22,13 +24,15 @@ function Register() {
       },
       body: JSON.stringify({
         apiKey: getApiKey(),
-        bitcoinJungleUsername: getUsername(),
+        bitcoinJungleUsername: username,
       })
     })
     .then((res) => res.json())
     .then((data) => {
       if(data.success) {
         setSubmitted(true)
+      } else if(data.type) {
+        alert(localized.errors[data.type] || "An unknown error has occurred")
       } else {
         alert(data.message || "An unknown error has occurred")
       }
@@ -52,8 +56,8 @@ function Register() {
               <p>{localized.registerSubtext2}</p>
             </div>
             <div className="col-12">
-              {!submitted &&
-                <button className="btn btn-secondary text-light align-middle" onClick={handleClick} disabled={loading}>
+              {!submitted && username &&
+                <button className="btn btn-primary text-light align-middle" onClick={handleClick} disabled={loading}>
                   {loading &&
                     <div className="spinner-border" role="status">
                       <span className="visually-hidden">Loading...</span>
@@ -67,6 +71,9 @@ function Register() {
                   {localized.registerSuccess}
                 </div>
               }
+              <button className="btn btn-secondary text-light align-middle mt-5" onClick={clearForm} disabled={loading}>
+                Go Back
+              </button>
             </div>
           </div>
         </form>

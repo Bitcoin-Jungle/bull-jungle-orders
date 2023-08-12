@@ -9,7 +9,8 @@ const en = {
 	registerSubtext2: "Please request access by clicking the button below.",
 	registerBtn: "Request Access Now!",
 	registerSuccess: "Thanks for requesting access. We will review your request shortly. Check back here later!",
-
+	goBackBtn: "Go Back",
+	
 	buyBtn: "Buy Bitcoin",
 	sellBtn: "Sell Bitcoin",
 	billPayBtn: "Bill Pay",
@@ -98,6 +99,7 @@ const en = {
 		invalidInvoice: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp.",
 		invalidFiatAmount: "There is a per transaction limit of $1000 CAD.",
 		invoiceNotPaid: "Invoice has not been paid. Please try your order again.",
+		pendingApproval: "Your request is currently pending. If it's been a while and you haven't heard from us, try contacting us on WhatsApp.",
 	},
 }
 
