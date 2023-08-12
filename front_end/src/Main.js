@@ -380,30 +380,33 @@ function Main({ client, registeredUser }) {
     })
 
     window.addEventListener("message", (e) => {
-      const data = JSON.parse(e.data)
+      try {
+        const data = JSON.parse(e.data)
 
-      switch(data.action) {
-        case "submitOrder": 
-          submitOrderRef.current()
-          break;
+        switch(data.action) {
+          case "submitOrder": 
+            submitOrderRef.current()
+            break;
 
-        case "toggleLoadingOn":
-          toggleLoadingOnRef.current()
-          break;
+          case "toggleLoadingOn":
+            toggleLoadingOnRef.current()
+            break;
 
-        case "toggleLoadingOff":
-          toggleLoadingOffRef.current()
-          break;
+          case "toggleLoadingOff":
+            toggleLoadingOffRef.current()
+            break;
 
-        case "invoiceCreated":
-          invoiceCreatedRef.current(data.bolt11)
-          break;
+          case "invoiceCreated":
+            invoiceCreatedRef.current(data.bolt11)
+            break;
 
-        case "resetTimestamp":
-          resetTimestamp()
-          break;
+          case "resetTimestamp":
+            resetTimestamp()
+            break;
+        }
+      } catch(e) {
+        console.log('decode fail', e.data)
       }
-
     })
   }, [])
 
