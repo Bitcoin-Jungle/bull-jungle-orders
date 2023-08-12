@@ -65,9 +65,9 @@ const es = {
 	step: "Paso",
 
 	step1Title: "Seleccione qué acción le gustaría tomar.",
-	step2Title: "Ingrese una cantidad (en dólares o colones) que le gustaría",
+	step2Title: "Ingrese una cantidad (en dólares o colones) a",
 	step3Title: "Ingrese su número de teléfono para que podamos comunicarnos con usted en caso de cualquier problema.",
-	step4Title: "Ingrese los detalles del destino del pago.",
+	step4Title: "Ingrese el destino del pago.",
 	step5Title: "Revise la información a continuación y envíe su pago antes de enviar este pedido.",
 	
 	buy: "comprar",

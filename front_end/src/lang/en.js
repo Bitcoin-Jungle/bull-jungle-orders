@@ -65,7 +65,7 @@ const en = {
 	step: "Step",
 
 	step1Title: "Select which action you would like to take.",
-	step2Title: "Enter an amount (in dollars or colones) that you would like to",
+	step2Title: "Enter an amount (in dollars or colones) to",
 	step3Title: "Enter your phone number so that we can contact you in case of any issue.",
 	step4Title: "Enter the payment destination details.",
 	step5Title: "Please review the information below & send your payment before submitting this order.",
