@@ -10,7 +10,7 @@ const en = {
 	registerBtn: "Request Access Now!",
 	registerSuccess: "Thanks for requesting access. We will review your request shortly. Check back here later!",
 	goBackBtn: "Go Back",
-	
+
 	buyBtn: "Buy Bitcoin",
 	sellBtn: "Sell Bitcoin",
 	billPayBtn: "Bill Pay",
@@ -53,7 +53,9 @@ const en = {
 
 	invoiceHelperText: "Please scan or click on the QR code to pay",
 
-	submitBtnTitle: "Create Order Now",
+	createOrderBUY: "Buy Now",
+	createOrderSELL: "Send Payment",
+	createOrderBILLPAY: "Pay Bill Now",
 
 	to: "to",
 

@@ -467,7 +467,7 @@ function Main({ client, registeredUser }) {
             </h1>
           </div>
           {!apiKey &&
-            <div className="mb-3">
+            <div className="mb-1">
               <label htmlFor="apiKey" className="form-label">{localized.apiKeyTitle}</label>
               <input type="password" className="form-control" id="apiKey" onBlur={(e) => setApiKey(e.target.value)} />
               <div className="form-text">{localized.apiKeyHelper}</div>
@@ -476,7 +476,7 @@ function Main({ client, registeredUser }) {
         </div>
       }
 
-      <div className="text-center mt-3 mb-3">
+      <div className="text-center mt-1 mb-1">
         <img src="/bull-bitcoin-banner-logo.png" className={`bull-logo ${action ? "small" : ""}`} />
       </div>
 
@@ -491,7 +491,7 @@ function Main({ client, registeredUser }) {
                   {" "}
                   {localized.step1Title}
                 </p>
-                <div className="row action-buttons mb-3">
+                <div className="row action-buttons mb-1">
                   <div className="col-12">
                     <button className={(action === "BUY" ? "btn btn-warning" : "btn bg-white btn-secondary text-dark") + " align-middle"} onClick={() => handleAction("BUY")}>
                       <SendReceiveIcon isReceive={true} size={18} />
@@ -528,14 +528,14 @@ function Main({ client, registeredUser }) {
                     {localized.step2Title} {localized[action.toLowerCase()]}.
                   </p>
 
-                  <div className="row mb-3">
-                    <div className="col-12 mb-3">
+                  <div className="row mb-1">
+                    <div className="col-12 mb-1">
                       <label htmlFor="fiatAmount" className="form-label">{localized.fiatAmountTitle}</label>
                       <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
                       <div className="form-text">{localized.fiatAmountHelper}</div>
                     </div>
 
-                    <div className="col-12 mb-3">
+                    <div className="col-12 mb-1">
                       <label htmlFor="fiatCurrency" className="form-label">{localized.fiatCurrencyTitle}</label>
                       <select className="form-control" id="fiatCurrency" value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
                         <option value="CRC">CRC</option>
@@ -596,7 +596,7 @@ function Main({ client, registeredUser }) {
                       }
 
                       {!satAmount &&
-                        <button className="btn btn-warning btn-sm" onClick={() => calculateSatAmount(true)} disabled={overPerTxnLimit || underPerTxnMinimum}>
+                        <button className="btn btn-primary btn-sm" onClick={() => calculateSatAmount(true)} disabled={overPerTxnLimit || underPerTxnMinimum}>
                           {overPerTxnLimit &&
                             <>{localized.overPerTxnLimit}</>
                           }
@@ -625,7 +625,7 @@ function Main({ client, registeredUser }) {
                           {localized.step3Title}
                         </p>
 
-                        <div className="mb-3">
+                        <div className="mb-1">
                           <label htmlFor="phoneNumber" className="form-label">{localized.phoneNumberTitle}</label>
                           <input className="form-control" id="phoneNumber" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value) } }/>
                           <div className="form-text">{localized.phoneNumberHelper}</div>
@@ -640,7 +640,7 @@ function Main({ client, registeredUser }) {
                           {" "}
                           {localized.step4Title}
                         </p>
-                        <div className="paymentReqContainer mb-3">
+                        <div className="paymentReqContainer mb-1">
                           <input className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => { setPaymentReq(e.target.value); setDisableButton(false) } }/>
                           <div className="form-text">{localized.sellPaymentReqHelper}</div>
                         </div>
@@ -648,7 +648,7 @@ function Main({ client, registeredUser }) {
                     }
 
                     {action === 'BUY' && phoneNumber && registeredUser &&
-                      <div className="paymentReqContainer mb-3">
+                      <div className="paymentReqContainer mb-1">
 
                         {!isFromBJ() && 
                           <div className="well">
@@ -657,9 +657,9 @@ function Main({ client, registeredUser }) {
                               {" "}
                               {localized.step4Title}
                             </p>
-                            <div className="row action-buttons mb-3">
+                            <div className="row action-buttons mb-1">
 
-                              <div className="mb-3">
+                              <div className="mb-1">
                                 <label htmlFor="username" className="form-label">{localized.bitcoinJungleWallet}</label>
                                 <div className="input-group">
                                   <input className="form-control" id="username" value={username} onChange={(e) => { setUsername(e.target.value); setPaymentReq("") } } />
@@ -695,7 +695,7 @@ function Main({ client, registeredUser }) {
                                   <li>CR76090100002792137503 ({localized.usdAccount})</li>
                                 </ul>
                                 
-                                <div className="mb-3">
+                                <div className="mb-1">
                                   <label htmlFor="paymentIdentifier" className="form-label">{localized.paymentIdentifierTitle}</label>
                                   <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => {
                                     setDisableButton(true)
@@ -725,23 +725,23 @@ function Main({ client, registeredUser }) {
                           {" "}
                           {localized.step4Title}
                         </p>
-                        <div className="paymentReqContainer mb-3">
-                          <div className="mb-3">
+                        <div className="paymentReqContainer mb-1">
+                          <div className="mb-1">
                             <label htmlFor="billerCategory" className="form-label">{localized.billerCategoryTitle}</label>
                             <input type="text" className="form-control" id="billerCategory" value={billerCategory} onChange={(e) => { setBillerCategory(e.target.value); setDisableButton(false) } }/>
                           </div>
 
-                          <div className="mb-3">
+                          <div className="mb-1">
                             <label htmlFor="billerService" className="form-label">{localized.billerServiceTitle}</label>
                             <input type="text" className="form-control" id="billerService" value={billerService} onChange={(e) => { setBillerService(e.target.value); setDisableButton(false) } }/>
                           </div>
 
-                          <div className="mb-3">
+                          <div className="mb-1">
                             <label htmlFor="billerActionType" className="form-label">{localized.billerActionTypeTitle}</label>
                             <input type="text" className="form-control" id="billerActionType" value={billerActionType} onChange={(e) => { setBillerActionType(e.target.value); setDisableButton(false) } }/>
                           </div>
 
-                          <div className="mb-3">
+                          <div className="mb-1">
                             <label htmlFor="billerAccountNumber" className="form-label">{localized.billerAccountNumberTitle}</label>
                             <input type="text" className="form-control" id="billerAccountNumber" value={billerAccountNumber} onChange={(e) =>{ setBillerAccountNumber(e.target.value); setDisableButton(false) } }/>
                           </div>
@@ -750,8 +750,8 @@ function Main({ client, registeredUser }) {
                     }
 
                     <div className="well">
-                      <div className="submit-container mb-3">
-                        <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton || overPerTxnLimit} onClick={handleFormSubmit}>{localized.submitBtnTitle}</button>
+                      <div className="submit-container mb-1 mt-1">
+                        <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton || overPerTxnLimit} onClick={handleFormSubmit}>{localized[`createOrder${action}`]}</button>
                         {loading &&
                           <div className="spinner-border" role="status">
                             <span className="visually-hidden">Loading...</span>

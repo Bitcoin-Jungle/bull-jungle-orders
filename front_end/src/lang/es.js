@@ -53,7 +53,9 @@ const es = {
 
 	invoiceHelperText: "Escanee o haga clic en el código QR para pagar",
 
-	submitBtnTitle: "Crear Orden Ya!",
+	createOrderBUY: "Compra Ahora",
+	createOrderSELL: "Envia Pago",
+	createOrderBILLPAY: "Paga Factura",
 
 	to: "a",
 
