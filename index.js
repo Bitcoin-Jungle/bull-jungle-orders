@@ -239,13 +239,14 @@ app.post('/order', async (req, res) => {
     let invoicePaid
     for (var i = 0; i < 100; i++) {
       console.log('checking invoice', i, timestamp)
-      await new Promise(resolve => setTimeout(resolve, 2500))
 
       invoicePaid = await checkInvoice(timestamp)
 
       if(invoicePaid) {
         console.log('invoice paid', timestamp)
         break
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 2500))
       }
     }
 
