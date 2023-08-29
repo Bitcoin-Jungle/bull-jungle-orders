@@ -22,4 +22,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["/bin/bash", "-c", "node index.js;tor -f /etc/torrc"]
+CMD node index.js;tor -f /etc/torrc
