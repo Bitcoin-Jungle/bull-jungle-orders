@@ -48,6 +48,7 @@ function Main({ client, registeredUser }) {
   const [username, setUsername] = useState(getUsername())
   const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
   const [underPerTxnMinimum, setUnderPerTxnMinimum] = useState(false)
+  const [sinpeCheckData, setSinpeCheckData] = useState({})
 
   const localized = localizeText(language)
 
@@ -208,6 +209,7 @@ function Main({ client, registeredUser }) {
     setTimestamp(new Date().toISOString())
     setOverPerTxnLimit(false)
     setUnderPerTxnMinimum(false)
+    setSinpeCheckData({})
   }
 
   const handleFormSubmit = async (e) => {
@@ -253,7 +255,7 @@ function Main({ client, registeredUser }) {
       setLoading(false)
 
       if(data.error) {
-        alert(localized.errors[data.type])
+        alert(localized.errors[data.type] || data.message)
         return
       } else if(data.inFlight) {
         setTimeout(() => {
@@ -338,6 +340,39 @@ function Main({ client, registeredUser }) {
     } else {
       setDisableButton(false)
     }
+  }
+
+  const handlePaymentReqChange = async (e) => {
+    setPaymentReq(e.target.value)
+    setSinpeCheckData({})
+    setDisableButton(false)
+  }
+
+  const checkPhoneNumberForSinpe = async () => {
+    if(paymentReq.length !== 8) {
+      return
+    }
+
+    setLoading(true)
+    setSinpeCheckData({})
+    
+    fetch(`/checkPhoneNumberForSinpe?phoneNumber=${paymentReq}&apiKey=${apiKey}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        alert(localized.errors[data.type] || data.message)
+        return
+      } else {
+        setSinpeCheckData(data.data)
+        setDisableButton(false)
+      }
+    })
+    .catch((err) => {
+      alert(err)
+    })
+    .finally(() => {
+      setLoading(false)
+    })
   }
 
   const resetTimestamp = () => {
@@ -644,8 +679,18 @@ function Main({ client, registeredUser }) {
                           {localized.step4Title}
                         </p>
                         <div className="paymentReqContainer mb-1">
-                          <input className="form-control" id="paymentReq" value={paymentReq} onChange={(e) => { setPaymentReq(e.target.value); setDisableButton(false) } }/>
+                          <input className="form-control" id="paymentReq" value={paymentReq} onChange={handlePaymentReqChange} />
                           <div className="form-text">{localized.sellPaymentReqHelper}</div>
+                        </div>
+                        <div className="mb-1">
+                          {paymentReq.length === 8 && !sinpeCheckData.NombreCliente &&
+                            <button className="btn btn-warning btn-sm" onClick={checkPhoneNumberForSinpe}>{localized.verifyNumber}</button>
+                          }
+                          {sinpeCheckData.NombreCliente &&
+                            <div className="alert alert-info">
+                              This phone number is registered with SINPE Movil to {sinpeCheckData.NombreCliente}
+                            </div>
+                          }
                         </div>
                       </div>
                     }

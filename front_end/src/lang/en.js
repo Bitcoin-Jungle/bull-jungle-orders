@@ -57,6 +57,9 @@ const en = {
 	createOrderSELL: "Send Payment",
 	createOrderBILLPAY: "Pay Bill Now",
 
+	verifyNumber: "Verify Phone Number",
+	numberVerifiedTo: "This phone number is registered with SINPE Móvil to",
+
 	to: "to",
 
 	overPerTxnLimit: "The per transaction limit is $1000 CAD.",

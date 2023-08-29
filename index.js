@@ -225,6 +225,14 @@ app.post('/order', async (req, res) => {
     if(!isValidIban && !isValidSinpe) {
       return res.send({error: true, type: "invalidPaymentReqSell"})
     }
+
+    if(isValidSinpe) {
+      const phoneNumberCheck = await checkPhoneNumberForSinpe(paymentReq.replace(/[^0-9]/gi, '').trim())
+
+      if(phoneNumberCheck.error) {
+        return res.send({error: true, message: phoneNumberCheck.message})
+      }
+    }
   }
 
   const priceData = await getPrice()
@@ -606,6 +614,72 @@ app.post('/addToSheet', async (req, res) => {
 
   return res.send({success: true})
 })
+
+app.get('/checkPhoneNumberForSinpe', async (req, res) => {
+  let phoneNumber = req.query.phoneNumber
+  const apiKey = req.query.apiKey
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  if(!phoneNumber) {
+    return res.send({error: true, message: "phoneNumber is required"})
+  }
+
+  phoneNumber = phoneNumber.replace(/[^0-9]/gi, '').trim()
+
+  if(phoneNumber.length !== 8) {
+    return res.send({error: true, message: "phoneNumber must be 8 digits"})
+  }
+
+  const result = await checkPhoneNumberForSinpe(phoneNumber)
+
+  return res.send(result)
+})
+
+const checkPhoneNumberForSinpe = async (phoneNumber) => {
+  try {
+    const response = await axios(invoice_endpoint_url, {
+      method: "POST",
+      auth: {
+        username: invoice_endpoint_user,
+        password: invoice_endpoint_password,
+      },
+      data: {
+        jsonrpc: "2.0",
+        id: Math.floor(Math.random() * 1001).toString(),
+        method: "getInfoCh4",
+        params: {
+          "phoneNumber": parseInt(phoneNumber),
+        },
+      },
+    })
+
+    if(response.data.result.error) {
+      return {
+        error: true,
+        message: response.data.result.message || "An unexpected error has occurred.",
+      }
+    }
+
+    return { 
+      error: false,
+      data: response.data.result.result,
+    }
+
+  } catch (e) {
+    console.log('error checking phone number for sinpe', e)
+    return {
+      error: true,
+      message: "An unknown error has occurred.",
+    }
+  }
+}
 
 const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
   try {

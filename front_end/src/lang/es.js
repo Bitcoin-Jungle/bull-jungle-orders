@@ -57,6 +57,9 @@ const es = {
 	createOrderSELL: "Envia Pago",
 	createOrderBILLPAY: "Paga Factura",
 
+	verifyNumber: "Verifica número de teléfono",
+	numberVerifiedTo: "Este número de teléfono está registrado a",
+
 	to: "a",
 
 	overPerTxnLimit: "El límite por transacción es de $1000 CAD.",
