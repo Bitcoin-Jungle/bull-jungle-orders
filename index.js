@@ -230,13 +230,13 @@ app.post('/order', async (req, res) => {
       return res.send({error: true, type: "invalidPaymentReqSell"})
     }
 
-    if(isValidSinpe) {
-      const phoneNumberCheck = await checkPhoneNumberForSinpe(paymentReq.replace(/[^0-9]/gi, '').trim())
+    // if(isValidSinpe) {
+    //   const phoneNumberCheck = await checkPhoneNumberForSinpe(paymentReq.replace(/[^0-9]/gi, '').trim())
 
-      if(phoneNumberCheck.error) {
-        return res.send({error: true, message: phoneNumberCheck.message})
-      }
-    }
+    //   if(phoneNumberCheck.error) {
+    //     return res.send({error: true, message: phoneNumberCheck.message})
+    //   }
+    // }
   }
 
   const priceData = await getPrice()
