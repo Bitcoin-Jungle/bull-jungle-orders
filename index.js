@@ -7,6 +7,7 @@ import * as dotenv from 'dotenv'
 import { GoogleSpreadsheet } from 'google-spreadsheet'
 import { JWT } from 'google-auth-library'
 import axios from 'axios'
+import { SocksProxyAgent } from 'socks-proxy-agent'
 import serveStatic from 'serve-static'
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
@@ -30,6 +31,9 @@ const invoice_endpoint_password = process.env.invoice_endpoint_password
 const price_data_url = process.env.price_data_url
 const db_location = process.env.db_location
 const admin_api_key = process.env.admin_api_key
+const sparkwallet_url = process.env.sparkwallet_url
+const sparkwallet_user = process.env.sparkwallet_user
+const sparkwallet_password = process.env.sparkwallet_password
 
 const corsOptions = {
   origin: process.env.NODE_ENV !== "production" ? 'http://localhost:3001' : 'https://orders.bitcoinjungle.app',
@@ -78,14 +82,14 @@ googleSheetEventHandler.on('addRow', async ({rowData, sheet: sheetIndex}) => {
   return true
 })
 
-telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount}) => {
+telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, bolt11}) => {
   console.log('sending tg message')
   
-  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount)
+  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11)
 
   if(!telegramMessage) {
     await new Promise(resolve => setTimeout(resolve, 1000 * 10))
-    await sendOrderToTelegram(rowData, formulaFreeAmount)
+    await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11)
   }
 
   return true
@@ -383,6 +387,7 @@ app.post('/order', async (req, res) => {
     {
       rowData,
       formulaFreeAmount,
+      bolt11: (action === "BUY" ? paymentDestination : null),
     }
   )
 
@@ -642,6 +647,65 @@ app.get('/checkPhoneNumberForSinpe', async (req, res) => {
   return res.send(result)
 })
 
+app.get('/payInvoice', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const bolt11 = req.query.bolt11
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!bolt11) {
+    return res.send({error: true, message: "bolt11 is required"})
+  }
+
+  const payment = await payInvoice(bolt11)
+
+  if(payment) {
+    return res.send(payment)
+  }
+
+  return res.send({error: true, message: "Error sending payment"})
+})
+
+const payInvoice = async (bolt11) => {
+  try {
+    const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
+    const httpsAgent = new SocksProxyAgent(`socks://127.0.0.1:${proxyPort}`, {rejectUnauthorized: false})
+
+    const response = await axios(sparkwallet_url, {
+      method: "POST",
+      auth: {
+        username: sparkwallet_user,
+        password: sparkwallet_password,
+      },
+      data: {
+        method: "_pay",
+        params: [
+          bolt11,
+          null,
+        ],
+      },
+      rejectUnauthorized: false,
+      httpsAgent,
+    })
+
+    if(response.data.status === "complete") {
+      return response.data
+    }
+
+    return false
+
+  } catch (e) {
+    console.log('error paying invoice', e)
+    return false
+  }
+}
+
 const checkPhoneNumberForSinpe = async (phoneNumber) => {
   try {
     const response = await axios(invoice_endpoint_url, {
@@ -681,7 +745,7 @@ const checkPhoneNumberForSinpe = async (phoneNumber) => {
   }
 }
 
-const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
+const sendOrderToTelegram = async (rowData, formulaFreeAmount, bolt11) => {
   try {
     let message = `🚨 New Order 🚨\n`
 
@@ -697,7 +761,26 @@ const sendOrderToTelegram = async (rowData, formulaFreeAmount) => {
       }
     })
 
-    const resp = await bot.telegram.sendMessage(chat_id, message)
+    const optionsObj = {}
+
+    if(bolt11) {
+      optionsObj.reply_markup = {
+        inline_keyboard: [
+          [
+            {
+              text: "Pay Invoice",
+              url: `https://orders.bitcoinjungle.app/payInvoice?apiKey=${admin_api_key}&bolt11=${bolt11}`
+            }
+          ],
+        ],
+      }
+    }
+
+    const resp = await bot.telegram.sendMessage(
+      chat_id, 
+      message,
+      optionsObj
+    )
 
     return resp
   } catch(e) {
