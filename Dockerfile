@@ -21,4 +21,5 @@ RUN npm install
 COPY . .
 
 EXPOSE 3000
-CMD [ "node", "index.js" ]
+
+CMD ["/bin/bash", "-c", "node index.js;tor -f /etc/torrc"]
