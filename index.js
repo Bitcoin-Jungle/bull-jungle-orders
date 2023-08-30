@@ -714,10 +714,6 @@ app.get('/payFiat', async (req, res) => {
     return res.send({error: true, message: "order payment status is already complete, can't send fiat twice."})
   }
 
-  if(order.Type !== "Sell") {
-    return res.send({error: true, message: "can only send fiat for 'Sell' orders"})
-  }
-
   try {
     const orderData = JSON.parse(order.data)
   } catch (e) {
@@ -725,9 +721,25 @@ app.get('/payFiat', async (req, res) => {
     return res.send({error: true, message: "error parsing order data json"})
   }
 
+  if(orderData.Type !== "Sell") {
+    return res.send({error: true, message: "can only send fiat for 'Sell' orders"})
+  }
+
   const currency = orderData["To Currency"]
   const amount = parseFloat(orderData["To Amount"].replace(/,/g, ""))
   const destination = orderData["Payment Destination"]
+
+  if(currency !== "USD" && currency !== "CRC") {
+    return res.send({error: true, message: "order currency is invalid"})
+  }
+
+  if(!amount) {
+    return res.send({error: true, message: "order amount is invalid"})
+  }
+
+  if(!destination) {
+    return res.send({error: true, message: "order destination is invalid"})
+  }
 
   const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(destination))
   const isValidSinpe = destination.replace(/[^0-9]/gi, '').trim().length === 8
