@@ -3,13 +3,12 @@ import axios from 'axios'
 
 dotenv.config()
 
-const invoice_endpoint_url = process.env.invoice_endpoint_url
-const invoice_endpoint_user = process.env.invoice_endpoint_user
-const invoice_endpoint_password = process.env.invoice_endpoint_password
+const ridivi_endpoint_url = process.env.ridivi_endpoint_url
+const ridivi_endpoint_user = process.env.ridivi_endpoint_user
+const ridivi_endpoint_password = process.env.ridivi_endpoint_password
 const ridivi_id = process.env.ridivi_id
 const ridivi_crc_account = process.env.ridivi_crc_account
 const ridivi_usd_account = process.env.ridivi_usd_account
-const ridivi_sinpe_number = process.env.ridivi_sinpe_number
 const ridivi_name = process.env.ridivi_name
 
 const callApi = async (obj) => {
@@ -21,18 +20,28 @@ const callApi = async (obj) => {
       params: obj,
     }
 
-    const response = await axios(invoice_endpoint_url, {
+    console.log('callApi', postData)
+
+    const response = await axios(ridivi_endpoint_url, {
       method: "POST",
       auth: {
-        username: invoice_endpoint_user,
-        password: invoice_endpoint_password,
+        username: ridivi_endpoint_user,
+        password: ridivi_endpoint_password,
       },
       data: postData,
     })
 
-    return response
+    console.log(response.status, response.data)
+
+    if(response.data && response.data.result) {
+      return {
+        data: response.data.result
+      }
+    }
+
+    return false
   } catch (e) {
-    console.log('error calling API', JSON.stringify(postData))
+    console.log('error calling API', e)
     return false
   }
 }
@@ -102,7 +111,7 @@ const getInfoNumCh4 = async ({ phoneNumber }) => {
 const loadTransferCh4 = async ({ phoneNumber, description, amount }) => {
   return await callApi({
     option: "loadTransferCh4",
-    NumTelefonoOrigen: parseInt(ridivi_sinpe_number),
+    IbanOrigen: ridivi_crc_account,
     NumTelefonoDestino: parseInt(phoneNumber),
     Descripcion: description,
     Moneda: "1",
@@ -117,9 +126,9 @@ const sendLoadTransferCh4 = async ({ loadKey }) => {
   })
 }
 
-const getLoadedTransferCh4 = async ({ loadKey }) => {
+const getLoadTransferCh4 = async ({ loadKey }) => {
   return await callApi({
-    option: "getLoadedTransferCh4",
+    option: "getLoadTransferCh4",
     loadKey,
   })
 }
@@ -133,5 +142,5 @@ export {
   getInfoNumCh4, 
   loadTransferCh4, 
   sendLoadTransferCh4, 
-  getLoadedTransferCh4,
+  getLoadTransferCh4,
 }

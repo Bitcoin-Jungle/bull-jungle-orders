@@ -39,7 +39,6 @@ const sparkwallet_password = process.env.sparkwallet_password
 const ridivi_id = process.env.ridivi_id
 const ridivi_crc_account = process.env.ridivi_crc_account
 const ridivi_usd_account = process.env.ridivi_usd_account
-const ridivi_sinpe_number = process.env.ridivi_sinpe_number
 const ridivi_name = process.env.ridivi_name
 
 const corsOptions = {
@@ -714,8 +713,9 @@ app.get('/payFiat', async (req, res) => {
     return res.send({error: true, message: "order payment status is already complete, can't send fiat twice."})
   }
 
+  let orderData = {}
   try {
-    const orderData = JSON.parse(order.data)
+    orderData = JSON.parse(order.data)
   } catch (e) {
     console.log('error parsing order data json', e)
     return res.send({error: true, message: "error parsing order data json"})
@@ -783,7 +783,7 @@ app.get('/payFiat', async (req, res) => {
   }
 
   if(isValidIban) {
-    const theirAccount = await ridivi.getIbanData({destination})
+    const theirAccount = await ridivi.getIbanData({iban: destination})
 
     if(!theirAccount) {
       await updateOrderPaymentStatus(db, timestamp, null)
@@ -806,7 +806,7 @@ app.get('/payFiat', async (req, res) => {
       toIban: destination,
       toName: theirAccount.data.account.NomPropietario,
       amount: amount,
-      description: `pago por orden ${order.id}`,
+      description: `orden ${order.id}`,
       reference: timestamp,
     })
 
@@ -853,8 +853,8 @@ app.get('/payFiat', async (req, res) => {
 
     const loadTransferCh4 = await ridivi.loadTransferCh4({
       phoneNumber: destination,
-      description: `pago por orden ${order.id}`,
-      amount: amount,
+      description: `orden ${order.id}`,
+      amount: amount.toString(),
     })
 
     if(!loadTransferCh4) {
@@ -955,7 +955,7 @@ const checkPhoneNumberForSinpe = async (phoneNumber) => {
 
   return { 
     error: false,
-    data: response.data.result.result,
+    data: response.data.result,
   }
 }
 
