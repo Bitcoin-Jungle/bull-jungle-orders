@@ -719,7 +719,7 @@ app.get('/payFiat', async (req, res) => {
   }
 
   const currency = order["To Currency"]
-  const amount = parseFloat(order["To Amount"]replace(/,/g, ""))
+  const amount = parseFloat(order["To Amount"].replace(/,/g, ""))
   const destination = order["Payment Destination"]
 
   const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(destination))

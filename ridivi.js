@@ -38,8 +38,8 @@ const callApi = async (obj) => {
 }
 
 const getAccount = async ({ currency }) => {
-  const iban = currency === 'CRC' ? ridivi_crc_account : ridivi_usd_account,
-  
+  const iban = currency === 'CRC' ? ridivi_crc_account : ridivi_usd_account
+
   return await callApi({
     option: "getAccount",
     iban,
