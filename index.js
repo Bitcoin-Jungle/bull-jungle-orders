@@ -718,9 +718,16 @@ app.get('/payFiat', async (req, res) => {
     return res.send({error: true, message: "can only send fiat for 'Sell' orders"})
   }
 
-  const currency = order["To Currency"]
-  const amount = parseFloat(order["To Amount"].replace(/,/g, ""))
-  const destination = order["Payment Destination"]
+  try {
+    const orderData = JSON.parse(order.data)
+  } catch (e) {
+    console.log('error parsing order data json', e)
+    return res.send({error: true, message: "error parsing order data json"})
+  }
+
+  const currency = orderData["To Currency"]
+  const amount = parseFloat(orderData["To Amount"].replace(/,/g, ""))
+  const destination = orderData["Payment Destination"]
 
   const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(destination))
   const isValidSinpe = destination.replace(/[^0-9]/gi, '').trim().length === 8
