@@ -14,6 +14,8 @@ import sqlite3 from 'sqlite3'
 import ibantools from 'ibantools'
 import { EventEmitter } from 'events'
 
+import * as ridivi from "./ridivi.js"
+
 dotenv.config()
 
 const telegram_bot_token = process.env.telegram_bot_token
@@ -34,6 +36,11 @@ const admin_api_key = process.env.admin_api_key
 const sparkwallet_url = process.env.sparkwallet_url
 const sparkwallet_user = process.env.sparkwallet_user
 const sparkwallet_password = process.env.sparkwallet_password
+const ridivi_id = process.env.ridivi_id
+const ridivi_crc_account = process.env.ridivi_crc_account
+const ridivi_usd_account = process.env.ridivi_usd_account
+const ridivi_sinpe_number = process.env.ridivi_sinpe_number
+const ridivi_name = process.env.ridivi_name
 
 const corsOptions = {
   origin: process.env.NODE_ENV !== "production" ? 'http://localhost:3001' : 'https://orders.bitcoinjungle.app',
@@ -82,14 +89,14 @@ googleSheetEventHandler.on('addRow', async ({rowData, sheet: sheetIndex}) => {
   return true
 })
 
-telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, bolt11}) => {
+telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, bolt11, timestamp}) => {
   console.log('sending tg message')
   
-  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11)
+  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11, timestamp)
 
   if(!telegramMessage) {
     await new Promise(resolve => setTimeout(resolve, 1000 * 10))
-    await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11)
+    await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11, timestamp)
   }
 
   return true
@@ -388,6 +395,7 @@ app.post('/order', async (req, res) => {
       rowData,
       formulaFreeAmount,
       bolt11: (action === "BUY" ? paymentDestination : null),
+      timestamp: (action === "SELL" ? timestamp : null),
     }
   )
 
@@ -672,6 +680,202 @@ app.get('/payInvoice', async (req, res) => {
   return res.send({error: true, message: "Error sending payment"})
 })
 
+app.get('/payFiat', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const timestamp = req.query.timestamp
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!timestamp) {
+    return res.send({error: true, message: "timestamp is required"})
+  }
+
+  const order = await getOrder(db, timestamp)
+
+  if(!order) {
+    return res.send({error: true, message: "order not found"})
+  }
+
+  if(order.status !== 'complete') {
+    return res.send({error: true, message: "order has not been processed internally yet"})
+  }
+
+  if(order.paymentStatus === 'in-flight') {
+    return res.send({error: true, message: "order payment status is currently in-flight"})
+  }
+
+  if(order.paymentStatus === 'complete') {
+    return res.send({error: true, message: "order payment status is already complete, can't send fiat twice."})
+  }
+
+  if(order.Type !== "Sell") {
+    return res.send({error: true, message: "can only send fiat for 'Sell' orders"})
+  }
+
+  const currency = order["To Currency"]
+  const amount = parseFloat(order["To Amount"]replace(/,/g, ""))
+  const destination = order["Payment Destination"]
+
+  const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(destination))
+  const isValidSinpe = destination.replace(/[^0-9]/gi, '').trim().length === 8
+
+  if(!isValidIban && !isValidSinpe) {
+    return res.send({error: true, message: "Payment destination is not valid IBAN nor SINPE number"})
+  }
+
+  await updateOrderPaymentStatus(db, timestamp, 'in-flight')
+
+  const ourAccount = await ridivi.getAccount({currency})
+
+  if(!ourAccount) {
+    await updateOrderPaymentStatus(db, timestamp, null)
+    return res.send({error: true, message: "error with getAccount"})
+  }
+
+  if(ourAccount.data.error) {
+    await updateOrderPaymentStatus(db, timestamp, null)
+    return res.send({error: true, message: ourAccount.data.message})
+  }
+
+  if(ourAccount.data.account.Currency !== currency) {
+    await updateOrderPaymentStatus(db, timestamp, null)
+    return res.send({error: true, message: "Our account currency does not match order currency"})
+  }
+
+  if(ourAccount.data.account.Blocked || ourAccount.data.account.MasterBlocked) {
+    await updateOrderPaymentStatus(db, timestamp, null)
+    return res.send({error: true, message: "Our account has been blocked"})
+  }
+
+  if(!ourAccount.data.account.Active) {
+    await updateOrderPaymentStatus(db, timestamp, null)
+    return res.send({error: true, message: "Our account is not active"})
+  }
+
+  if(parseFloat(ourAccount.data.account.Balance) < amount) {
+    await updateOrderPaymentStatus(db, timestamp, null)
+    return res.send({error: true, message: "Our account balance is less than the order amount to send"})
+  }
+
+  if(isValidIban) {
+    const theirAccount = await ridivi.getIbanData({destination})
+
+    if(!theirAccount) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "error with getIbanData"})
+    }
+
+    if(theirAccount.data.error) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: theirAccount.data.message})
+    }
+
+    if(theirAccount.data.account.CodigoMoneda !== currency) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "Their account currency does not match order currency"})
+    }
+
+    const loadTransfer = await ridivi.loadTransfer({
+      currency,
+      toId: theirAccount.data.account.idNumber,
+      toIban: destination,
+      toName: theirAccount.data.account.NomPropietario,
+      amount: amount,
+      description: `pago por orden ${order.id}`,
+      reference: timestamp,
+    })
+
+    if(!loadTransfer) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "error with loadTransfer"})
+    }
+
+    if(loadTransfer.data.error) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: loadTransfer.data.message})
+    }
+
+    if(!loadTransfer.data.loadKey) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "loadTransfer failed to generate loadKey"})
+    }
+
+    const sendLoadedTransfer = await ridivi.sendLoadedTransfer({
+      loadKey: loadTransfer.data.loadKey,
+    })
+
+    if(!sendLoadedTransfer) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "error with sendLoadedTransfer"})
+    }
+
+    if(sendLoadedTransfer.data.error) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: sendLoadedTransfer.data.message || sendLoadedTransfer.data.error})
+    }
+
+    await updateOrderPaymentStatus(db, timestamp, 'complete')
+
+    return res.send({error: false, data: sendLoadedTransfer.data})
+
+  } else if(isValidSinpe) {
+    const phoneNumberCheck = await checkPhoneNumberForSinpe(destination.replace(/[^0-9]/gi, '').trim())
+
+    if(phoneNumberCheck.error) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: phoneNumberCheck.message})
+    }
+
+    const loadTransferCh4 = await loadTransferCh4({
+      phoneNumber: destination,
+      description: `pago por orden ${order.id}`,
+      amount: amount,
+    })
+
+    if(!loadTransferCh4) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "error with loadTransferCh4"})
+    }
+
+    if(loadTransferCh4.data.error) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: loadTransferCh4.data.message})
+    }
+
+    if(!loadTransferCh4.data.loadKey) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "loadTransferCh4 failed to generate loadKey"})
+    }
+
+    const sendLoadTransferCh4 = await ridivi.sendLoadTransferCh4({
+      loadKey: loadTransferCh4.data.loadKey,
+    })
+
+    if(!sendLoadTransferCh4) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "error with sendLoadTransferCh4"})
+    }
+
+    if(sendLoadTransferCh4.data.error) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: sendLoadTransferCh4.data.message})
+    }
+
+    await updateOrderPaymentStatus(db, timestamp, 'complete')
+
+    return res.send({error: false, data: sendLoadTransferCh4.data})
+  }
+
+  await updateOrderPaymentStatus(db, timestamp, null)
+  return res.send({error: true, message: "Payment destination is not valid IBAN nor SINPE number"})
+})
+
 const payInvoice = async (bolt11) => {
   try {
     const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
@@ -707,45 +911,36 @@ const payInvoice = async (bolt11) => {
 }
 
 const checkPhoneNumberForSinpe = async (phoneNumber) => {
-  try {
-    const response = await axios(invoice_endpoint_url, {
-      method: "POST",
-      auth: {
-        username: invoice_endpoint_user,
-        password: invoice_endpoint_password,
-      },
-      data: {
-        jsonrpc: "2.0",
-        id: Math.floor(Math.random() * 1001).toString(),
-        method: "getInfoCh4",
-        params: {
-          "phoneNumber": parseInt(phoneNumber),
-        },
-      },
-    })
+  const response = await ridivi.getInfoNumCh4({ phoneNumber })
 
-    if(response.data.result.error) {
-      return {
-        error: true,
-        message: response.data.result.message || "An unexpected error has occurred.",
-      }
-    }
-
-    return { 
-      error: false,
-      data: response.data.result.result,
-    }
-
-  } catch (e) {
-    console.log('error checking phone number for sinpe', e)
+  if(!response) {
     return {
       error: true,
-      message: "An unknown error has occurred.",
+      message: "An unexpected error has occurred.",
     }
+  }
+
+  if(response.data.error) {
+    return {
+      error: true,
+      message: response.data.error.message || "An unexpected error has occurred.",
+    }
+  }
+
+  if(response.data.result.error) {
+    return {
+      error: true,
+      message: response.data.result.message || "An unexpected error has occurred.",
+    }
+  }
+
+  return { 
+    error: false,
+    data: response.data.result.result,
   }
 }
 
-const sendOrderToTelegram = async (rowData, formulaFreeAmount, bolt11) => {
+const sendOrderToTelegram = async (rowData, formulaFreeAmount, bolt11, timestamp) => {
   try {
     let message = `🚨 New Order 🚨\n`
 
@@ -768,8 +963,21 @@ const sendOrderToTelegram = async (rowData, formulaFreeAmount, bolt11) => {
         inline_keyboard: [
           [
             {
-              text: "Pay Invoice",
+              text: "Pay Lightning Invoice",
               url: `https://orders.bitcoinjungle.app/payInvoice?apiKey=${admin_api_key}&bolt11=${bolt11}`
+            }
+          ],
+        ],
+      }
+    }
+
+    if(timestamp) {
+      optionsObj.reply_markup = {
+        inline_keyboard: [
+          [
+            {
+              text: "Pay Out Fiat",
+              url: `https://orders.bitcoinjungle.app/payFiat?apiKey=${admin_api_key}&timestamp=${timestamp}`
             }
           ],
         ],
@@ -1160,6 +1368,21 @@ const updateOrderStatus = async (db, timestamp, status) => {
     )
   } catch(e) {
     console.log('updateOrderStatus error', e)
+    return false
+  }
+}
+
+const updateOrderPaymentStatus = async (db, timestamp, paymentStatus) => {
+  try {
+    return await db.run(
+      "UPDATE orders SET paymentStatus = ? WHERE timestamp = ?",
+      [
+        paymentStatus,
+        timestamp,
+      ]
+    )
+  } catch(e) {
+    console.log('updateOrderPaymentStatus error', e)
     return false
   }
 }

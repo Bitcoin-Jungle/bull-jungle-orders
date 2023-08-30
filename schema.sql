@@ -21,3 +21,6 @@ CREATE TABLE orders (
 	status TEXT,
 	data TEXT
 );
+
+ALTER TABLE orders ADD COLUMN paymentStatus TEXT;
+UPDATE orders set paymentStatus = 'complete';
