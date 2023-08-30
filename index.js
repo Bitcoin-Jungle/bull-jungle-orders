@@ -832,7 +832,7 @@ app.get('/payFiat', async (req, res) => {
       return res.send({error: true, message: phoneNumberCheck.message})
     }
 
-    const loadTransferCh4 = await loadTransferCh4({
+    const loadTransferCh4 = await ridivi.loadTransferCh4({
       phoneNumber: destination,
       description: `pago por orden ${order.id}`,
       amount: amount,
