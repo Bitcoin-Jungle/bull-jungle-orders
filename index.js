@@ -840,6 +840,7 @@ app.get('/payFiat', async (req, res) => {
     }
 
     await updateOrderPaymentStatus(db, timestamp, 'complete')
+    await updateOrderSettlementData(db, timestamp, sendLoadedTransfer.data)
 
     return res.send({error: false, data: sendLoadedTransfer.data})
 
@@ -887,6 +888,7 @@ app.get('/payFiat', async (req, res) => {
     }
 
     await updateOrderPaymentStatus(db, timestamp, 'complete')
+    await updateOrderSettlementData(db, timestamp, sendLoadTransferCh4.data)
 
     return res.send({error: false, data: sendLoadTransferCh4.data})
   }
@@ -1402,6 +1404,21 @@ const updateOrderPaymentStatus = async (db, timestamp, paymentStatus) => {
     )
   } catch(e) {
     console.log('updateOrderPaymentStatus error', e)
+    return false
+  }
+}
+
+const updateOrderSettlementData = async (db, timestamp, data) => {
+  try {
+    return await db.run(
+      "UPDATE orders SET settlementData = ? WHERE timestamp = ?",
+      [
+        JSON.stringify(data),
+        timestamp,
+      ]
+    )
+  } catch(e) {
+    console.log('updateOrderSettlementData error', e)
     return false
   }
 }

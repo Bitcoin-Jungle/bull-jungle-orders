@@ -23,4 +23,5 @@ CREATE TABLE orders (
 );
 
 ALTER TABLE orders ADD COLUMN paymentStatus TEXT;
+ALTER TABLE orders ADD COLUMN settlementData TEXT;
 UPDATE orders set paymentStatus = 'complete';
