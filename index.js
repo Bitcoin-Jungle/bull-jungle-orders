@@ -728,6 +728,7 @@ app.get('/payFiat', async (req, res) => {
   const currency = orderData["To Currency"]
   const amount = parseFloat(orderData["To Amount"].replace(/,/g, ""))
   const destination = orderData["Payment Destination"]
+  const satAmount = orderData["From Amount"].replace("=(", "").replace(" / 100000000)", "")
 
   if(currency !== "USD" && currency !== "CRC") {
     return res.send({error: true, message: "order currency is invalid"})
@@ -735,6 +736,20 @@ app.get('/payFiat', async (req, res) => {
 
   if(!amount) {
     return res.send({error: true, message: "order amount is invalid"})
+  }
+
+  if(Number(amount).toLocaleString() !== orderData["To Amount"]) {
+    return res.send({error: true, message: "error parsing fiat amount from order data. please review manually."})
+  }
+
+  const priceData = await getPrice()
+
+  if((satAmount / 100000000) * priceData[`BTC${currency}`] > amount * 1.05) {
+    return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
+  }
+
+  if((satAmount / 100000000) * priceData[`BTC${currency}`] < amount * 0.95) {
+    return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
   }
 
   if(!destination) {
@@ -746,6 +761,10 @@ app.get('/payFiat', async (req, res) => {
 
   if(!isValidIban && !isValidSinpe) {
     return res.send({error: true, message: "Payment destination is not valid IBAN nor SINPE number"})
+  }
+
+  if(isValidSinpe && currency !== "CRC") {
+    return res.send({error: true, message: "SINPE Movil must be CRC currency"})
   }
 
   await updateOrderPaymentStatus(db, timestamp, 'in-flight')
@@ -855,7 +874,7 @@ app.get('/payFiat', async (req, res) => {
     const loadTransferCh4 = await ridivi.loadTransferCh4({
       phoneNumber: destination,
       description: `orden ${order.id}`,
-      amount: amount.toString(),
+      amount,
     })
 
     if(!loadTransferCh4) {
@@ -885,6 +904,11 @@ app.get('/payFiat', async (req, res) => {
     if(sendLoadTransferCh4.data.error) {
       await updateOrderPaymentStatus(db, timestamp, null)
       return res.send({error: true, message: sendLoadTransferCh4.data.message})
+    }
+
+    if(sendLoadTransferCh4.data.result.Error) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: sendLoadTransferCh4.data.result.CodEstado})
     }
 
     await updateOrderPaymentStatus(db, timestamp, 'complete')
@@ -944,7 +968,7 @@ const checkPhoneNumberForSinpe = async (phoneNumber) => {
   if(response.data.error) {
     return {
       error: true,
-      message: response.data.error.message || "An unexpected error has occurred.",
+      message: response.data.message || "An unexpected error has occurred.",
     }
   }
 
