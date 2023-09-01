@@ -134,14 +134,20 @@ function Main({}) {
             style={{height: "80vh"}}
             columns={columns}
             rows={accountDetail.transfers} />
-
-          {accountDetail.nextPage &&
-            <div>
+        
+          <div>
+            {pageNumber > 1 &&
+              <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber - 1) }>
+                Previous Page
+              </button>
+            }
+            {accountDetail.nextPage &&
               <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber + 1) }>
                 Next Page
               </button>
-            </div> 
-          }
+            }
+          </div> 
+          
         </div>
       }
 
