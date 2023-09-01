@@ -88,14 +88,14 @@ googleSheetEventHandler.on('addRow', async ({rowData, sheet: sheetIndex}) => {
   return true
 })
 
-telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, bolt11, timestamp}) => {
+telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, timestamp}) => {
   console.log('sending tg message')
   
-  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11, timestamp)
+  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount, timestamp)
 
   if(!telegramMessage) {
     await new Promise(resolve => setTimeout(resolve, 1000 * 10))
-    await sendOrderToTelegram(rowData, formulaFreeAmount, bolt11, timestamp)
+    await sendOrderToTelegram(rowData, formulaFreeAmount, timestamp)
   }
 
   return true
@@ -402,8 +402,7 @@ app.post('/order', async (req, res) => {
     {
       rowData,
       formulaFreeAmount,
-      bolt11: (action === "BUY" ? paymentDestination : null),
-      timestamp: (action === "SELL" ? timestamp : null),
+      timestamp,
     }
   )
 
@@ -665,7 +664,8 @@ app.get('/checkPhoneNumberForSinpe', async (req, res) => {
 
 app.get('/payInvoice', async (req, res) => {
   const apiKey = req.query.apiKey
-  const bolt11 = req.query.bolt11
+  const timestamp = req.query.timestamp
+  const force = (req.query.force && req.query.force == 'true' ? true : false)
 
   if(!apiKey) {
     return res.send({error: true, message: "apiKey is required"})
@@ -675,16 +675,90 @@ app.get('/payInvoice', async (req, res) => {
     return res.send({error: true, message: "apiKey is incorrect"})
   }
 
-  if(!bolt11) {
-    return res.send({error: true, message: "bolt11 is required"})
+  if(!timestamp) {
+    return res.send({error: true, message: "timestamp is required"})
   }
 
-  const payment = await payInvoice(bolt11)
+  const order = await getOrder(db, timestamp)
+
+  if(!order) {
+    return res.send({error: true, message: "order not found"})
+  }
+
+  if(order.status !== 'complete') {
+    return res.send({error: true, message: "order has not been processed internally yet"})
+  }
+
+  if(order.paymentStatus === 'in-flight') {
+    return res.send({error: true, message: "order payment status is currently in-flight"})
+  }
+
+  if(order.paymentStatus === 'complete') {
+    return res.send({error: true, message: "order payment status is already complete, can't pay a lightning invoice twice."})
+  }
+
+  let orderData = {}
+  try {
+    orderData = JSON.parse(order.data)
+  } catch (e) {
+    console.log('error parsing order data json', e)
+    return res.send({error: true, message: "error parsing order data json"})
+  }
+
+  if(orderData.Type !== "Buy") {
+    return res.send({error: true, message: "can only send sats for 'Buy' orders"})
+  }
+
+  const currency = orderData["From Currency"]
+  const fiatAmount = parseFloat(orderData["From Amount"].replace(/,/g, ""))
+  const destination = orderData["Payment Destination"]
+  const paymentIdentifier = orderData["Payment Identifier"].trim()
+  const satAmount = orderData["To Amount"].replace("=(", "").replace(" / 100000000)", "")
+
+  if(currency !== "USD" && currency !== "CRC") {
+    return res.send({error: true, message: "order currency is invalid"})
+  }
+
+  const priceData = await getPrice()
+
+  if((satAmount / 100000000) * priceData[`BTC${currency}`] > fiatAmount * 1.05) {
+    return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
+  }
+
+  if((satAmount / 100000000) * priceData[`BTC${currency}`] < fiatAmount * 0.95) {
+    return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
+  }
+
+  if(!destination) {
+    return res.send({error: true, message: "order destination is invalid"})
+  }
+
+  if(!paymentIdentifier) {
+    return res.send({error: true, message: "payment identifier is invalid"})
+  }
+
+  await updateOrderPaymentStatus(db, timestamp, 'in-flight')
+
+  const fiatPaymentMade = await ridivi.checkHistoryForPayment({
+    currency,
+    paymentIdentifier,
+    amount: fiatAmount,
+  })
+
+  if(!fiatPaymentMade && !force) {
+    await updateOrderPaymentStatus(db, timestamp, null)
+    return res.send({error: true, message: "couldnt locate fiat payment, if you are sure then add &force=true and try again"})
+  }
+
+  const payment = await payInvoice(destination)
 
   if(payment) {
+    await updateOrderPaymentStatus(db, timestamp, 'complete')
+    await updateOrderSettlementData(db, timestamp, payment)
     return res.send(payment)
   }
 
+  await updateOrderPaymentStatus(db, timestamp, null)
   return res.send({error: true, message: "Error sending payment"})
 })
 
@@ -1072,7 +1146,7 @@ const checkPhoneNumberForSinpe = async (phoneNumber) => {
   }
 }
 
-const sendOrderToTelegram = async (rowData, formulaFreeAmount, bolt11, timestamp) => {
+const sendOrderToTelegram = async (rowData, formulaFreeAmount, timestamp) => {
   try {
     let message = `🚨 New Order 🚨\n`
 
@@ -1090,20 +1164,18 @@ const sendOrderToTelegram = async (rowData, formulaFreeAmount, bolt11, timestamp
 
     const optionsObj = {}
 
-    if(bolt11) {
+    if(rowData.Type === "Buy") {
       optionsObj.reply_markup = {
         inline_keyboard: [
           [
             {
               text: "Pay Lightning Invoice",
-              url: `https://orders.bitcoinjungle.app/payInvoice?apiKey=${admin_api_key}&bolt11=${bolt11}`
+              url: `https://orders.bitcoinjungle.app/payInvoice?apiKey=${admin_api_key}&timestamp=${timestamp}`
             }
           ],
         ],
       }
-    }
-
-    if(timestamp) {
+    } else if(rowData.Type === "Sell") {
       optionsObj.reply_markup = {
         inline_keyboard: [
           [

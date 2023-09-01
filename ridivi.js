@@ -143,6 +143,59 @@ const getHistory = async ({from, to, page, iban}) => {
   })
 }
 
+const checkHistoryForPayment = async ({currency, paymentIdentifier, amount}) => {
+  const iban = currency === 'CRC' ? ridivi_crc_account : ridivi_usd_account
+
+  return checkHistoryPageForPayment({pageNumber: 1, currency, paymentIdentifier, amount, iban})
+}
+
+const checkHistoryPageForPayment = async ({pageNumber, currency, paymentIdentifier, amount, iban}) => {
+  let fromDate = new Date()
+  fromDate.setDate(fromDate.getDate() - 3)
+
+  const history = await getHistory({
+    from: fromDate.toISOString().split('T')[0],
+    to: new Date().toISOString().split('T')[0],
+    page: pageNumber,
+    iban,
+  })
+
+  const exists = history.data.transfers.find((row) => {
+    return row.NumReferenciaSP === paymentIdentifier
+  })
+
+  if(!exists) {
+    if(!history.data.nextPage) {
+      return false
+    }
+    
+    return checkHistoryPageForPayment({
+      pageNumber: pageNumber + 1,
+      currency,
+      paymentIdentifier,
+      amount,
+    })
+  }
+
+  if(exists.CodMoneda !== currency) {
+    return false
+  }
+
+  if(Number(exists.Monto) !== Number(amount)) {
+    return false
+  }
+
+  if(exists.Estado !== 'A') {
+    return false
+  }
+
+  if(exists.TipoTransaccion.indexOf("CRE") !== 0) {
+    return false
+  }
+
+  return true
+}
+
 export { 
   getAccount, 
   getIbanData, 
@@ -154,4 +207,5 @@ export {
   sendLoadTransferCh4, 
   getLoadTransferCh4,
   getHistory,
+  checkHistoryForPayment,
 }
