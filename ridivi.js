@@ -133,6 +133,16 @@ const getLoadTransferCh4 = async ({ loadKey }) => {
   })
 }
 
+const getHistory = async ({from, to, page, iban}) => {
+  return callApi({
+    option: "getHistory",
+    from,
+    to,
+    pageNumber: parseInt(page),
+    iban,
+  })
+}
+
 export { 
   getAccount, 
   getIbanData, 
@@ -143,4 +153,5 @@ export {
   loadTransferCh4, 
   sendLoadTransferCh4, 
   getLoadTransferCh4,
+  getHistory,
 }

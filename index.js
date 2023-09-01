@@ -120,9 +120,18 @@ app.use(async (req, res, next) => {
     }
   }
 
+  if(req.path === '/admin' || req.path === '/admin/' || req.path === '/admin/index.html') {
+    const key = req.query.key
+
+    if(key !== admin_api_key) {
+      return res.sendStatus(401)
+    }
+  }
+
   next()
 })
 app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
+app.use("/admin", serveStatic('admin_front_end/build', { 'index': ['index.html'] }))
 
 app.post('/order', async (req, res) => {
   const apiKey = req.body.apiKey
@@ -919,6 +928,84 @@ app.get('/payFiat', async (req, res) => {
 
   await updateOrderPaymentStatus(db, timestamp, null)
   return res.send({error: true, message: "Payment destination is not valid IBAN nor SINPE number"})
+})
+
+app.get('/getAccounts', async (req, res) => {
+  const apiKey = req.query.apiKey
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  const crcAccount = await ridivi.getAccount({currency: "CRC"})
+  const usdAccount = await ridivi.getAccount({currency: "USD"})
+
+  return res.send({
+    error: false,
+    data: {
+      CRC: {
+        iban: ridivi_crc_account,
+        data: crcAccount.data,
+      },
+      USD: {
+        iban: ridivi_usd_account,
+        data: usdAccount.data,
+      }
+    }
+  })
+})
+
+app.get('/getHistory', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const from = req.query.from
+  const to = req.query.to
+  const page = req.query.page
+  const iban = req.query.iban
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!from) {
+    return res.send({error: true, message: "from is required"})
+  }
+
+  if(!to) {
+    return res.send({error: true, message: "to is required"})
+  }
+
+  if(!page) {
+    return res.send({error: true, message: "page is required"})
+  }
+
+  if(!iban) {
+    return res.send({error: true, message: "iban is required"})
+  }
+
+  const data = await ridivi.getHistory({
+    from,
+    to,
+    page,
+    iban,
+  })
+
+  if(!data) {
+    res.send({error: true, message: "getHistory error"})
+  }
+
+  if(data.error) {
+    res.send({error: true, message: data.message})
+  }
+
+  return res.send(data.data)
 })
 
 const payInvoice = async (bolt11) => {
