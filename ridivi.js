@@ -174,6 +174,7 @@ const checkHistoryPageForPayment = async ({pageNumber, currency, paymentIdentifi
       currency,
       paymentIdentifier,
       amount,
+      iban,
     })
   }
 
