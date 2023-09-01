@@ -43,7 +43,7 @@ function Main({}) {
 
     const params = new URLSearchParams({
       apiKey,
-      from: moment().subtract(2, 'days').format('YYYY-MM-DD'),
+      from: moment().subtract(3, 'days').format('YYYY-MM-DD'),
       to: moment().format('YYYY-MM-DD'),
       page: pageNumber,
       iban: account.iban,
