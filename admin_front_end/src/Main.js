@@ -137,7 +137,7 @@ function Main({}) {
 
           {accountDetail.nextPage &&
             <div>
-              <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber++) }>
+              <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber + 1) }>
                 Next Page
               </button>
             </div> 
