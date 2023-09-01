@@ -130,12 +130,14 @@ function Main({}) {
 
       {accountDetail && accountDetail.transfers && accountDetail.transfers.length > 0 &&
         <div>
-          <DataGrid 
-            style={{height: "80vh"}}
-            columns={columns}
-            rows={accountDetail.transfers} />
+          <div className="mb-3">
+            <DataGrid 
+              style={{height: "80vh"}}
+              columns={columns}
+              rows={accountDetail.transfers} />
+          </div>
         
-          <div>
+          <div className="mb-3">
             {pageNumber > 1 &&
               <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber - 1) }>
                 Previous Page
@@ -147,7 +149,6 @@ function Main({}) {
               </button>
             }
           </div> 
-          
         </div>
       }
 
