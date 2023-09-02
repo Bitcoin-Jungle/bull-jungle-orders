@@ -101,11 +101,11 @@ function Main({}) {
       return {
         key: value,
         name: value,
+        resizable: true,
         renderCell(props) {
           const cell = props.row[props.column.key]
           const id = (Math.random() + 1).toString(36).substring(7)
 
-          console.log(props)
           return (
             <>
               <span id={`cell-${id}`}>{cell}</span>

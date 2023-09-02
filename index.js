@@ -885,7 +885,7 @@ app.get('/payFiat', async (req, res) => {
   }
 
   if(isValidIban) {
-    const theirAccount = await ridivi.getIbanData({iban: destination})
+    const theirAccount = await ridivi.getIbanData({iban: ibantools.electronicFormatIBAN(destination)})
 
     if(!theirAccount) {
       await updateOrderPaymentStatus(db, timestamp, null)
@@ -905,7 +905,7 @@ app.get('/payFiat', async (req, res) => {
     const loadTransfer = await ridivi.loadTransfer({
       currency,
       toId: theirAccount.data.account.idNumber,
-      toIban: destination,
+      toIban: ibantools.electronicFormatIBAN(destination),
       toName: theirAccount.data.account.NomPropietario,
       amount: amount,
       description: `orden ${order.id}`,
@@ -955,7 +955,7 @@ app.get('/payFiat', async (req, res) => {
     }
 
     const loadTransferCh4 = await ridivi.loadTransferCh4({
-      phoneNumber: destination,
+      phoneNumber: destination.replace(/[^0-9]/gi, '').trim(),
       description: `orden ${order.id}`,
       amount,
     })
