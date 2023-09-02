@@ -2,6 +2,7 @@ import 'react-data-grid/lib/styles.css'
 
 import { useState, useEffect } from 'react'
 import DataGrid from 'react-data-grid'
+import { Tooltip } from 'react-tooltip'
 import * as moment from 'moment'
 
 import { getApiKey } from './utils/index'
@@ -85,6 +86,8 @@ function Main({}) {
 
   useEffect(() => {
     getAccounts()
+
+    setInterval(getHistory, 1000 * 30)
   }, [])
 
   useEffect(() => {
@@ -98,6 +101,30 @@ function Main({}) {
       return {
         key: value,
         name: value,
+        renderCell(props) {
+          const cell = props.row[props.column.key]
+          const id = (Math.random() + 1).toString(36).substring(7)
+
+          console.log(props)
+          return (
+            <>
+              <span id={`cell-${id}`}>{cell}</span>
+              <Tooltip 
+                anchorSelect={`#cell-${id}`} 
+                place="bottom" 
+                content={cell} 
+                positionStrategy="fixed" 
+                style={{zIndex: 1000}} 
+                className="unselectable"
+                render={() => {
+                  return (
+                    <span className="unselectable">{cell}</span>
+                  )
+                }}
+              />
+            </>
+          )
+        },
       }
     })
   }
