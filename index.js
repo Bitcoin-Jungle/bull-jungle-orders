@@ -1087,6 +1087,38 @@ app.get('/getHistory', async (req, res) => {
   return res.send(data.data)
 })
 
+app.get('/alert', async (req, res) => {
+  const alert = await getAlert(db)
+
+  return res.send({error: (alert ? false : true), data: alert})
+})
+
+app.post('/alert', async (req, res) => {
+  const active = (req.body.active ? true : false)
+  let message = req.body.message
+  const apiKey = req.body.key
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(active && !message) {
+    return res.send({error: true, message: "Must include a message if setting active"})
+  }
+
+  if(!active && message) {
+    let message = null
+  }
+
+  const alert = await updateAlert(db, active, message)
+
+  return res.send({error: alert ? false : true})
+})
+
 const payInvoice = async (bolt11) => {
   try {
     const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
@@ -1443,6 +1475,31 @@ const getTicker = async () => {
     BTCUSD,
     BTCCAD,
     timestamp,
+  }
+}
+
+const getAlert = async (db) => {
+  try {
+    return await db.get(
+      "SELECT * FROM alert WHERE id = 1",
+    )
+  } catch {
+    return false
+  }
+}
+
+const updateAlert = async (db, active, message) => {
+  try {
+    return await db.run(
+      "UPDATE alert SET active = ?, message = ?, timestamp = ? WHERE id = 1",
+      [
+        active,
+        message,
+        new Date().toISOString(),
+      ]
+    )
+  } catch {
+    return false
   }
 }
 

@@ -84,6 +84,8 @@ const en = {
 
 	orderSuccess: "Order submitted successfully. We will review and process it shortly. Please contact us on WhatsApp with any questions.",
 
+	statusUpdateTitle: "System Status Update",
+
 	errors: {
 		apiKeyRequired: "API Key is required.",
 		apiKeyIncorrect: "API Key is incorrect.",

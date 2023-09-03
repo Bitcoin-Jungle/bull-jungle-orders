@@ -84,6 +84,8 @@ const es = {
 
 	orderSuccess: "Pedido enviado con éxito. Lo revisaremos y procesaremos en breve. Contáctenos por WhatsApp si tiene alguna pregunta.",
 
+	statusUpdateTitle: "Actualización del estado del sistema",
+
 	errors: {
 		apiKeyRequired: "Se requiere la clave API.",
 		apiKeyIncorrect: "La clave API es incorrecta.",

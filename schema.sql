@@ -22,6 +22,15 @@ CREATE TABLE orders (
 	data TEXT
 );
 
+CREATE TABLE alert (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	timestamp TEXT,
+	active BOOLEAN,
+	message TEXT
+);
+
+INSERT INTO alert (timestamp, active, message) VALUES ('1970-01-01-T00:00:00.000Z', false, null);
+
 ALTER TABLE orders ADD COLUMN paymentStatus TEXT;
 ALTER TABLE orders ADD COLUMN settlementData TEXT;
 UPDATE orders set paymentStatus = 'complete';

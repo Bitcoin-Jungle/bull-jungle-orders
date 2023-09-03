@@ -14,6 +14,56 @@ function Main({}) {
   const [accountDetail, setAccountDetail] = useState({})
   const [loading, setLoading] = useState(false)
   const [pageNumber, setPageNumber] = useState(1)
+  const [alert, setAlert] = useState({active: false})
+
+  const getAlert = async () => {
+    fetch("/alert")
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        console.log('error getting alert')
+        return
+      }
+
+      setAlert(data.data)
+    })
+    .catch((e) => {
+      console.log('error getting alert', e)
+    })
+  }
+
+  const updateAlert = () => {
+    const message = prompt("Enter updated system status here. Leave blank to deactivate message.")
+
+    setLoading(true)
+
+    fetch("/alert", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify({
+        active: (message && message.length ? true : false),
+        message: (message && message.length ? message : null),
+        key: apiKey,
+      }),
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        alert(data.message)
+        return
+      }
+
+      getAlert()
+    })
+    .catch((e) => {
+      console.log('error updating alert', e)
+    })
+    .finally(() => {
+      setLoading(false)
+    })
+  }
 
   const getAccounts = () => {
     setLoading(true)
@@ -86,12 +136,12 @@ function Main({}) {
 
   useEffect(() => {
     getAccounts()
-
-    setInterval(getHistory, 1000 * 30)
+    getAlert()
   }, [])
 
   useEffect(() => {
     getHistory()
+    setInterval(getHistory, 1000 * 30)
   }, [account, pageNumber])
 
   let columns = []
@@ -132,6 +182,21 @@ function Main({}) {
   return (
     <div>
       <h3>Bull Jungle Admin</h3>
+
+      {alert.active == true &&
+        <div className="container text-center mb-3">
+          <div className="alert alert-danger">
+            🚨<b>System Status Update</b>🚨
+            <br /><button className="btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
+            <br />{new Date(alert.timestamp).toLocaleString()}
+            <br />{alert.message}
+          </div>
+        </div>
+      }
+
+      {!alert.active &&
+        <button className="mb-3 btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
+      }
 
       <div className="mb-3">
         <select onChange={handleAccountChange} value={(account ? account.data.account.Currency : null)}>

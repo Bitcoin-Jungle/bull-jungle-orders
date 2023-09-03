@@ -49,8 +49,25 @@ function Main({ client, registeredUser }) {
   const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
   const [underPerTxnMinimum, setUnderPerTxnMinimum] = useState(false)
   const [sinpeCheckData, setSinpeCheckData] = useState({})
+  const [alert, setAlert] = useState({})
 
   const localized = localizeText(language)
+
+  const getAlert = async () => {
+    fetch("/alert")
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        console.log('error getting alert')
+        return
+      }
+
+      setAlert(data.data)
+    })
+    .catch((e) => {
+      console.log('error getting alert', e)
+    })
+  }
 
   const handleAction = (action) => {
     clearForm()
@@ -394,6 +411,8 @@ function Main({ client, registeredUser }) {
     getPriceData()
     setInterval(getPriceData, 1000 * 120)
 
+    getAlert()
+
     window.addEventListener("submitOrder", (e) => {
       submitOrderRef.current()
     })
@@ -517,6 +536,16 @@ function Main({ client, registeredUser }) {
       <div className="text-center mt-1 mb-1">
         <img src="/bull-bitcoin-banner-logo.png" className={`bull-logo ${action ? "small" : ""}`} />
       </div>
+
+      {alert && alert.active &&
+        <div className="container text-center">
+          <div className="alert alert-danger">
+            🚨<b>{localized.statusUpdateTitle}</b>🚨
+            <br />{new Date(alert.timestamp).toLocaleString()}
+            <br />{alert.message}
+          </div>
+        </div>
+      }
 
       <div className="container d-flex">
         {apiKey &&
