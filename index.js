@@ -456,16 +456,21 @@ app.post('/invoice', async (req, res) => {
     }
   }
 
-  const response = await axios(invoice_endpoint_url, {
-    method: "POST",
-    auth: {
-      username: invoice_endpoint_user,
-      password: invoice_endpoint_password,
-    },
-    data: invoiceData,
-  })
+  try {
+    const response = await axios(invoice_endpoint_url, {
+      method: "POST",
+      auth: {
+        username: invoice_endpoint_user,
+        password: invoice_endpoint_password,
+      },
+      data: invoiceData,
+    })
 
-  return res.send(response.data)
+    return res.send(response.data)
+  } catch(e) {
+    console.log('create invoice error', e)
+    return res.send({error: true, message: "An unexpected error has occurred."})
+  }
 })
 
 app.get('/price', async (req, res) => {

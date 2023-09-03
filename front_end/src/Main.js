@@ -131,7 +131,7 @@ function Main({ client, registeredUser }) {
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
-        alert(localized.errors[data.type] || data.error.message)
+        alert(localized.errors[data.type] || data.message)
         return
       } else {
         setInvoice(data.result.bolt11)
