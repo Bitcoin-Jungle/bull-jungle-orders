@@ -148,7 +148,17 @@ function Main({ client, registeredUser }) {
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
-        alert(localized.errors[data.type] || data.message)
+        if(data.type) {
+          alert(localized.errors[data.type])
+          return
+        }
+
+        if(data.message) {
+          alert(data.message)
+          return
+        }
+
+        alert(data.error.message || "An unexpected error has occurred")
         return
       } else {
         setInvoice(data.result.bolt11)
