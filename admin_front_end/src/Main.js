@@ -183,18 +183,18 @@ function Main({}) {
     <div>
       <h3>Bull Jungle Admin</h3>
 
-      {setSystemAlert.active == true &&
+      {systemAlert.active == true &&
         <div className="container text-center mb-3">
           <div className="alert alert-danger">
             🚨<b>System Status Update</b>🚨
             <br /><button className="btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
-            <br />{new Date(setSystemAlert.timestamp).toLocaleString()}
-            <br />{setSystemAlert.message}
+            <br />{new Date(systemAlert.timestamp).toLocaleString()}
+            <br />{systemAlert.message}
           </div>
         </div>
       }
 
-      {!setSystemAlert.active &&
+      {!systemAlert.active &&
         <button className="mb-3 btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
       }
 
