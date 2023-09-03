@@ -49,7 +49,7 @@ function Main({ client, registeredUser }) {
   const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
   const [underPerTxnMinimum, setUnderPerTxnMinimum] = useState(false)
   const [sinpeCheckData, setSinpeCheckData] = useState({})
-  const [alert, setAlert] = useState({})
+  const [systemAlert, setSystemAlert] = useState({})
 
   const localized = localizeText(language)
 
@@ -62,7 +62,7 @@ function Main({ client, registeredUser }) {
         return
       }
 
-      setAlert(data.data)
+      setSystemAlert(data.data)
     })
     .catch((e) => {
       console.log('error getting alert', e)
@@ -547,12 +547,12 @@ function Main({ client, registeredUser }) {
         <img src="/bull-bitcoin-banner-logo.png" className={`bull-logo ${action ? "small" : ""}`} />
       </div>
 
-      {alert && alert.active &&
+      {systemAlert && systemAlert.active &&
         <div className="container text-center">
           <div className="alert alert-danger">
             🚨<b>{localized.statusUpdateTitle}</b>🚨
-            <br />{new Date(alert.timestamp).toLocaleString()}
-            <br />{alert.message}
+            <br />{new Date(systemAlert.timestamp).toLocaleString()}
+            <br />{systemAlert.message}
           </div>
         </div>
       }

@@ -14,7 +14,7 @@ function Main({}) {
   const [accountDetail, setAccountDetail] = useState({})
   const [loading, setLoading] = useState(false)
   const [pageNumber, setPageNumber] = useState(1)
-  const [alert, setAlert] = useState({active: false})
+  const [systemAlert, setSystemAlert] = useState({active: false})
 
   const getAlert = async () => {
     fetch("/alert")
@@ -25,7 +25,7 @@ function Main({}) {
         return
       }
 
-      setAlert(data.data)
+      setSystemAlert(data.data)
     })
     .catch((e) => {
       console.log('error getting alert', e)
@@ -183,18 +183,18 @@ function Main({}) {
     <div>
       <h3>Bull Jungle Admin</h3>
 
-      {alert.active == true &&
+      {setSystemAlert.active == true &&
         <div className="container text-center mb-3">
           <div className="alert alert-danger">
             🚨<b>System Status Update</b>🚨
             <br /><button className="btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
-            <br />{new Date(alert.timestamp).toLocaleString()}
-            <br />{alert.message}
+            <br />{new Date(setSystemAlert.timestamp).toLocaleString()}
+            <br />{setSystemAlert.message}
           </div>
         </div>
       }
 
-      {!alert.active &&
+      {!setSystemAlert.active &&
         <button className="mb-3 btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
       }
 
