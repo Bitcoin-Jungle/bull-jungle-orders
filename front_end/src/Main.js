@@ -688,7 +688,7 @@ function Main({ client, registeredUser }) {
                           }
                           {sinpeCheckData.NombreCliente &&
                             <div className="alert alert-info">
-                              This phone number is registered with SINPE Movil to {sinpeCheckData.NombreCliente}
+                              {localized.numberVerifiedTo} {sinpeCheckData.NombreCliente}
                             </div>
                           }
                         </div>
