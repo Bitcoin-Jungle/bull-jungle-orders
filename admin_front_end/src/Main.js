@@ -141,7 +141,7 @@ function Main({}) {
 
   useEffect(() => {
     getHistory()
-    setInterval(getHistory, 1000 * 30)
+    // setInterval(getHistory, 1000 * 30)
   }, [account, pageNumber])
 
   let columns = []

@@ -760,7 +760,7 @@ app.get('/payInvoice', async (req, res) => {
   if(payment) {
     await updateOrderPaymentStatus(db, timestamp, 'complete')
     await updateOrderSettlementData(db, timestamp, payment)
-    return res.send(payment)
+    return res.send({error: false, data: payment})
   }
 
   await updateOrderPaymentStatus(db, timestamp, null)

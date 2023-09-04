@@ -547,7 +547,7 @@ function Main({ client, registeredUser }) {
         <img src="/bull-bitcoin-banner-logo.png" className={`bull-logo ${action ? "small" : ""}`} />
       </div>
 
-      {systemAlert && systemAlert.active &&
+      {systemAlert && systemAlert.active == true &&
         <div className="container text-center">
           <div className="alert alert-danger">
             🚨<b>{localized.statusUpdateTitle}</b>🚨
