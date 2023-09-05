@@ -4,7 +4,8 @@ FROM node:18-alpine
 WORKDIR /usr/src/app
 
 # RUN apk update
-# RUN apk add tor bash
+# RUN apk add tor
+RUN apk add bash
 
 # RUN echo "Log notice stdout" >> /etc/torrc
 # RUN echo "SocksPort 0.0.0.0:9050" >> /etc/torrc
