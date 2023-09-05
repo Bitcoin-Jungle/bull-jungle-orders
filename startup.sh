@@ -4,7 +4,7 @@
 node index.js &
 
 # Start the second process
-tor -f /etc/torrc &
+# tor -f /etc/torrc &
 
 # Wait for any process to exit
 wait -n

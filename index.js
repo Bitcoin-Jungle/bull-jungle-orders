@@ -7,7 +7,7 @@ import * as dotenv from 'dotenv'
 import { GoogleSpreadsheet } from 'google-spreadsheet'
 import { JWT } from 'google-auth-library'
 import axios from 'axios'
-import { SocksProxyAgent } from 'socks-proxy-agent'
+// import { SocksProxyAgent } from 'socks-proxy-agent'
 import serveStatic from 'serve-static'
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
@@ -1121,8 +1121,8 @@ app.post('/alert', async (req, res) => {
 
 const payInvoice = async (bolt11) => {
   try {
-    const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
-    const httpsAgent = new SocksProxyAgent(`socks://127.0.0.1:${proxyPort}`, {rejectUnauthorized: false})
+    // const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
+    // const httpsAgent = new SocksProxyAgent(`socks://127.0.0.1:${proxyPort}`, {rejectUnauthorized: false})
 
     const response = await axios(sparkwallet_url, {
       method: "POST",
@@ -1137,8 +1137,8 @@ const payInvoice = async (bolt11) => {
           null,
         ],
       },
-      rejectUnauthorized: false,
-      httpsAgent,
+      // rejectUnauthorized: false,
+      // httpsAgent,
     })
 
     if(response.data.status === "complete") {

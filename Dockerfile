@@ -3,11 +3,11 @@ FROM node:18-alpine
 # Create app directory
 WORKDIR /usr/src/app
 
-RUN apk update
-RUN apk add tor bash
+# RUN apk update
+# RUN apk add tor bash
 
-RUN echo "Log notice stdout" >> /etc/torrc
-RUN echo "SocksPort 0.0.0.0:9050" >> /etc/torrc
+# RUN echo "Log notice stdout" >> /etc/torrc
+# RUN echo "SocksPort 0.0.0.0:9050" >> /etc/torrc
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
