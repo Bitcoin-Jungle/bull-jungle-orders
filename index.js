@@ -461,7 +461,7 @@ app.post('/order', async (req, res) => {
 
   const userToAllow = await getPhoneNumber(db, phoneNumber)
 
-  if(userToAllow && userToAllow.allow_instant) {
+  if(userToAllow && userToAllow.allow_instant == 1) {
     console.log('processing instantly!')
 
     processOrderEventHandler.emit(
