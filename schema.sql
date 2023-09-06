@@ -34,3 +34,5 @@ INSERT INTO alert (timestamp, active, message) VALUES ('1970-01-01-T00:00:00.000
 ALTER TABLE orders ADD COLUMN paymentStatus TEXT;
 ALTER TABLE orders ADD COLUMN settlementData TEXT;
 UPDATE orders set paymentStatus = 'complete';
+
+ALTER TABLE phone_numbers ADD COLUMN allow_instant NOT NULL DEFAULT false;

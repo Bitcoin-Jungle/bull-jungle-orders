@@ -72,6 +72,7 @@ const app = express()
 
 const googleSheetEventHandler = new EventEmitter()
 const telegramEventHandler = new EventEmitter()
+const processOrderEventHandler = new EventEmitter()
 
 let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
 
@@ -99,6 +100,48 @@ telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, times
   }
 
   return true
+})
+
+processOrderEventHandler.on('processOrder', async ({rowData}) => {
+  console.log('processing order')
+
+  try {
+    let urlToCall = (process.env.NODE_ENV !== "production" ? 'http://localhost:3000' : 'https://orders.bitcoinjungle.app')
+    if(rowData.Type === 'Buy') {
+      urlToCall += '/payInvoice/?'
+    } else {
+      urlToCall += '/payFiat/?'
+    }
+
+    urlToCall += new URLSearchParams({timestamp: rowData.Date, apiKey: admin_api_key}).toString()
+
+    console.log('calling', urlToCall)
+
+    const response = await axios(urlToCall)
+
+    console.log('call complete', response.data)
+
+    if(response.data.error) {
+      console.log('error calling')
+
+      await bot.telegram.sendMessage(
+        chat_id, 
+        `error processing order ${rowData.Date}: ${response.data.message}. Please review manually.`,
+      )
+
+      return false
+    }
+
+    await bot.telegram.sendMessage(
+      chat_id, 
+      `order ${rowData.Date} processed successfully. ${JSON.stringify(response.data)}`,
+    )
+
+    return true
+  } catch(e) {
+    console.log('error processing order', e)
+    return false
+  }
 })
 
 app.use(bodyParser.json())
@@ -415,6 +458,19 @@ app.post('/order', async (req, res) => {
   )
 
   console.log('order submitted successfully.')
+
+  const userToAllow = await getPhoneNumber(db, phoneNumber)
+
+  if(userToAllow && userToAllow.allow_instant) {
+    console.log('processing instantly!')
+
+    processOrderEventHandler.emit(
+      'processOrder',
+      {
+        rowData,
+      }
+    )
+  }
 
   return res.send({success: true})
 })
