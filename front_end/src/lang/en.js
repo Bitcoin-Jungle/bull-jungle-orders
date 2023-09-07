@@ -59,6 +59,8 @@ const en = {
 
 	verifyNumber: "Verify Phone Number",
 	numberVerifiedTo: "This phone number is registered with SINPE Móvil to",
+	verifyIban: "Verify IBAN Account",
+	ibanVerifiedTo: "This IBAN account is registered to",
 
 	to: "to",
 

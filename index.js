@@ -723,6 +723,33 @@ app.get('/checkPhoneNumberForSinpe', async (req, res) => {
   return res.send(result)
 })
 
+app.get('/checkIbanAccount', async (req, res) => {
+  let iban = req.query.iban
+  const apiKey = req.query.apiKey
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  if(!iban) {
+    return res.send({error: true, message: "iban is required"})
+  }
+
+  const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(iban))
+ 
+  if(!isValidIban) {
+    return res.send({error: true, message: "iban account is invalid"})
+  }
+
+  const result = await checkIbanAccount(ibantools.electronicFormatIBAN(iban))
+
+  return res.send(result)
+})
+
 app.get('/payInvoice', async (req, res) => {
   const apiKey = req.query.apiKey
   const timestamp = req.query.timestamp
@@ -1236,6 +1263,36 @@ const checkPhoneNumberForSinpe = async (phoneNumber) => {
   return { 
     error: false,
     data: response.data.result,
+  }
+}
+
+const checkIbanAccount = async (iban) => {
+  const response = await ridivi.getIbanData({ iban })
+
+  if(!response) {
+    return {
+      error: true,
+      message: "An unexpected error has occurred.",
+    }
+  }
+
+  if(response.data.error) {
+    return {
+      error: true,
+      message: response.data.message || "An unexpected error has occurred.",
+    }
+  }
+
+  if(response.data.account.error) {
+    return {
+      error: true,
+      message: response.data.account.message || "An unexpected error has occurred.",
+    }
+  }
+
+  return { 
+    error: false,
+    data: response.data.account,
   }
 }
 

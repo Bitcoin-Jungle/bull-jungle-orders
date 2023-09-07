@@ -375,22 +375,41 @@ function Main({ client, registeredUser }) {
     setDisableButton(false)
   }
 
-  const checkPhoneNumberForSinpe = async () => {
-    if(paymentReq.length !== 8) {
-      return
+  const checkPaymentRequest = async () => {
+    const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(paymentReq))
+    const isValidSinpe = paymentReq.replace(/[^0-9]/gi, '').trim().length === 8
+
+    if(!isValidIban && !isValidSinpe) {
+      return false
     }
 
     setLoading(true)
     setSinpeCheckData({})
+
+    let url = ''
+    if(isValidSinpe) {
+      url = `/checkPhoneNumberForSinpe?phoneNumber=${paymentReq.replace(/[^0-9]/gi, '').trim()}&apiKey=${apiKey}`
+    } else {
+      url = `/checkIbanAccount?iban=${ibantools.electronicFormatIBAN(paymentReq)}&apiKey=${apiKey}`
+    }
     
-    fetch(`/checkPhoneNumberForSinpe?phoneNumber=${paymentReq}&apiKey=${apiKey}`)
+    fetch(url)
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
         alert(localized.errors[data.type] || data.message)
         return
       } else {
-        setSinpeCheckData(data.data)
+        if(data.data.CodigoMoneda && fiatCurrency && data.data.CodigoMoneda !== fiatCurrency) {
+          alert("This account's currency does not match your selected currency for this order.")
+          return
+        }
+
+        setSinpeCheckData({
+          name: data.data.NombreCliente || data.data.NomPropietario,
+          currency: data.data.CodigoMoneda || null,
+        })
+
         setDisableButton(false)
       }
     })
@@ -519,6 +538,9 @@ function Main({ client, registeredUser }) {
       <Register clearForm={clearForm} />
     )
   }
+
+  const isValidIban = ibantools.isValidIBAN(ibantools.electronicFormatIBAN(paymentReq))
+  const isValidSinpe = paymentReq.replace(/[^0-9]/gi, '').trim().length === 8
 
   return (
     <div>
@@ -722,12 +744,12 @@ function Main({ client, registeredUser }) {
                           <div className="form-text">{localized.sellPaymentReqHelper}</div>
                         </div>
                         <div className="mb-1">
-                          {paymentReq.length === 8 && !sinpeCheckData.NombreCliente &&
-                            <button className="btn btn-warning btn-sm" onClick={checkPhoneNumberForSinpe}>{localized.verifyNumber}</button>
+                          {(isValidSinpe || isValidIban) && !sinpeCheckData.name &&
+                            <button className="btn btn-warning btn-sm" onClick={checkPaymentRequest}>{(isValidSinpe ? localized.verifyNumber : localized.verifyIban)}</button>
                           }
-                          {sinpeCheckData.NombreCliente &&
+                          {sinpeCheckData.name &&
                             <div className="alert alert-info">
-                              {localized.numberVerifiedTo} {sinpeCheckData.NombreCliente}
+                              {(isValidSinpe ? localized.numberVerifiedTo : localized.ibanVerifiedTo)} {sinpeCheckData.name}
                             </div>
                           }
                         </div>

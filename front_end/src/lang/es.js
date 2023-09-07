@@ -59,6 +59,8 @@ const es = {
 
 	verifyNumber: "Verifica número de teléfono",
 	numberVerifiedTo: "Este número de teléfono está registrado a",
+	verifyIban: "Verifica Cuenta IBAN",
+	ibanVerifiedTo: "Esta cuenta IBAN está registrada a",
 
 	to: "a",
 
