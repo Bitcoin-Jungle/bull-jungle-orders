@@ -85,6 +85,8 @@ const en = {
 	terms: "Terms & Conditions",
 
 	orderSuccess: "Order submitted successfully. We will review and process it shortly. Please contact us on WhatsApp with any questions.",
+	orderSuccessTitle: "Order submitted successfully!",
+	orderSuccessMessage: "We will review and process it shortly. Please contact us on WhatsApp with any questions.",
 
 	statusUpdateTitle: "System Status Update",
 

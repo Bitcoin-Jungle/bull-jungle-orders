@@ -42,6 +42,17 @@ const getLanguage = () => {
   return navigator.language || navigator.userLanguage || 'en'
 }
 
+const getSatBalance = () => {
+  const params = (new URL(document.location)).searchParams;
+  const key = params.get("satBalance");
+
+  if(key && key.length > 0) {
+    return key
+  }
+
+  return false
+}
+
 const isFromBJ = () => {
   const params = (new URL(document.location)).searchParams;
   const key = params.get("fromBJ");
@@ -72,4 +83,4 @@ const isInIframe = () => {
   }
 }
 
-export { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ, isRegistered, isInIframe }
+export { getApiKey, getPhoneNumber, getUsername, getLanguage, getSatBalance, isFromBJ, isRegistered, isInIframe }

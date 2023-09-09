@@ -85,6 +85,8 @@ const es = {
 	terms: "Términos y condiciones",
 
 	orderSuccess: "Pedido enviado con éxito. Lo revisaremos y procesaremos en breve. Contáctenos por WhatsApp si tiene alguna pregunta.",
+	orderSuccessTitle: "¡Pedido enviado con éxito!",
+	orderSuccessMessage: "Lo revisaremos y procesaremos en breve. Contáctenos por WhatsApp si tiene alguna pregunta.",
 
 	statusUpdateTitle: "Actualización del estado del sistema",
 

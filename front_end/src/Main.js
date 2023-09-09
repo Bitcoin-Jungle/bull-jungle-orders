@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 import localizeText from './lang/index'
-import { getApiKey, getPhoneNumber, getUsername, getLanguage, isFromBJ, isInIframe } from './utils/index'
+import { getApiKey, getPhoneNumber, getUsername, getLanguage, getSatBalance, isFromBJ, isInIframe } from './utils/index'
 
 import { SendReceiveIcon } from './components/SendReceiveIcon'
 import Modal from './components/Modal'
@@ -290,7 +290,7 @@ function Main({ client, registeredUser }) {
         }, 1000)
       } else {
         if(window.ReactNativeWebView) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({action: "complete", message: localized.orderSuccess}))
+          window.ReactNativeWebView.postMessage(JSON.stringify({action: "complete", message: localized.orderSuccess, title: localized.orderSuccessTitle, subtext: localized.orderSuccessMessage}))
         } else {
           alert(localized.orderSuccess)
         }
@@ -305,6 +305,24 @@ function Main({ client, registeredUser }) {
         submitOrder()
       }, 1000)
     })
+  }
+
+  const calculateMaxFiatAmount = () => {
+    const satBalance = getSatBalance()
+
+    const indexRate = parseFloat(priceData[`BTC${fiatCurrency}`])
+    let txnRate = indexRate
+
+    if(action === "SELL") {
+      txnRate = indexRate * 0.98
+    } else if (action === "BILLPAY") {
+      txnRate = indexRate * 0.98
+    }
+
+    const btcAmount = parseFloat(satBalance / 100000000)
+    const fiatAmount = parseFloat(btcAmount * txnRate)
+
+    setFiatAmount(Math.floor(fiatAmount))
   }
 
   const calculateSatAmount = (setSat) => {
@@ -630,7 +648,16 @@ function Main({ client, registeredUser }) {
                   <div className="row mb-1">
                     <div className="col-12 mb-1">
                       <label htmlFor="fiatAmount" className="form-label">{localized.fiatAmountTitle}</label>
-                      <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
+                      <div className="input-group">
+                        <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
+                        {getSatBalance() && action === 'SELL' && 
+                          <span class="input-group-text" id="fiatAmount-addon">
+                            <button className="btn btn-warning fs-6 btn-sm" onClick={calculateMaxFiatAmount}>
+                              Max
+                            </button>
+                          </span>
+                        }
+                      </div>
                       <div className="form-text">{localized.fiatAmountHelper}</div>
                     </div>
 
