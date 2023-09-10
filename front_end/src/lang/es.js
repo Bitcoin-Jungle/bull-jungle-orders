@@ -30,6 +30,8 @@ const es = {
 	sellPaymentReqHelper: "Ingresa el número de teléfono de SINPE Móvil o número de cuenta IBAN al que deseas recibir el pago",
 	buyPaymentReqHelper: "Ingresa una factura lightning donde quieres recibir el bitcoin",
 
+	sellPaymentDescHelper: "Opcionalmente, incluya un mensaje con su pago.",
+	
 	bitcoinJungleWallet: "Bitcoin Jungle Wallet",
 	lightningWallet: "Otro Lightning Wallet",
 
@@ -74,7 +76,8 @@ const es = {
 	step3Title: "Ingrese su número de teléfono para que podamos comunicarnos con usted en caso de cualquier problema.",
 	step4Title: "Ingrese el destino del pago.",
 	step5Title: "Revise la información a continuación y envíe su pago antes de enviar este pedido.",
-	
+	step6Title: "Incluya un mensaje con su pago.",
+
 	buy: "comprar",
 	sell: "vender",
 	billpay: "pagar factura",

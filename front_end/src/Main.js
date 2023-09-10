@@ -34,6 +34,7 @@ function Main({ client, registeredUser }) {
   const [satAmount, setSatAmount] = useState("")
   const [action, setAction] = useState("")
   const [paymentReq, setPaymentReq] = useState("")
+  const [paymentDesc, setPaymentDesc] = useState("")
   const [billerCategory, setBillerCategory] = useState("")
   const [billerService, setBillerService] = useState("")
   const [billerActionType, setBillerActionType] = useState("")
@@ -141,7 +142,7 @@ function Main({ client, registeredUser }) {
       body: JSON.stringify({
         apiKey: apiKey,
         label: timestamp,
-        description: `${fiatAmount} ${fiatCurrency} (${satAmount} sats) to ${paymentReq}`,
+        description: `${fiatAmount} ${fiatCurrency} to ${paymentReq} ${paymentDesc ? paymentDesc : ""}`,
         satAmount: satAmount,
       })
     })
@@ -224,6 +225,7 @@ function Main({ client, registeredUser }) {
     setSatAmount("")
     setAction("")
     setPaymentReq("")
+    setPaymentDesc("")
     setPhoneNumber(getPhoneNumber())
     setUsername(getUsername())
     setBillerCategory("")
@@ -266,6 +268,7 @@ function Main({ client, registeredUser }) {
         satAmount,
         action,
         paymentReq,
+        paymentDesc,
         phoneNumber,
         billerCategory,
         billerService,
@@ -391,6 +394,16 @@ function Main({ client, registeredUser }) {
     setPaymentReq(e.target.value)
     setSinpeCheckData({})
     setDisableButton(false)
+  }
+
+  const handlePaymentDescChange = async (e) => {
+    const val = e.target.value.replaceAll(/bitcoin|btc|sats|cripto|crypto/gi, '')
+
+    if(val.length >= 15) {
+      val = val.substr(0, 15)
+    }
+
+    setPaymentDesc(val)
   }
 
   const checkPaymentRequest = async () => {
@@ -772,13 +785,34 @@ function Main({ client, registeredUser }) {
                         </div>
                         <div className="mb-1">
                           {(isValidSinpe || isValidIban) && !sinpeCheckData.name &&
-                            <button className="btn btn-warning btn-sm" onClick={checkPaymentRequest}>{(isValidSinpe ? localized.verifyNumber : localized.verifyIban)}</button>
+                            <button className="btn btn-warning btn-sm" onClick={checkPaymentRequest} disabled={loading}>
+                              {loading &&
+                                <div className="spinner-border" role="status" style={{width: "1rem", height: "1rem"}}>
+                                  <span className="visually-hidden">Loading...</span>
+                                </div>
+                              }
+                              {(isValidSinpe ? localized.verifyNumber : localized.verifyIban)}
+                            </button>
                           }
                           {sinpeCheckData.name &&
-                            <div className="alert alert-info">
+                            <div className="alert alert-info mb-0">
                               {(isValidSinpe ? localized.numberVerifiedTo : localized.ibanVerifiedTo)} {sinpeCheckData.name}
                             </div>
                           }
+                        </div>
+                      </div>
+                    }
+
+                    {action === 'SELL' && phoneNumber && (isValidSinpe || isValidIban) &&
+                      <div className="well">
+                        <p>
+                          <b>{localized.step} {isFromBJ() ? "4" : "5"}</b>
+                          {" "}
+                          {localized.step6Title}
+                        </p>
+                        <div className="paymentDescContainer mb-1">
+                          <input className="form-control" id="paymentDesc" value={paymentDesc} onChange={handlePaymentDescChange} />
+                          <div className="form-text">{localized.sellPaymentDescHelper}</div>
                         </div>
                       </div>
                     }

@@ -183,6 +183,7 @@ app.post('/order', async (req, res) => {
   const satAmount  = (req.body.satAmount ? parseInt(req.body.satAmount.replace(/,/g, "").replace(/\./g, "")) : null)
   const action  = (req.body.action ? req.body.action.toUpperCase() : null)
   let paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
+  const paymentDesc = (req.body.paymentDesc ? req.body.paymentDesc.replaceAll(/bitcoin|btc|sats|cripto|crypto/gi, '').substr(0,15) : null)
   const phoneNumber = (req.body.phoneNumber ? req.body.phoneNumber.replace(/[^\d]+/g, "").trim() : null)
   const timestamp = (req.body.timestamp ? req.body.timestamp : new Date().toISOString())
   const invoice = (req.body.invoice ? req.body.invoice : null)
@@ -437,7 +438,7 @@ app.post('/order', async (req, res) => {
     await addPaymentIdentifier(db, paymentIdentifier)
   }
 
-  await updateOrderData(db, timestamp, rowData)
+  await updateOrderData(db, timestamp, {...rowData, "Payment Description": paymentDesc})
   await updateOrderStatus(db, timestamp, 'complete')
 
   telegramEventHandler.emit(
@@ -900,6 +901,7 @@ app.get('/payFiat', async (req, res) => {
   const amount = parseFloat(orderData["To Amount"].replace(/,/g, ""))
   const destination = orderData["Payment Destination"]
   const satAmount = orderData["From Amount"].replace("=(", "").replace(" / 100000000)", "")
+  const paymentDesc = orderData["Payment Description"] || null
 
   if(currency !== "USD" && currency !== "CRC") {
     return res.send({error: true, message: "order currency is invalid"})
@@ -996,7 +998,7 @@ app.get('/payFiat', async (req, res) => {
       toIban: ibantools.electronicFormatIBAN(destination),
       toName: theirAccount.data.account.NomPropietario,
       amount: amount,
-      description: `orden ${order.id}`,
+      description: paymentDesc || `orden ${order.id}`,
       reference: timestamp,
     })
 
@@ -1044,7 +1046,7 @@ app.get('/payFiat', async (req, res) => {
 
     const loadTransferCh4 = await ridivi.loadTransferCh4({
       phoneNumber: destination.replace(/[^0-9]/gi, '').trim(),
-      description: `orden ${order.id}`,
+      description: paymentDesc || `orden ${order.id}`,
       amount,
     })
 

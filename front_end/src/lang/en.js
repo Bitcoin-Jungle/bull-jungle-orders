@@ -30,6 +30,8 @@ const en = {
 	sellPaymentReqHelper: "Enter the SINPE Móvil phone number or IBAN account number you want to receive payment at",
 	buyPaymentReqHelper: "Enter a lightning invoice where you want to receive the bitcoin",
 
+	sellPaymentDescHelper: "Optionally, include a message with your payment. This will be visible to the recipient.",
+	
 	bitcoinJungleWallet: "Bitcoin Jungle Wallet",
 	lightningWallet: "Other Lightning Wallet",
 
@@ -74,7 +76,8 @@ const en = {
 	step3Title: "Enter your phone number so that we can contact you in case of any issue.",
 	step4Title: "Enter the payment destination details.",
 	step5Title: "Please review the information below & send your payment before submitting this order.",
-
+	step6Title: "Include a message with your payment.",
+	
 	buy: "buy",
 	sell: "sell",
 	billpay: "pay bill",
