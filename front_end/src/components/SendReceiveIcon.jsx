@@ -2,7 +2,7 @@ import * as React from "react"
 
 const xml_transaction_sent = `
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="60px" height="60px" viewBox="20 20 60 60" enable-background="new 20 20 60 60" xml:space="preserve">
+	 width="{size}" height="{size}" viewBox="20 20 60 60" enable-background="new 20 20 60 60" xml:space="preserve">
 <g>
 	<path fill="#FFFFFF" d="M44.499,61.99c-0.507,0-1,0.111-1.464,0.33c-1.706,0.811-2.437,2.857-1.628,4.562
 		c0.564,1.189,1.781,1.957,3.1,1.957c0.506,0,0.998-0.111,1.461-0.33c0.828-0.393,1.452-1.084,1.76-1.945
@@ -22,7 +22,7 @@ const xml_transaction_sent = `
 
 const xml_transaction_received = `
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="60px" height="60px" viewBox="20 20 60 60" enable-background="new 20 20 60 60" xml:space="preserve">
+	 width="{size}" height="{size}" viewBox="20 20 60 60" enable-background="new 20 20 60 60" xml:space="preserve">
 <g>
 	<path fill="#FFFFFF" d="M44.498,61.99c-0.507,0-1,0.111-1.464,0.33c-1.706,0.811-2.437,2.857-1.628,4.562
 		c0.564,1.189,1.781,1.957,3.1,1.957c0.506,0,0.998-0.111,1.461-0.33c0.828-0.393,1.452-1.084,1.76-1.945
@@ -47,6 +47,6 @@ export const SendReceiveIcon = ({ isReceive, pending, size, transparent }) => {
   let color = colorTypeFromIconType({ isReceive, isPending: pending })
   if (transparent) color = "#ffffff"
   const raw_xml = isReceive ? xml_transaction_received : xml_transaction_sent
-	const parse_xml = raw_xml.replace("{color}", color)
+	const parse_xml = raw_xml.replace("{color}", color).replace("{size}", `${size}px`)
   return <span style={{width: size, height: size}} dangerouslySetInnerHTML={{__html: parse_xml}}></span>
 }

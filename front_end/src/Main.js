@@ -624,21 +624,41 @@ function Main({ client, registeredUser }) {
                 <div className="row action-buttons mb-1">
                   <div className="col-12">
                     <button className={(action === "BUY" ? "btn btn-warning" : "btn bg-white btn-secondary text-dark") + " align-middle"} onClick={() => handleAction("BUY")}>
-                      <SendReceiveIcon isReceive={true} size={18} />
-                      {" "}
-                      <span className="align-middle">
-                        {localized.buyBtn}
-                      </span>
+                      <div className="d-flex justify-content-center align-items-center">
+                        <div className="p-1">
+                          <SendReceiveIcon isReceive={true} size={50} />
+                        </div>
+                        <div className="text-start w-75">
+                          <div>
+                            <span className="align-middle">
+                              {localized.buyBtn}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="fs-6 fw-light mt-1 align-top">{localized.buyBtnHelper}</span>
+                          </div>
+                        </div>
+                      </div>
                     </button>
                   </div>
                   <div className="col-12" style={{height: 40}}></div>
                   <div className="col-12">
                     <button className={(action === "SELL" ? "btn btn-warning" : "btn bg-white btn-secondary text-dark") + " align-middle"} onClick={() => handleAction("SELL")}>
-                      <SendReceiveIcon />
-                      {" "}
-                      <span className="align-middle">
-                        {localized.sellBtn}
-                      </span>
+                      <div className="d-flex justify-content-center align-items-center">
+                        <div className="p-1">
+                          <SendReceiveIcon size={50} />
+                        </div>
+                        <div className="text-start w-75">
+                          <div>
+                            <span className="align-middle">
+                              {localized.sellBtn}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="fs-6 fw-light mt-1 align-top">{localized.sellBtnHelper}</span>
+                          </div>
+                        </div>
+                      </div>
                     </button>
                   </div>
                   {/*<div className="col">

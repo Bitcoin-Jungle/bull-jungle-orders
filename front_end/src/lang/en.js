@@ -11,8 +11,10 @@ const en = {
 	registerSuccess: "Thanks for requesting access. We will review your request shortly. Check back here later!",
 	goBackBtn: "Go Back",
 
-	buyBtn: "Buy Bitcoin",
-	sellBtn: "Sell Bitcoin",
+	buyBtn: "Buy",
+	buyBtnHelper: "Receive Bitcoin in your wallet",
+	sellBtn: "Sell",
+	sellBtnHelper: "Send a SINPE payment",
 	billPayBtn: "Bill Pay",
 
 	fiatAmountTitle: "Amount",
@@ -77,7 +79,7 @@ const en = {
 	step4Title: "Enter the payment destination details.",
 	step5Title: "Please review the information below & send your payment before submitting this order.",
 	step6Title: "Include a message with your payment.",
-	
+
 	buy: "buy",
 	sell: "sell",
 	billpay: "pay bill",

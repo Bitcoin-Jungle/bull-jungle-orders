@@ -11,8 +11,10 @@ const es = {
 	registerSuccess: "Gracias por solicitar acceso. Revisaremos tu solicitud en breve. ¡Vuelve aquí más tarde!",
 	goBackBtn: "Regresar",
 
-	buyBtn: "Compra BTC",
-	sellBtn: "Vende BTC",
+	buyBtn: "Comprar",
+	buyBtnHelper: "Reciba Bitcoin en su cartera",
+	sellBtn: "Vender",
+	sellBtnHelper: "Envie un pago por SINPE",
 	billPayBtn: "Paga Factura",
 
 	fiatAmountTitle: "Monto",
