@@ -299,8 +299,9 @@ app.post('/order', async (req, res) => {
   }
 
   const priceData = await getPrice()
+  const txnRate = getTxnRate('CAD', action)
 
-  if((satAmount / 100000000) * priceData['BTCCAD'] >= 995) {
+  if((satAmount / 100000000) * txnRate >= 995) {
     return res.send({error: true, type: "invalidFiatAmount"})
   }
 
@@ -536,7 +537,7 @@ app.get('/price', async (req, res) => {
 })
 
 app.get('/ticker', async (req, res) => {
-  const tickerData = await getTicker()
+  const tickerData = getTicker()
   return res.send(tickerData)
 })
 
@@ -808,13 +809,13 @@ app.get('/payInvoice', async (req, res) => {
     return res.send({error: true, message: "order currency is invalid"})
   }
 
-  const priceData = await getPrice()
+  const txnRate = getTxnRate(currency, 'BUY')
 
-  if((satAmount / 100000000) * priceData[`BTC${currency}`] > fiatAmount * 1.05) {
+  if((satAmount / 100000000) * txnRate > fiatAmount * 1.05) {
     return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
   }
 
-  if((satAmount / 100000000) * priceData[`BTC${currency}`] < fiatAmount * 0.95) {
+  if((satAmount / 100000000) * txnRate < fiatAmount * 0.95) {
     return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
   }
 
@@ -915,13 +916,13 @@ app.get('/payFiat', async (req, res) => {
     return res.send({error: true, message: "error parsing fiat amount from order data. please review manually."})
   }
 
-  const priceData = await getPrice()
+  const txnRate = getTxnRate(currency, 'SELL')
 
-  if((satAmount / 100000000) * priceData[`BTC${currency}`] > amount * 1.05) {
+  if((satAmount / 100000000) * txnRate > amount * 1.05) {
     return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
   }
 
-  if((satAmount / 100000000) * priceData[`BTC${currency}`] < amount * 0.95) {
+  if((satAmount / 100000000) * txnRate < amount * 0.95) {
     return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
   }
 
@@ -1580,7 +1581,16 @@ const getPrice = async () => {
   }
 }
 
-const getTicker = async () => {
+const getTxnRate = (currency, action) => {
+  const priceData = getTicker()
+  const currencyPair = `BTC${currency}`
+  const direction = (action.toUpperCase() === 'BUY' ? 'toFromPrice' : 'fromToPrice')
+  const indexRate = parseFloat(priceData[currencyPair][direction])
+
+  return indexRate
+}
+
+const getTicker = () => {
   const timestamp = new Date().toISOString()
 
   return {

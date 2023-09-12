@@ -204,7 +204,7 @@ function Main({ client, registeredUser }) {
   }
 
   const getPriceData = () => {
-    fetch("/price")
+    fetch("/ticker")
     .then((res) => res.json())
     .then((data) => {
       if(data.timestamp) {
@@ -310,17 +310,18 @@ function Main({ client, registeredUser }) {
     })
   }
 
+  const getTxnRate = (currency) => {
+    const currencyPair = `BTC${currency || fiatCurrency}`
+    const direction = (action === 'BUY' ? 'toFromPrice' : 'fromToPrice')
+    const indexRate = parseFloat(priceData[currencyPair][direction])
+
+    return indexRate
+  }
+
   const calculateMaxFiatAmount = () => {
     const satBalance = getSatBalance()
 
-    const indexRate = parseFloat(priceData[`BTC${fiatCurrency}`])
-    let txnRate = indexRate
-
-    if(action === "SELL") {
-      txnRate = indexRate * 0.98
-    } else if (action === "BILLPAY") {
-      txnRate = indexRate * 0.98
-    }
+    const txnRate = getTxnRate()
 
     const btcAmount = parseFloat(satBalance / 100000000)
     const fiatAmount = parseFloat(btcAmount * txnRate)
@@ -336,26 +337,19 @@ function Main({ client, registeredUser }) {
       return
     }
 
-    const indexRate = parseFloat(priceData[`BTC${fiatCurrency}`])
-    let txnRate = indexRate
-
-    if(action === "SELL") {
-      txnRate = indexRate * 0.98
-    } else if (action === "BILLPAY") {
-      txnRate = indexRate * 0.98
-    }
+    const txnRate = getTxnRate()
 
     const btcAmount = parseFloat(fiatAmount / txnRate)
     const satAmount = btcAmount * 100000000
 
-    if(btcAmount * priceData['BTCCAD'] >= 995) {
+    if(btcAmount * getTxnRate('CAD') >= 995) {
       setOverPerTxnLimit(true)
       setSatAmount("")
       setPaymentReq("")
       return
     }
 
-    if(Math.round(btcAmount * priceData['BTCCRC']) < 2000) {
+    if(Math.round(btcAmount * getTxnRate('CRC')) < 2000) {
       setUnderPerTxnMinimum(true)
       setSatAmount("")
       setPaymentReq("")
