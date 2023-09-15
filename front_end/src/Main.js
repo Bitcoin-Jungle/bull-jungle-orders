@@ -636,7 +636,7 @@ function Main({ client, registeredUser }) {
                     </button>
                   </div>
                   <div className="col-12" style={{height: 40}}></div>
-                  <div className="col-12">
+                  {/*<div className="col-12">
                     <button className={(action === "SELL" ? "btn btn-warning" : "btn bg-white btn-secondary text-dark") + " align-middle"} onClick={() => handleAction("SELL")}>
                       <div className="d-flex justify-content-center align-items-center">
                         <div className="p-1">
@@ -654,7 +654,7 @@ function Main({ client, registeredUser }) {
                         </div>
                       </div>
                     </button>
-                  </div>
+                  </div>*}
                   {/*<div className="col">
                     <button className={(action === "BILLPAY" ? "btn btn-primary" : "btn btn-secondary")} onClick={() => handleAction("BILLPAY")}>{localized.billPayBtn}</button>
                   </div>*/}
