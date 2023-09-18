@@ -151,7 +151,7 @@ const checkHistoryForPayment = async ({currency, paymentIdentifier, amount}) => 
 
 const checkHistoryPageForPayment = async ({pageNumber, currency, paymentIdentifier, amount, iban}) => {
   let fromDate = new Date()
-  fromDate.setDate(fromDate.getDate() - 3)
+  fromDate.setDate(fromDate.getDate() - 2)
 
   const history = await getHistory({
     from: fromDate.toISOString().split('T')[0],

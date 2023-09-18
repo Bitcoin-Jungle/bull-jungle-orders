@@ -811,12 +811,14 @@ app.get('/payInvoice', async (req, res) => {
 
   const txnRate = getTxnRate(currency, 'BUY')
 
-  if((satAmount / 100000000) * txnRate > fiatAmount * 1.05) {
-    return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
-  }
+  if(!force) {
+    if((satAmount / 100000000) * txnRate > fiatAmount * 1.05) {
+      return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
+    }
 
-  if((satAmount / 100000000) * txnRate < fiatAmount * 0.95) {
-    return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
+    if((satAmount / 100000000) * txnRate < fiatAmount * 0.95) {
+      return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
+    }
   }
 
   if(!destination) {
@@ -829,15 +831,17 @@ app.get('/payInvoice', async (req, res) => {
 
   await updateOrderPaymentStatus(db, timestamp, 'in-flight')
 
-  const fiatPaymentMade = await ridivi.checkHistoryForPayment({
-    currency,
-    paymentIdentifier,
-    amount: fiatAmount,
-  })
+  if(!force) {
+    const fiatPaymentMade = await ridivi.checkHistoryForPayment({
+      currency,
+      paymentIdentifier,
+      amount: fiatAmount,
+    })
 
-  if(!fiatPaymentMade && !force) {
-    await updateOrderPaymentStatus(db, timestamp, null)
-    return res.send({error: true, message: "couldnt locate fiat payment, if you are sure then add &force=true and try again"})
+    if(!fiatPaymentMade) {
+      await updateOrderPaymentStatus(db, timestamp, null)
+      return res.send({error: true, message: "couldnt locate fiat payment, if you are sure then add &force=true and try again"})
+    }
   }
 
   const payment = await payInvoice(destination)
