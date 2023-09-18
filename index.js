@@ -13,6 +13,7 @@ import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
 import ibantools from 'ibantools'
 import { EventEmitter } from 'events'
+import twilio from 'twilio'
 
 import * as ridivi from "./ridivi.js"
 
@@ -40,6 +41,11 @@ const ridivi_id = process.env.ridivi_id
 const ridivi_crc_account = process.env.ridivi_crc_account
 const ridivi_usd_account = process.env.ridivi_usd_account
 const ridivi_name = process.env.ridivi_name
+const twilio_account_sid = process.env.twilio_account_sid
+const twilio_auth_token = process.env.twilio_auth_token
+const twilio_from_number = process.env.twilio_from_number
+
+const twilioClient = twilio(twilio_account_sid, twilio_auth_token)
 
 const corsOptions = {
   origin: process.env.NODE_ENV !== "production" ? 'http://localhost:3001' : 'https://orders.bitcoinjungle.app',
@@ -73,6 +79,7 @@ const app = express()
 const googleSheetEventHandler = new EventEmitter()
 const telegramEventHandler = new EventEmitter()
 const processOrderEventHandler = new EventEmitter()
+const twilioEventHandler = new EventEmitter()
 
 let BTCCRC, USDCRC, USDCAD, BTCUSD, BTCCAD
 
@@ -140,6 +147,33 @@ processOrderEventHandler.on('processOrder', async ({rowData}) => {
     return true
   } catch(e) {
     console.log('error processing order', e)
+    return false
+  }
+})
+
+twilioEventHandler.on('message', async ({ data, phoneNumber, amount, currency }) => {
+  if(!data.data) {
+    return false
+  }
+
+  if(!data.data.result) {
+    return false
+  }
+
+  if(!data.data.result.ReferenciaSinpe) {
+    return false
+  }
+
+  try {
+    const resp = await twilioClient.messages.create({
+      body: `Usted ha enviado ${amount} ${currency} a ${data.data.result.NombreClienteDestino}. Comprobante ${data.data.result.ReferenciaSinpe}`,
+      from: twilio_from_number,
+      to: phoneNumber
+    })
+
+    return true
+  } catch (e) {
+    console.log('twilio error', e)
     return false
   }
 })
@@ -1092,6 +1126,20 @@ app.get('/payFiat', async (req, res) => {
     await updateOrderPaymentStatus(db, timestamp, 'complete')
     await updateOrderSettlementData(db, timestamp, sendLoadTransferCh4.data)
 
+    const phoneNumberRecord = await getPhoneNumberById(db, orderData['User'])
+
+    if(phoneNumberRecord) {
+      twilioEventHandler.emit(
+        'message',
+        {
+          data: sendLoadTransferCh4,
+          phoneNumber: phoneNumberRecord.phoneNumber,
+          amount,
+          currency,
+        }
+      )
+    }
+
     return res.send({error: false, data: sendLoadTransferCh4.data})
   }
 
@@ -1707,6 +1755,17 @@ const getPhoneNumber = async (db, phoneNumber) => {
     return await db.get(
       "SELECT * FROM phone_numbers WHERE phoneNumber = ?", 
       [phoneNumber]
+    )
+  } catch {
+    return false
+  }
+}
+
+const getPhoneNumberById = async (db, id) => {
+  try {
+    return await db.get(
+      "SELECT * FROM phone_numbers WHERE id = ?", 
+      [id]
     )
   } catch {
     return false
