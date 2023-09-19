@@ -872,7 +872,7 @@ function Main({ client, registeredUser }) {
                             </p>
                             <div className="alert alert-warning">
                               <p>
-                                <b>{localized.rulesTitle}</b>
+                                <b>🚨 {localized.rulesTitle} 🚨</b>
                                 <br />
                                 <span>
                                   {localized.rulesInstructionsBefore}
