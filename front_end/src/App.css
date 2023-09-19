@@ -61,3 +61,7 @@ p {
 .container.d-flex {
   max-width: 600px;
 }
+
+.recharts-responsive-container {
+  min-height: 600px;
+}

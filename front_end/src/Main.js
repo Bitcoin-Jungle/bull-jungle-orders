@@ -7,6 +7,7 @@ import { SendReceiveIcon } from './components/SendReceiveIcon'
 import Modal from './components/Modal'
 import Invoice from './components/Invoice'
 import Register from './Register'
+import Chart from './Chart'
 
 import { 
   RECIPIENT_WALLET_ID, 
@@ -43,6 +44,7 @@ function Main({ client, registeredUser }) {
   const [paymentHash, setPaymentHash] = useState("")
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showChartModal, setShowChartModal] = useState(false)
   const [paymentIdentifier, setPaymentIdentifier] = useState("")
   const [timestamp, setTimestamp] = useState(new Date().toISOString())
   const [phoneNumber, setPhoneNumber] = useState(getPhoneNumber())
@@ -965,7 +967,25 @@ function Main({ client, registeredUser }) {
             >
               {localized.terms}
             </a>
+            {" | "}
+            <a 
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                setShowChartModal(!showChartModal)
+              }}
+            >
+              {(showChartModal ? localized.hidePriceHistory : localized.showPriceHistory)}
+            </a>
           </span>
+          {showChartModal &&
+            <div>
+              <Chart
+                language={language}
+                apiKey={apiKey} 
+              />
+            </div>
+          }
         </div>
       </footer>
 

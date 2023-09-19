@@ -1257,6 +1257,34 @@ app.post('/alert', async (req, res) => {
   return res.send({error: alert ? false : true})
 })
 
+app.get('/priceHistory', async (req, res) => {
+  const apiKey = req.query.apiKey
+  
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  const data = await getBullHistory('BTC', 'CRC')
+
+  if(!data || !data.result) {
+    return res.send({error: true, message: "Error loading map data"})
+  }
+
+  const output = data.result.map((el) => {
+    return {
+      date: new Date(el.createdAt).toLocaleString(),
+      buy: el.toFromPrice,
+      sell: el.fromToPrice,
+    }
+  })
+
+  res.send({success: true, data: output})
+})
+
 const payInvoice = async (bolt11) => {
   try {
     // const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
@@ -1496,6 +1524,48 @@ const getBullPrice = async (from, to) => {
     console.log('error getBullPrice', from, to)
     await new Promise(resolve => setTimeout(resolve, 5000))
     return await getBullPrice(from, to)
+  }
+}
+
+const getBullHistory = async (from, to) => {
+  let fromDate = new Date()
+  fromDate.setDate(fromDate.getDate() - 2)
+
+  try {
+    const response = await axios({
+      method: "POST",
+      url: price_data_url,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: {
+        id: Math.floor(Math.random() * 1001).toString(),
+        jsonrpc: "2.0",
+        method: "listRates",
+        params: {
+          to,
+          from,
+          period: "hour",
+          range: {
+            start: fromDate.toISOString(),
+            end: new Date().toISOString(),
+          }
+        }
+      }
+    })
+
+    if(!response) {
+      return false
+    }
+
+    if(!response.data) {
+      return false
+    }
+
+    return response.data
+  } catch(e) {
+    console.log('error getBullRates', from, to)
+    return false
   }
 }
 

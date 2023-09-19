@@ -88,6 +88,8 @@ const es = {
 	confirm: "Confirmar",
 
 	terms: "Términos y condiciones",
+	showPriceHistory: "Mostrar historial",
+	hidePriceHistory: "Esconder historial",
 
 	orderSuccess: "Pedido enviado con éxito. Lo revisaremos y procesaremos en breve. Contáctenos por WhatsApp si tiene alguna pregunta.",
 	orderSuccessTitle: "¡Pedido enviado con éxito!",
