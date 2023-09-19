@@ -39,6 +39,13 @@ const es = {
 
 	bjUsernamePrompt: "Cual es tu nombre de usario en la app Bitcoin Jungle?",
 
+	rulesTitle: "Reglas Importantes",
+	rulesInstructionsBefore: "Tenga en cuenta las siguientes reglas antes de realizar su transferencia bancaria.",
+	rules1: "No aceptamos transferencias de terceros. Esto significa que todos los fondos deben provenir de una cuenta bancaria a su nombre (o el de su empresa).",
+	rules2: "Recomendamos no escribir cosas como bitcoin, btc, crypto, etc. en el campo memo. Esto es por tu privacidad.",
+	rules3: "Sólo aceptamos transferencias instantáneas. No seleccione la opción de transferencia lenta de 1 a 3 días.",
+	rulesInstructionsAfter: "El incumplimiento de estas reglas puede resultar en una prohibición permanente de Bull Bitcoin.",
+
 	paymentOptionsTitle: "Opciones de pago",
 	paymentOptionsInstructionBefore: "Antes de enviar el orden, debe enviar",
 	paymentOptionsInstructionsAfter: "a una de las siguientes opciones",

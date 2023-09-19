@@ -39,6 +39,13 @@ const en = {
 
 	bjUsernamePrompt: "What is your Bitcoin Jungle username?",
 
+	rulesTitle: "Important Rules",
+	rulesInstructionsBefore: "Please keep the following rules in mind before making your bank transfer.",
+	rules1: "We don't accept third party transfers. This means that all funds must originate from a bank account in your (or your business) name.",
+	rules2: "We recommend not writing things like bitcoin, btc, crypto, et. cetera. in the memo field. This is for your privacy.",
+	rules3: "We only accept instant transfers. Do not select the slow 1-3 day transfer option.",
+	rulesInstructionsAfter: "Failure to adhere to these rules may result in a permanent ban from Bull Bitcoin.",
+
 	paymentOptionsTitle: "Payment Options",
 	paymentOptionsInstructionBefore: "Before submitting the order, you must send",
 	paymentOptionsInstructionsAfter: "to one of the following options",

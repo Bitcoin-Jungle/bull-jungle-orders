@@ -870,6 +870,29 @@ function Main({ client, registeredUser }) {
                               {" "}
                               {localized.step5Title}
                             </p>
+                            <div className="alert alert-warning">
+                              <p>
+                                <b>{localized.rulesTitle}</b>
+                                <br />
+                                <span>
+                                  {localized.rulesInstructionsBefore}
+                                </span>
+                                <ol>
+                                  <li>
+                                    {localized.rules1}
+                                  </li>
+                                  <li>
+                                    {localized.rules2}
+                                  </li>
+                                  <li>
+                                    {localized.rules3}
+                                  </li>
+                                </ol>
+                                <span>
+                                  {localized.rulesInstructionsAfter}
+                                </span>
+                              </p>
+                            </div>
                             <div className="alert alert-info">
                               <p>
                                 <b>{localized.paymentOptionsTitle}</b>
