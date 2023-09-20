@@ -8,6 +8,7 @@ import Modal from './components/Modal'
 import Invoice from './components/Invoice'
 import Register from './Register'
 import Chart from './Chart'
+import Rules from './Rules'
 
 import { 
   RECIPIENT_WALLET_ID, 
@@ -870,29 +871,8 @@ function Main({ client, registeredUser }) {
                               {" "}
                               {localized.step5Title}
                             </p>
-                            <div className="alert alert-warning">
-                              <p>
-                                <b>🚨 {localized.rulesTitle} 🚨</b>
-                                <br />
-                                <span>
-                                  {localized.rulesInstructionsBefore}
-                                </span>
-                                <ol>
-                                  <li>
-                                    {localized.rules1}
-                                  </li>
-                                  <li>
-                                    {localized.rules2}
-                                  </li>
-                                  <li>
-                                    {localized.rules3}
-                                  </li>
-                                </ol>
-                                <span>
-                                  {localized.rulesInstructionsAfter}
-                                </span>
-                              </p>
-                            </div>
+                            <Rules 
+                              localized={localized} />
                             <div className="alert alert-info">
                               <p>
                                 <b>{localized.paymentOptionsTitle}</b>

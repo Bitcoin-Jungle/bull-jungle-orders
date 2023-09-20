@@ -8,7 +8,7 @@ const en = {
 	registerSubtext1: "It looks like this is your first time here.",
 	registerSubtext2: "Please request access by clicking the button below.",
 	registerBtn: "Request Access Now!",
-	registerSuccess: "Thanks for requesting access. We will review your request shortly. Check back here later!",
+	registerSuccess: "Thanks for requesting access. We will review your request shortly. Please review the rules for buying Bitcoin below. Please reach out to us on WhatsApp at +1-970-450-5406 to let us know you have read and understand the rules.",
 	goBackBtn: "Go Back",
 
 	buyBtn: "Buy",

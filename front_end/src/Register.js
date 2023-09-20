@@ -2,6 +2,8 @@ import { useState } from 'react'
 
 import localizeText from './lang/index'
 
+import Rules from './Rules'
+
 import { getApiKey, getUsername, getLanguage, getPhoneNumber } from './utils/index'
 
 function Register({ clearForm }) {
@@ -78,8 +80,12 @@ function Register({ clearForm }) {
                 </button>
               }
               {submitted &&
-                <div className="alert alert-success">
-                  {localized.registerSuccess}
+                <div>
+                  <div className="alert alert-success">
+                    {localized.registerSuccess}
+                  </div>
+                  <Rules 
+                    localized={localized} />
                 </div>
               }
               <button className="btn btn-secondary text-light align-middle mt-5" onClick={clearForm} disabled={loading}>
