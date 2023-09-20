@@ -2,13 +2,14 @@ import { useState } from 'react'
 
 import localizeText from './lang/index'
 
-import { getApiKey, getUsername, getLanguage } from './utils/index'
+import { getApiKey, getUsername, getLanguage, getPhoneNumber } from './utils/index'
 
 function Register({ clearForm }) {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   const username = getUsername()
+  const phoneNumber = getPhoneNumber()
 
   const localized = localizeText(getLanguage())
 
@@ -25,6 +26,7 @@ function Register({ clearForm }) {
       body: JSON.stringify({
         apiKey: getApiKey(),
         bitcoinJungleUsername: username,
+        phoneNumber,
       })
     })
     .then((res) => res.json())
@@ -32,7 +34,16 @@ function Register({ clearForm }) {
       if(data.success) {
         setSubmitted(true)
       } else if(data.type) {
-        alert(localized.errors[data.type] || "An unknown error has occurred")
+        if(data.type === 'approved') {
+          const url = new URL(window.location.href)
+          url.searchParams.delete('registered')
+
+          console.log(url)
+
+          window.location = url
+        } else {
+          alert(localized.errors[data.type] || "An unknown error has occurred")
+        }
       } else {
         alert(data.message || "An unknown error has occurred")
       }

@@ -611,6 +611,7 @@ app.get('/user', async (req, res) => {
 app.post('/addUser', async (req, res) => {
   const apiKey = req.body.apiKey
   const bitcoinJungleUsername = req.body.bitcoinJungleUsername
+  const phoneNumber = req.body.phoneNumber
 
   if(!apiKey) {
     return res.send({error: true, message: "apiKey is required"})
@@ -624,11 +625,15 @@ app.post('/addUser', async (req, res) => {
     return res.send({error: true, message: "username is required"})
   }
 
+  if(!phoneNumber) {
+    return res.send({error: true, message: "phone number is required"})
+  }
+
   const userExists = await getUser(db, bitcoinJungleUsername)
 
   if(userExists) {
     if(userExists.approved) {
-      return res.send({error: true, message: "username exists already"})
+      return res.send({error: true, type: "approved"})
     }
 
     if(!userExists.approved) {
@@ -637,7 +642,7 @@ app.post('/addUser', async (req, res) => {
   }
 
   const user = await addUser(db, bitcoinJungleUsername)
-  const tgMsg = await sendUserAddMessage(bitcoinJungleUsername)
+  const tgMsg = await sendUserAddMessage(bitcoinJungleUsername, phoneNumber)
   
   if(!user) {
     return res.send({error: true, message: "error adding user"})
@@ -1453,12 +1458,30 @@ const addRowToSheet = async (rowData, sheetIndex) => {
   }
 }
 
-const sendUserAddMessage = async (bitcoinJungleUsername) => {
+const sendUserAddMessage = async (bitcoinJungleUsername, phoneNumber) => {
   try {
-    let message = `New User Requesting Access: ${bitcoinJungleUsername}\n`
-    message += `Click [here](https://orders.bitcoinjungle.app/approveUser?bitcoinJungleUsername=${bitcoinJungleUsername}&apiKey=${admin_api_key}) to approve this new user`
+    let message = `New User Requesting Access\n`
+    message += `Username: ${bitcoinJungleUsername}\n`
+    message += `Phone Number: ${phoneNumber}`
 
-    const resp = await bot.telegram.sendMessage(chat_id, message, {parse_mode: 'MarkdownV2'})
+    const optionsObj = {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Approve User",
+              url: `https://orders.bitcoinjungle.app/approveUser?bitcoinJungleUsername=${bitcoinJungleUsername}&apiKey=${admin_api_key}`
+            },
+          ],
+        ],
+      }
+    }
+
+    const resp = await bot.telegram.sendMessage(
+      chat_id, 
+      message, 
+      optionsObj
+    )
 
     return resp
   } catch(e) {
