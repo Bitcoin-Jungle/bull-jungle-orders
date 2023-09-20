@@ -642,7 +642,21 @@ app.post('/addUser', async (req, res) => {
   }
 
   const user = await addUser(db, bitcoinJungleUsername)
-  const tgMsg = await sendUserAddMessage(bitcoinJungleUsername, phoneNumber)
+
+  let phoneName = ''
+  if(phoneNumber.indexOf('506') === 0 || phoneNumber.indexOf('+506') === 0) {
+    let numberToSearch = phoneNumber.replaceAll(/[^0-9]/gi, '').replace(/^506/, '').trim()
+
+    if(numberToSearch.length === 8) {
+      const phoneNumberCheck = await checkPhoneNumberForSinpe(numberToSearch)
+
+      if(!phoneNumberCheck.error && phoneNumberCheck.data && phoneNumberCheck.data.NombreCliente) {
+       phoneName = phoneNumberCheck.data.NombreCliente
+      }
+    }
+  }
+
+  const tgMsg = await sendUserAddMessage(bitcoinJungleUsername, phoneNumber, phoneName)
   
   if(!user) {
     return res.send({error: true, message: "error adding user"})
@@ -1458,11 +1472,17 @@ const addRowToSheet = async (rowData, sheetIndex) => {
   }
 }
 
-const sendUserAddMessage = async (bitcoinJungleUsername, phoneNumber) => {
+const sendUserAddMessage = async (bitcoinJungleUsername, phoneNumber, phoneName) => {
   try {
     let message = `New User Requesting Access\n`
     message += `Username: ${bitcoinJungleUsername}\n`
-    message += `Phone Number: ${phoneNumber}`
+    message += `Phone Number: ${phoneNumber}\n`
+
+    if(phoneName && phoneName.length > 0) {
+      message += `✅ Name registered on SINPE Movil: ${phoneName}`
+    } else {
+      message += `❌ Phone number not registered on SINPE Movil`
+    }
 
     const optionsObj = {
       reply_markup: {
