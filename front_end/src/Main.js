@@ -143,10 +143,14 @@ function Main({ client, registeredUser }) {
         "Content-Type": "application/json; charset=utf-8"
       },
       body: JSON.stringify({
-        apiKey: apiKey,
+        apiKey,
         label: timestamp,
         description: `${fiatAmount} ${fiatCurrency} to ${paymentReq} ${paymentDesc ? paymentDesc : ""}`,
-        satAmount: satAmount,
+        satAmount,
+        action,
+        fiatAmount,
+        fiatCurrency,
+        phoneNumber,
       })
     })
     .then((res) => res.json())

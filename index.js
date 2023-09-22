@@ -280,7 +280,7 @@ app.post('/order', async (req, res) => {
   }
 
   if(!phoneNumber) {
-    return res.send({error: true, type: "phoneNumbeRequired"})
+    return res.send({error: true, type: "phoneNumberRequired"})
   }
 
   if(action !== 'BUY' && action !== 'SELL' && action !== 'BILLPAY') {
@@ -337,6 +337,12 @@ app.post('/order', async (req, res) => {
 
   if((satAmount / 100000000) * txnRate >= 995) {
     return res.send({error: true, type: "invalidFiatAmount"})
+  }
+
+  const isOver = await isUserOverDailyLimit({action, phoneNumber, fiatAmount, fiatCurrency})
+
+  if(isOver) {
+    return res.send({error: true, type: "isOverDailyLimit"})
   }
 
   await addOrder(db, timestamp)
@@ -516,6 +522,10 @@ app.post('/invoice', async (req, res) => {
   const label = req.body.label
   const description = req.body.description
   const satAmount = req.body.satAmount
+  const action = req.body.action
+  const fiatAmount = (req.body.fiatAmount ? req.body.fiatAmount.replace(/,/g, "") : null)
+  const fiatCurrency = req.body.fiatCurrency
+  const phoneNumber = (req.body.phoneNumber ? req.body.phoneNumber.replace(/[^\d]+/g, "").trim() : null)
 
   if(!apiKey) {
     return res.send({error: true, type: "apiKeyRequired"})
@@ -535,6 +545,28 @@ app.post('/invoice', async (req, res) => {
 
   if(!satAmount) {
     return res.send({error: true, type: "satAmountRequired"})
+  }
+
+  if(!action) {
+    return res.send({error: true, type: "actionRequired"})
+  }
+
+  if(!fiatAmount) {
+    return res.send({error: true, type: "fiatAmountRequired"})
+  }
+
+  if(!fiatCurrency) {
+    return res.send({error: true, type: "fiatCurrencyRequired"})
+  }
+
+  if(!phoneNumber) {
+    return res.send({error: true, type: "phoneNumberRequired"})
+  }
+
+  const isOver = await isUserOverDailyLimit({action, phoneNumber, fiatAmount, fiatCurrency})
+
+  if(isOver) {
+    return res.send({error: true, type: "isOverDailyLimit"})
   }
 
   const invoiceData = {
@@ -1908,6 +1940,85 @@ const addOrder = async (db, timestamp) => {
     )
   } catch(e) {
     console.log('addOrder error', e)
+    return false
+  }
+}
+
+const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurrency}) => {
+  const phoneUser = await getPhoneNumber(db, phoneNumber)
+
+  if(!phoneUser) {
+    console.log('phoneUser not found')
+    return false
+  }
+
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  const orders = await getUserOrders(db, action, phoneUser.id, yesterday.toISOString())
+
+  console.log(`phoneUser id ${phoneUser.id} has ${(orders ? orders.length : "0")} ${action} orders today`)
+
+  if(fiatCurrency === 'CRC') {
+    fiatAmount = fiatAmount / USDCRC.indexPrice
+  }
+
+  fiatAmount = fiatAmount * USDCAD
+
+  let total = fiatAmount
+
+  for (var i = orders.length - 1; i >= 0; i--) {
+    const order = orders[i]
+    const orderData = JSON.parse(order.data)
+    let orderFiatAmount = 0
+    let orderFiatCurrency = ''
+
+    if(orderData.Type === 'Buy') {
+      orderFiatAmount = orderData['From Amount'].replace(',', '')
+      orderFiatCurrency = orderData['From Currency']
+    } else {
+      orderFiatAmount = orderData['To Amount'].replace(',', '')
+      orderFiatCurrency = orderData['To Currency']
+    }
+
+    if(orderFiatCurrency === 'CRC') {
+      orderFiatAmount = orderFiatAmount / orderData['USD/CRC']
+    }
+
+    orderFiatAmount = orderFiatAmount * orderData['USD/CAD']
+
+    total += orderFiatAmount
+  }
+
+  console.log(`phoneUser id ${phoneUser.id} daily total of ${action} is ${total}. Limits are buy: ${phoneUser.daily_buy_limit}, sell: ${phoneUser.daily_sell_limit}`)
+
+  if(action.toUpperCase() === 'BUY' && total > phoneUser.daily_buy_limit) {
+    return true
+  } else if(action.toUpperCase() !== 'BUY' && total > phoneUser.daily_sell_limit) {
+    return true
+  }
+
+  return false
+}
+
+const getUserOrders = async (db, type, userId, since) => {
+  try {
+    return await db.all(
+      `
+        SELECT * 
+        FROM orders 
+        WHERE json_extract(data, '$.User') = ? 
+        AND json_extract(data, '$.Type') = ? 
+        AND timestamp >= ?
+      `, 
+      [
+        userId,
+        type[0].toUpperCase() + type.slice(1).toLowerCase(),
+        since,
+      ]
+    )
+  }catch(e) {
+    console.log('getUserOrders error', e)
     return false
   }
 }
