@@ -160,6 +160,10 @@ const checkHistoryPageForPayment = async ({pageNumber, currency, paymentIdentifi
     iban,
   })
 
+  if(!history) {
+    return false
+  }
+
   if(history.error) {
     return false
   }
