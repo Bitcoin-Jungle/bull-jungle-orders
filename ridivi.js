@@ -160,6 +160,14 @@ const checkHistoryPageForPayment = async ({pageNumber, currency, paymentIdentifi
     iban,
   })
 
+  if(history.error) {
+    return false
+  }
+
+  if(!history.data.transfers) {
+    return false
+  }
+
   const exists = history.data.transfers.find((row) => {
     return row.NumReferenciaSP === paymentIdentifier
   })
