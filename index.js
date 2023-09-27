@@ -1088,7 +1088,7 @@ app.get('/payFiat', async (req, res) => {
       toIban: ibantools.electronicFormatIBAN(destination),
       toName: theirAccount.data.account.NomPropietario,
       amount: amount,
-      description: paymentDesc || `orden ${order.id}`,
+      description: (paymentDesc || `orden ${order.id}`).padEnd(16, '_'),
       reference: timestamp,
     })
 
