@@ -127,6 +127,7 @@ const en = {
 		invoiceNotPaid: "Invoice has not been paid. Please try your order again.",
 		pendingApproval: "Your request is currently pending. If it's been a while and you haven't heard from us, try contacting us on WhatsApp.",
 		isOverDailyLimit: "This order would exceed the daily limits for your account. Please lower the amount or try again tomorrow.",
+		duplicateOrder: "This appears to be a duplicate order. Please wait a few minutes and ensure your order has processed completely before trying again.",
 	},
 }
 

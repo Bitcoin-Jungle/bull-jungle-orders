@@ -345,7 +345,11 @@ app.post('/order', async (req, res) => {
     return res.send({error: true, type: "isOverDailyLimit"})
   }
 
-  await addOrder(db, timestamp)
+  const orderAdded = await addOrder(db, timestamp)
+
+  if(!orderAdded) {
+    return res.send({error: true, type: "duplicateOrder"})
+  }
 
   if(action === 'SELL' || action === 'BILLPAY') {
     let invoicePaid
