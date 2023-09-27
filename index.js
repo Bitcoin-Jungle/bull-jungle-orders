@@ -1338,6 +1338,64 @@ app.get('/priceHistory', async (req, res) => {
   })
 
   res.send({success: true, data: output})
+
+app.get('/stats', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const from = req.query.from
+  const to = req.query.to
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!from) {
+    return res.send({error: true, message: "from is required"})
+  }
+
+  if(!to) {
+    return res.send({error: true, message: "to is required"})
+  }
+
+  const orders = await getOrders(db, from, to)
+
+  if(!orders) {
+    return res.send({error: true, message: "no orders found"})
+  }
+
+  const data = orders.map((el) => {
+    return JSON.parse(el.data)
+  })
+
+  const output = {
+    // raw_data: data,
+    total_sells_usd: 0,
+    total_sells_crc: 0,
+    total_buys_usd: 0,
+    total_buys_crc: 0,
+  }
+
+  data.forEach((el) => {
+
+    if(el['Type'] === 'Buy') {
+      if(el['From Currency'] === 'USD') {
+        output.total_buys_usd += parseFloat(el['From Amount'].replace(',', ''))
+      } else if(el['From Currency'] === 'CRC') {
+        output.total_buys_crc += parseFloat(el['From Amount'].replace(',', ''))
+      }
+    } else if(el['Type'] === 'Sell') {
+      if(el['To Currency'] === 'USD') {
+        output.total_sells_usd += parseFloat(el['To Amount'].replace(',', ''))
+      } else if(el['To Currency'] === 'CRC') {
+        output.total_sells_crc += parseFloat(el['To Amount'].replace(',', ''))
+      }
+    }
+  })
+
+  return res.send(output)
 })
 
 const payInvoice = async (bolt11) => {
@@ -2023,6 +2081,21 @@ const getUserOrders = async (db, type, userId, since) => {
     )
   }catch(e) {
     console.log('getUserOrders error', e)
+    return false
+  }
+}
+
+const getOrders = async (db, from, to) => {
+  try {
+    return await db.all(
+      "SELECT * FROM orders WHERE timestamp >= ? AND timestamp <= ? AND status = 'complete'", 
+      [
+        from,
+        to,
+      ]
+    )
+  } catch(e) {
+    console.log('getOrders error', e)
     return false
   }
 }
