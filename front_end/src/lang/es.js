@@ -97,6 +97,7 @@ const es = {
 	terms: "Términos y condiciones",
 	showPriceHistory: "Mostrar historial",
 	hidePriceHistory: "Esconder historial",
+	support: "Soporte por WhatsApp",
 
 	orderSuccess: "Pedido enviado con éxito. Lo revisaremos y procesaremos en breve. Contáctenos por WhatsApp si tiene alguna pregunta.",
 	orderSuccessTitle: "¡Pedido enviado con éxito!",

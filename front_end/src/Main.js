@@ -977,6 +977,10 @@ function Main({ client, registeredUser }) {
               {localized.terms}
             </a>
             {" | "}
+            <a href="whatsapp:+50687833773">
+              {localized.support}
+            </a>
+            {" | "}
             <a 
               href="#"
               onClick={(e) => {
