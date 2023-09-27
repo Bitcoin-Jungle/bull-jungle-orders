@@ -340,11 +340,7 @@ function Main({ client, registeredUser }) {
       return
     }
 
-    let txnRate = getTxnRate()
-
-    if(action === 'SELL') {
-      txnRate = txnRate * 0.985
-    }
+    const txnRate = getTxnRate()
 
     const btcAmount = parseFloat(fiatAmount / txnRate)
     const satAmount = btcAmount * 100000000
