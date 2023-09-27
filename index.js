@@ -1338,6 +1338,7 @@ app.get('/priceHistory', async (req, res) => {
   })
 
   res.send({success: true, data: output})
+})
 
 app.get('/stats', async (req, res) => {
   const apiKey = req.query.apiKey
