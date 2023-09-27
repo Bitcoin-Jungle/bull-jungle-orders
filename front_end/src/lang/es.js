@@ -125,6 +125,7 @@ const es = {
 		invalidFiatAmount: "Hay un límite por transacción de $1000 CAD.",
 		invoiceNotPaid: "La factura no ha sido pagada. Intente realizar su pedido de nuevo.",
 		pendingApproval: "Su solicitud está pendiente. Si ha pasado un tiempo y no ha escuchado nada de nosotros, intente contactarnos en WhatsApp.",
+		isOverDailyLimit: "Este pedido excedería los límites diarios de su cuenta. Por favor reduzca la cantidad o vuelva a intentarlo mañana.",
 	},
 
 }
