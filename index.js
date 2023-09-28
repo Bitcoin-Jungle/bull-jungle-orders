@@ -1371,29 +1371,54 @@ app.get('/stats', async (req, res) => {
   })
 
   const output = {
-    // raw_data: data,
+    total_count: 0,
+
+    total_sells_count: 0,
     total_sells_usd: 0,
+    total_sells_count_usd: 0,
     total_sells_crc: 0,
+    total_sells_count_crc: 0,
+    total_sells_dollarized: 0,
+
+    total_buys_count: 0,
     total_buys_usd: 0,
+    total_buys_count_usd: 0,
     total_buys_crc: 0,
+    total_buys_count_crc: 0,
+    total_buys_dollarized: 0,
   }
 
-  data.forEach((el) => {
+  for (var i = data.length - 1; i >= 0; i--) {
+    const el = data[i]
+  
+    output.total_count += 1
 
     if(el['Type'] === 'Buy') {
+      output.total_buys_count += 1
+
       if(el['From Currency'] === 'USD') {
         output.total_buys_usd += parseFloat(el['From Amount'].replace(',', ''))
+        output.total_buys_dollarized += parseFloat(el['From Amount'].replace(',', ''))
+        output.total_buys_count_usd += 1
       } else if(el['From Currency'] === 'CRC') {
         output.total_buys_crc += parseFloat(el['From Amount'].replace(',', ''))
+        output.total_buys_dollarized += parseFloat(el['From Amount'].replace(',', '') / el['USD/CRC'])
+        output.total_buys_count_crc += 1
       }
     } else if(el['Type'] === 'Sell') {
+      output.total_sells_count += 1
+
       if(el['To Currency'] === 'USD') {
         output.total_sells_usd += parseFloat(el['To Amount'].replace(',', ''))
+        output.total_sells_dollarized += parseFloat(el['To Amount'].replace(',', ''))
+        output.total_sells_count_usd += 1
       } else if(el['To Currency'] === 'CRC') {
         output.total_sells_crc += parseFloat(el['To Amount'].replace(',', ''))
+        output.total_sells_dollarized += parseFloat(el['To Amount'].replace(',', '') / el['USD/CRC'])
+        output.total_sells_count_crc += 1
       }
     }
-  })
+  }
 
   return res.send(output)
 })
