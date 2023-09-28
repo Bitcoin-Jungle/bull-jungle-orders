@@ -332,7 +332,6 @@ app.post('/order', async (req, res) => {
     // }
   }
 
-  const priceData = await getPrice()
   const txnRate = getTxnRate('CAD', action)
 
   if((satAmount / 100000000) * txnRate >= 995) {
@@ -440,8 +439,8 @@ app.post('/order', async (req, res) => {
     "Biller Account Number": billerAccountNumber,
     "Settlement LN Invoice": invoice,
     "Invoice Payment PreImage": paymentHash,
-    "USD/CRC": priceData.USDCRC,
-    "USD/CAD": priceData.USDCAD,
+    "USD/CRC": USDCRC.indexPrice,
+    "USD/CAD": USDCAD,
   }
 
   console.log('processed order data to', rowData)
