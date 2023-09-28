@@ -2039,12 +2039,12 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
     return false
   }
 
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
+  const todayMidnight = new Date()
+  todayMidnight.setUTCHours(0, 0, 0, 0)
 
-  const orders = await getUserOrders(db, action, phoneUser.id, yesterday.toISOString())
+  const orders = await getUserOrders(db, action, phoneUser.id, todayMidnight.toISOString())
 
-  console.log(`phoneUser id ${phoneUser.id} has ${(orders ? orders.length : "0")} ${action} orders today`)
+  console.log(`phoneUser id ${phoneUser.id} has ${(orders ? orders.length : "0")} ${action} orders since ${todayMidnight.toISOString()}`)
 
   if(fiatCurrency === 'CRC') {
     fiatAmount = fiatAmount / USDCRC.indexPrice
