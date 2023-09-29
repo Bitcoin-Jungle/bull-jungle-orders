@@ -44,6 +44,8 @@ const ridivi_name = process.env.ridivi_name
 const twilio_account_sid = process.env.twilio_account_sid
 const twilio_auth_token = process.env.twilio_auth_token
 const twilio_from_number = process.env.twilio_from_number
+const default_daily_sell_limit = process.env.default_daily_sell_limit
+const default_daily_buy_limit = process.env.default_daily_buy_limit
 
 const twilioClient = twilio(twilio_account_sid, twilio_auth_token)
 
@@ -2040,8 +2042,13 @@ const getPhoneNumberById = async (db, id) => {
 const addPhoneNumber = async (db, phoneNumber) => {
   try {
     return await db.run(
-      "INSERT INTO phone_numbers (phoneNumber) VALUES (?)", 
-      [phoneNumber]
+      "INSERT INTO phone_numbers (phoneNumber, allow_instant, daily_buy_limit, daily_sell_limit) VALUES (?, ?, ?, ?)", 
+      [
+        phoneNumber,
+        true,
+        parseFloat(default_daily_buy_limit),
+        parseFloat(default_daily_sell_limit),
+      ]
     )
   } catch {
     return false
@@ -2065,11 +2072,20 @@ const addOrder = async (db, timestamp) => {
 }
 
 const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurrency}) => {
-  const phoneUser = await getPhoneNumber(db, phoneNumber)
+  let phoneUser = await getPhoneNumber(db, phoneNumber)
+  let dailySellLimit = 0
+  let dailyBuyLimit = 0
 
   if(!phoneUser) {
     console.log('phoneUser not found')
-    return false
+    phoneUser = {
+      id: "new",
+    }
+    dailySellLimit = default_daily_sell_limit
+    dailyBuyLimit = default_daily_buy_limit
+  } else {
+    dailySellLimit = phoneUser.daily_sell_limit
+    dailyBuyLimit = phoneUser.daily_buy_limit
   }
 
   const todayMidnight = new Date()
@@ -2110,11 +2126,11 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
     total += orderFiatAmount
   }
 
-  console.log(`phoneUser id ${phoneUser.id} daily total of ${action} is ${total}. Limits are buy: ${phoneUser.daily_buy_limit}, sell: ${phoneUser.daily_sell_limit}`)
+  console.log(`phoneUser id ${phoneUser.id} daily total of ${action} is ${total}. Limits are buy: ${dailyBuyLimit}, sell: ${dailySellLimit}`)
 
-  if(action.toUpperCase() === 'BUY' && total > phoneUser.daily_buy_limit) {
+  if(action.toUpperCase() === 'BUY' && total > dailyBuyLimit) {
     return true
-  } else if(action.toUpperCase() !== 'BUY' && total > phoneUser.daily_sell_limit) {
+  } else if(action.toUpperCase() !== 'BUY' && total > dailySellLimit) {
     return true
   }
 
