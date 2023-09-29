@@ -89,6 +89,7 @@ const en = {
 
 	buy: "buy",
 	sell: "sell",
+	index: "index",
 	billpay: "pay bill",
 
 	continue: "Continue...",

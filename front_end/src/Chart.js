@@ -7,6 +7,7 @@ import {
   PointElement,
   LineElement,
   Tooltip,
+  Legend,
 } from 'chart.js'
 import { Line } from "react-chartjs-2"
 
@@ -15,14 +16,20 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  Tooltip
+  Tooltip,
+  Legend
 )
 
 const options = {
   responsive: true,
+  plugins: {
+    legend: {
+      position: 'top',
+    },
+  },
 }
 
-function Chart({ language, apiKey }) {
+function Chart({ localized, language, apiKey }) {
   const [data, setData] = useState([])
 
   const getData = () => {
@@ -52,13 +59,19 @@ function Chart({ language, apiKey }) {
     labels,
     datasets: [
       {
-        label: 'Buy',
+        label: localized.buy,
         data: data.map((el) => el.buy),
         borderColor: '#459C0B',
         backgroundColor: '#459C0B',
       },
       {
-        label: 'Sell',
+        label: localized.index,
+        data: data.map((el => el.index)),
+        borderColor: '#000000',
+        backgroundColor: '#000000',
+      },
+      {
+        label: localized.sell,
         data: data.map((el) => el.sell),
         borderColor: '#FF7e1c',
         backgroundColor: '#FF7e1c',

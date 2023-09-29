@@ -90,6 +90,7 @@ const es = {
 	buy: "comprar",
 	sell: "vender",
 	billpay: "pagar factura",
+	index: "indexado",
 
 	continue: "Continuar...",
 	confirm: "Confirmar",

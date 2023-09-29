@@ -1323,16 +1323,23 @@ app.get('/priceHistory', async (req, res) => {
   }
 
   const data = await getBullHistory('BTC', 'CRC')
+  const bitcoinJungleIndex = await getBitcoinJunglePrice("ONE_WEEK")
 
   if(!data || !data.result) {
     return res.send({error: true, message: "Error loading map data"})
   }
 
   const output = data.result.map((el) => {
+    const d = new Date(el.createdAt)
+
+    const closestTimestamp = closestDate(Math.round(d.getTime() / 1000), bitcoinJungleIndex.map(indexPrice => indexPrice.timestamp))
+    const closestIndexPrice = bitcoinJungleIndex.find(indexPrice => indexPrice.timestamp === closestTimestamp)
+
     return {
-      date: new Date(el.createdAt).toLocaleString(),
+      date: d.toLocaleString(),
       buy: el.toFromPrice,
       sell: el.fromToPrice,
+      index: Math.round(((closestIndexPrice.price.base / 10 ** closestIndexPrice.price.offset) / 100)),
     }
   })
 
@@ -1831,26 +1838,13 @@ getBtcCad()
 
 const getPrice = async () => {
   try {
-    const response = await axios({
-      method: "POST",
-      url: "https://api.mainnet.bitcoinjungle.app/graphql",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      data: {
-        query: "query BtcPriceList($range: PriceGraphRange!) {\n  btcPriceList(range: $range) {\n    price {\n      base\n      currencyUnit\n      formattedAmount\n      offset\n    }\n    timestamp\n  }\n}",
-        variables: {
-          range: "ONE_DAY"
-        },
-        operationName: "BtcPriceList"
-      }
-    })
+    const response = await getBitcoinJunglePrice("ONE_DAY")
 
-    if(!response || !response.data || !response.data.data || !response.data.data.btcPriceList || !response.data.data.btcPriceList.length) {
+    if(!response) {
       return {error: true, message: "Error fetching price"}
     }
 
-    const priceData = response.data.data.btcPriceList.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
+    const priceData = response.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
     const timestamp = new Date(priceData.timestamp * 1000).toISOString()
 
     const BTCCRC = Math.round(((priceData.price.base / 10 ** priceData.price.offset) / 100))
@@ -1862,6 +1856,34 @@ const getPrice = async () => {
     return {BTCCRC, USDCRC: USDCRC.indexPrice, USDCAD, BTCUSD, BTCCAD, timestamp}
   } catch(e) {
     return {error: true, message: "Error fetching price"}
+  }
+}
+
+const getBitcoinJunglePrice = async (range) => {
+  try {
+    const response = await axios({
+      method: "POST",
+      url: "https://api.mainnet.bitcoinjungle.app/graphql",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: {
+        query: "query BtcPriceList($range: PriceGraphRange!) {\n  btcPriceList(range: $range) {\n    price {\n      base\n      currencyUnit\n      formattedAmount\n      offset\n    }\n    timestamp\n  }\n}",
+        variables: {
+          range,
+        },
+        operationName: "BtcPriceList"
+      }
+    })
+
+    if(!response || !response.data || !response.data.data || !response.data.data.btcPriceList || !response.data.data.btcPriceList.length) {
+      return false
+    }
+
+    return response.data.data.btcPriceList
+  } catch (e) {
+    console.log('getBitcoinJunglePrice error', e)
+    return false
   }
 }
 
@@ -1886,6 +1908,17 @@ const getTicker = () => {
     timestamp,
   }
 }
+
+const closestDate = (toDate, dates) => dates.reduce((x, date) => {
+  const distance = Math.abs(toDate - date)
+  if (!x.distance || distance < x.distance) {
+    return {
+      distance, 
+      date
+    }
+  }
+  return x
+}, {}).date
 
 const getAlert = async (db) => {
   try {

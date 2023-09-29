@@ -994,6 +994,7 @@ function Main({ client, registeredUser }) {
           {showChartModal &&
             <div>
               <Chart
+                localized={localized}
                 language={language}
                 apiKey={apiKey} 
               />
