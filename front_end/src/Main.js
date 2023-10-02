@@ -333,7 +333,7 @@ function Main({ client, registeredUser }) {
     const btcAmount = parseFloat(satBalance / 100000000)
     const fiatAmount = parseFloat(btcAmount * txnRate)
 
-    setFiatAmount(Math.floor(fiatAmount))
+    setFiatAmount(Math.floor(fiatAmount).toString())
   }
 
   const calculateSatAmount = (setSat) => {
