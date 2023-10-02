@@ -528,7 +528,7 @@ app.post('/invoice', async (req, res) => {
   const description = req.body.description
   const satAmount = req.body.satAmount
   const action = req.body.action
-  const fiatAmount = (req.body.fiatAmount ? req.body.fiatAmount.replace(/,/g, "") : null)
+  const fiatAmount = (req.body.fiatAmount ? parseFloat(req.body.fiatAmount.replace(/,/g, "")) : null)
   const fiatCurrency = req.body.fiatCurrency
   const phoneNumber = (req.body.phoneNumber ? req.body.phoneNumber.replace(/[^\d]+/g, "").trim() : null)
 
