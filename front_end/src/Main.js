@@ -398,7 +398,7 @@ function Main({ client, registeredUser }) {
   }
 
   const handlePaymentDescChange = async (e) => {
-    const val = e.target.value.replaceAll(/bitcoin|btc|sats|cripto|crypto|\p{Emoji}/giu, '')
+    const val = e.target.value.replaceAll(/bitcoin|btc|sats|cripto|crypto|bit |\p{Emoji}/giu, '')
 
     if(val.length >= 15) {
       val = val.substr(0, 15)
