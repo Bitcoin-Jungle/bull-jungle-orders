@@ -14,6 +14,7 @@ import sqlite3 from 'sqlite3'
 import ibantools from 'ibantools'
 import { EventEmitter } from 'events'
 import twilio from 'twilio'
+import * as bolt11 from "bolt11"
 
 import * as ridivi from "./ridivi.js"
 
@@ -360,6 +361,23 @@ app.post('/order', async (req, res) => {
       invoicePaid = await checkInvoice(timestamp)
 
       if(invoicePaid) {
+        const decodedInvoice = bolt11.decode(invoicePaid.bolt11)
+
+        if(!decodedInvoice) {
+          console.log('cant decode invoice, failing')
+          return res.send({error: true, type: "invoiceNotPaid"})
+        }
+
+        if(decodedInvoice.satoshis > satAmount * 1.05) {
+          console.log("invoice sat amount is more than 5% over order sat amount. Please review manually.")
+          return res.send({error: true, type: "invoiceNotPaid"})
+        }
+
+        if(decodedInvoice.satoshis < satAmount * 0.95) {
+          console.log("invoice sat amount is more than 5% under order sat amount. Please review manually.")
+          return res.send({error: true, type: "invoiceNotPaid"})
+        }
+
         console.log('invoice paid', timestamp)
         break
       } else {
@@ -901,22 +919,36 @@ app.get('/payInvoice', async (req, res) => {
 
   const txnRate = getTxnRate(currency, 'BUY')
 
-  if(!force) {
-    if((satAmount / 100000000) * txnRate > fiatAmount * 1.05) {
-      return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
-    }
-
-    if((satAmount / 100000000) * txnRate < fiatAmount * 0.95) {
-      return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
-    }
-  }
-
   if(!destination) {
     return res.send({error: true, message: "order destination is invalid"})
   }
 
   if(!paymentIdentifier) {
     return res.send({error: true, message: "payment identifier is invalid"})
+  }
+
+  if(!force) {
+    if((satAmount / 100000000) * txnRate > fiatAmount * 1.05) {
+      return res.send({error: true, message: "Fiat amount is more than 5% over current market value. Please review manually."})
+    }
+
+    if((satAmount / 100000000) * txnRate < fiatAmount * 0.95) {
+      return res.send({error: true, message: "Fiat amount is more than 5% under current market value. Please review manually."})
+    }
+
+    const decodedInvoice = bolt11.decode(destination)
+
+    if(!decodedInvoice) {
+      return res.send({error: true, message: "invalid bolt11 invoice"})
+    }
+
+    if(decodedInvoice.satoshis > satAmount * 1.05) {
+      return res.send({error: true, message: "invoice sat amount is more than 5% over order sat amount. Please review manually."})
+    }
+
+    if(decodedInvoice.satoshis < satAmount * 0.95) {
+      return res.send({error: true, message: "invoice sat amount is more than 5% under order sat amount. Please review manually."})
+    }
   }
 
   await updateOrderPaymentStatus(db, timestamp, 'in-flight')
@@ -1660,7 +1692,7 @@ const checkInvoice = async (label) => {
     })
 
     if(response.data.result.status === 'paid') {
-      return true
+      return response.data.result
     }
 
     return false
