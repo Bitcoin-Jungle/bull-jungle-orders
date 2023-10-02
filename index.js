@@ -1338,7 +1338,7 @@ app.get('/priceHistory', async (req, res) => {
     const closestIndexPrice = bitcoinJungleIndex.find(indexPrice => indexPrice.timestamp === closestTimestamp)
 
     return {
-      date: d.toLocaleString(),
+      date: d.toISOString(),
       buy: el.toFromPrice,
       sell: el.fromToPrice,
       index: Math.round(((closestIndexPrice.price.base / 10 ** closestIndexPrice.price.offset) / 100)),
