@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-import localizeText from './lang/index'
+import { localizeText, localize } from './lang/index'
 import { getApiKey, getPhoneNumber, getUsername, getLanguage, getSatBalance, isFromBJ, isInIframe } from './utils/index'
 
 import { SendReceiveIcon } from './components/SendReceiveIcon'
@@ -157,7 +157,7 @@ function Main({ client, registeredUser }) {
     .then((data) => {
       if(data.error) {
         if(data.type) {
-          alert(localized.errors[data.type])
+          alert(localize(localized.errors, data.type, data.data))
           return
         }
 

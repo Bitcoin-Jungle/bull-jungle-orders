@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import localizeText from './lang/index'
+import { localizeText } from './lang/index'
 
 import Rules from './Rules'
 

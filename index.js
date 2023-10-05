@@ -344,7 +344,7 @@ app.post('/order', async (req, res) => {
   const isOver = await isUserOverDailyLimit({action, phoneNumber, fiatAmount, fiatCurrency})
 
   if(isOver) {
-    return res.send({error: true, type: "isOverDailyLimit"})
+    return res.send({error: true, type: "isOverDailyLimit", data: isOver})
   }
 
   const orderAdded = await addOrder(db, timestamp)
@@ -589,7 +589,7 @@ app.post('/invoice', async (req, res) => {
   const isOver = await isUserOverDailyLimit({action, phoneNumber, fiatAmount, fiatCurrency})
 
   if(isOver) {
-    return res.send({error: true, type: "isOverDailyLimit"})
+    return res.send({error: true, type: "isOverDailyLimit", data: isOver})
   }
 
   const invoiceData = {
@@ -2161,10 +2161,15 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
 
   console.log(`phoneUser id ${phoneUser.id} daily total of ${action} is ${total}. Limits are buy: ${dailyBuyLimit}, sell: ${dailySellLimit}`)
 
-  if(action.toUpperCase() === 'BUY' && total > dailyBuyLimit) {
-    return true
-  } else if(action.toUpperCase() !== 'BUY' && total > dailySellLimit) {
-    return true
+  if(
+    (action.toUpperCase() === 'BUY' && total > dailyBuyLimit) ||
+    (action.toUpperCase() !== 'BUY' && total > dailySellLimit)
+  ) {
+    return {
+      total,
+      dailyBuyLimit,
+      dailySellLimit,
+    }
   }
 
   return false
