@@ -10,6 +10,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Line } from "react-chartjs-2"
+import zoomPlugin from 'chartjs-plugin-zoom'
 
 ChartJS.register(
   CategoryScale,
@@ -17,7 +18,8 @@ ChartJS.register(
   PointElement,
   LineElement,
   Tooltip,
-  Legend
+  Legend,
+  zoomPlugin
 )
 
 const options = {
@@ -26,7 +28,18 @@ const options = {
     legend: {
       position: 'top',
     },
-  },
+    zoom: {
+      zoom: {
+        wheel: {
+          enabled: true,
+        },
+        pinch: {
+          enabled: true
+        },
+        mode: 'xy',
+      }
+    }
+  }
 }
 
 function Chart({ localized, language, apiKey }) {
