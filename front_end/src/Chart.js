@@ -31,13 +31,14 @@ const options = {
 
 function Chart({ localized, language, apiKey }) {
   const [data, setData] = useState([])
+  const [fiatCurrency, setFiatCurrency] = useState("CRC")
 
   const getData = () => {
-    fetch(`/priceHistory?apiKey=${apiKey}`)
+    fetch(`/priceHistory?apiKey=${apiKey}&fiatCurrency=${fiatCurrency}`)
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
-        alert(data.message || "An unexpected error has occurred.")
+        alert(localized.errors[data.type] || data.message || "An unexpected error has occurred.")
         return
       }
 
@@ -48,6 +49,11 @@ function Chart({ localized, language, apiKey }) {
   useEffect(() => {
     getData()
   }, [])
+
+  useEffect(() => {
+    setData([])
+    getData()
+  }, [fiatCurrency])
 
   const labels = data.map((el) => {
     const dateOptions = { weekday: undefined, year: undefined, month: 'short', day: 'numeric', hour: '2-digit', hour12: true }
@@ -89,6 +95,10 @@ function Chart({ localized, language, apiKey }) {
 
   return (
     <div className="well" style={{backgroundColor: "white"}}>
+      <select value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
+        <option value="CRC">Costa Rica Colón (CRC)</option>
+        <option value="USD">US Dollar (USD)</option>
+      </select>
       <Line 
         data={lineData}
         options={options}

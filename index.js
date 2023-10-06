@@ -1363,6 +1363,7 @@ app.post('/alert', async (req, res) => {
 
 app.get('/priceHistory', async (req, res) => {
   const apiKey = req.query.apiKey
+  const fiatCurrency = req.query.fiatCurrency
   
   if(!apiKey) {
     return res.send({error: true, type: "apiKeyRequired"})
@@ -1372,7 +1373,11 @@ app.get('/priceHistory', async (req, res) => {
     return res.send({error: true, type: "apiKeyIncorrect"})
   }
 
-  const data = await getBullHistory('BTC', 'CRC')
+  if(!fiatCurrency) {
+    return res.send({error: true, type: "fiatCurrencyRequired"})
+  }
+
+  const data = await getBullHistory('BTC', fiatCurrency)
   const bitcoinJungleIndex = await getBitcoinJunglePrice("ONE_WEEK")
 
   if(!data || !data.result) {
@@ -1384,12 +1389,17 @@ app.get('/priceHistory', async (req, res) => {
 
     const closestTimestamp = closestDate(Math.round(d.getTime() / 1000), bitcoinJungleIndex.map(indexPrice => indexPrice.timestamp))
     const closestIndexPrice = bitcoinJungleIndex.find(indexPrice => indexPrice.timestamp === closestTimestamp)
+    let indexPrice = Math.round(((closestIndexPrice.price.base / 10 ** closestIndexPrice.price.offset) / 100))
+
+    if(fiatCurrency !== 'CRC') {
+      indexPrice = Math.round(indexPrice / USDCRC.indexPrice)
+    }
 
     return {
       date: d.toISOString(),
       buy: el.toFromPrice,
       sell: el.fromToPrice,
-      index: Math.round(((closestIndexPrice.price.base / 10 ** closestIndexPrice.price.offset) / 100)),
+      index: indexPrice,
     }
   })
 
