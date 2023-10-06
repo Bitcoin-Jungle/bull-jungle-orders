@@ -1378,7 +1378,7 @@ app.get('/priceHistory', async (req, res) => {
   }
 
   const data = await getBullHistory('BTC', fiatCurrency)
-  const bitcoinJungleIndex = await getBitcoinJunglePrice("ONE_WEEK")
+  const bitcoinJungleIndex = await getBitcoinJunglePrice("ONE_DAY")
 
   if(!data || !data.result) {
     return res.send({error: true, message: "Error loading map data"})
@@ -1758,7 +1758,7 @@ const getBullPrice = async (from, to) => {
 
 const getBullHistory = async (from, to) => {
   let fromDate = new Date()
-  fromDate.setDate(fromDate.getDate() - 2)
+  fromDate.setDate(fromDate.getDate() - 1)
 
   try {
     const response = await axios({
