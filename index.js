@@ -112,7 +112,7 @@ telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, times
   return true
 })
 
-processOrderEventHandler.on('processOrder', async ({rowData}) => {
+processOrderEventHandler.on('processOrder', async ({rowData, tryNum}) => {
   console.log('processing order')
 
   try {
@@ -133,6 +133,22 @@ processOrderEventHandler.on('processOrder', async ({rowData}) => {
 
     if(response.data.error) {
       console.log('error calling')
+
+      if(rowData.Type === 'Buy' && (!tryNum || tryNum < 4)) {
+        tryNum = (!tryNum ? 2 : tryNum + 1)
+        await new Promise(resolve => setTimeout(resolve, 1000 * 10 * tryNum))
+        console.log(`trying again ${tryNum}...`)
+
+        processOrderEventHandler.emit(
+          'processOrder',
+          {
+            rowData,
+            tryNum: tryNum
+          }
+        )
+
+        return false
+      }
 
       await bot.telegram.sendMessage(
         chat_id, 
