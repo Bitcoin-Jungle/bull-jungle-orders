@@ -902,23 +902,23 @@ function Main({ client, registeredUser }) {
                                 <br />
                                 <ul className="accountList">
                                   <li>
-                                    <button onClick={() => copyToClipboard('87833773')}>
+                                    <span onClick={() => copyToClipboard('87833773')}>
                                       📋
-                                    </button>
+                                    </span>
                                     {" "}
                                     8783-3773 (Sinpe Móvil)
                                   </li>
                                   <li>
-                                    <button onClick={() => copyToClipboard('CR06090100002792137502')}>
+                                    <span onClick={() => copyToClipboard('CR06090100002792137502')}>
                                       📋
-                                    </button>
+                                    </span>
                                     {" "}
                                     CR06090100002792137502 ({localized.crcAccount})
                                   </li>
                                   <li>
-                                    <button onClick={() => copyToClipboard('CR76090100002792137503')}>
+                                    <span onClick={() => copyToClipboard('CR76090100002792137503')}>
                                       📋
-                                    </button>
+                                    </span>
                                     {" "}
                                     CR76090100002792137503 ({localized.usdAccount})
                                   </li>
