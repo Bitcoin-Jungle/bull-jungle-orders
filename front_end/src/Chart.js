@@ -109,8 +109,8 @@ function Chart({ localized, language, apiKey }) {
   return (
     <div className="well" style={{backgroundColor: "white"}}>
       <select value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
-        <option value="CRC">Costa Rica Colón (CRC)</option>
-        <option value="USD">US Dollar (USD)</option>
+        <option value="CRC">{localized.crc}</option>
+        <option value="USD">{localized.usd}</option>
       </select>
       <Line 
         data={lineData}
