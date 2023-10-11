@@ -5,15 +5,15 @@ import { isFromBJ } from '../utils/index'
 function Invoice({ invoice, localized }) {
 
 const copyToClipboard = () => {
-    try {
-      navigator.clipboard.writeText(invoice)
-      setTimeout(() => {
-        alert("Invoice copied to clipboard")
-      }, 50)
-    } catch(e) {
-
-    }
+  try {
+    navigator.clipboard.writeText(invoice)
+    setTimeout(() => {
+      alert("Invoice copied to clipboard")
+    }, 50)
+  } catch(e) {
+    console.log(e)
   }
+}
 
   const aHref = (isFromBJ() ? `bitcoinjungle://${invoice}` : `lightning:${invoice}`)
 

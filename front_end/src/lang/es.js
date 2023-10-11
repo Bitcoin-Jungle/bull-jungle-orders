@@ -4,6 +4,9 @@ const es = {
 	apiKeyTitle: "Contraseña",
 	apiKeyHelper: "Ingrese tu contraseña aquí",
 
+	crc: "Colónes",
+	usd: "Dolares",
+
 	registerTitle: "¡Bienvenido!",
 	registerSubtext1: "Parece que esta es tu primera vez aquí.",
 	registerSubtext2: "Solicite acceso haciendo clic en el botón de abajo.",
@@ -44,18 +47,20 @@ const es = {
 	rules1: "No aceptamos transferencias de terceros. Esto significa que todos los fondos deben provenir de una cuenta bancaria a su nombre (o el de su empresa).",
 	rules2: "Recomendamos no escribir cosas como bitcoin, btc, crypto, etc. en el campo memo. Esto es por tu privacidad.",
 	rules3: "Sólo aceptamos transferencias instantáneas. No seleccione la opción de transferencia lenta de 1 a 3 días.",
+	rules4: "La moneda eligido en este formulario debe corresponder con la moneda que usted nos envía desde su banco.",
 	rulesInstructionsAfter: "El incumplimiento de estas reglas puede resultar en una prohibición permanente de Bull Bitcoin y Toro Pagos.",
 
 	paymentOptionsTitle: "Opciones de pago",
-	paymentOptionsInstructionBefore: "Antes de realizar la compra, debe enviar",
-	paymentOptionsInstructionsAfter: "a una de las siguientes opciones",
+	paymentOptionsInstructionBefore: "Antes de llenar este formulario, envíanos {fiatAmount} {fiatCurrency} a nuestra cuenta bancaria.",
+	paymentIdNumber: "Nuestra Cédula Jurídica es 3-102-875766, Toro Pagos Limitada.",
+	paymentOptionsInstructionAfter: "Cuando ya has enviado {fiatAmount} {fiatCurrency}, copie el comprobante que te entregó el banco y péguela aquí.",
 
-	crcAccount: "Cuenta CRC",
-	usdAccount: "Cuenta USD",
+	crcAccount: "Cuenta Colónes",
+	usdAccount: "Cuenta Dolares",
 	
-	paymentIdentifierTitle: "Número de Comprobante del Pago",
+	paymentIdentifierTitle: "Comprobante del banco",
 	paymentIdentifierHelper: "Por lo general, recibirá un número de comprobante de pago de 25 dígitos. Si su banco no proporciona esto, ingrese el número proporcionado por su banco. Tenga en cuenta que esto puede causar retrasos.",
-	paymentConfirmationLabel: "Ya he enviado el pago con este número de comprobante",
+	paymentConfirmationLabel: "Mi banco me entregó este comprobante",
 	
 	billerCategoryTitle: "Categoría del facturador",
 	billerServiceTitle: "Servicio de facturación",

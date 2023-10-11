@@ -65,3 +65,11 @@ p {
 .recharts-responsive-container {
   min-height: 600px;
 }
+
+ul.accountList {
+  margin-top: 10px;
+}
+
+ul.accountList li {
+  padding-bottom: 5px;
+}

@@ -17,6 +17,9 @@ function Rules({ localized }) {
           <li>
             {localized.rules3}
           </li>
+          <li>
+            {localized.rules4}
+          </li>
         </ol>
         <span>
           {localized.rulesInstructionsAfter}

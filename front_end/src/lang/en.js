@@ -4,6 +4,9 @@ const en = {
 	apiKeyTitle: "API Key",
 	apiKeyHelper: "Enter your API Key here",
 
+	crc: "Colónes",
+	usd: "Dollars",
+
 	registerTitle: "Welcome!",
 	registerSubtext1: "It looks like this is your first time here.",
 	registerSubtext2: "Please request access by clicking the button below.",
@@ -44,14 +47,16 @@ const en = {
 	rules1: "We don't accept third party transfers. This means that all funds must originate from a bank account in your (or your business) name.",
 	rules2: "We recommend not writing things like bitcoin, btc, crypto, et. cetera. in the memo field. This is for your privacy.",
 	rules3: "We only accept instant transfers. Do not select the slow 1-3 day transfer option.",
+	rules4: "Your order currency must match the currency you send to us from your bank.",
 	rulesInstructionsAfter: "Failure to adhere to these rules may result in a permanent ban from Bull Bitcoin and Toro Pagos.",
 
 	paymentOptionsTitle: "Payment Options",
-	paymentOptionsInstructionBefore: "Before submitting the order, you must send",
-	paymentOptionsInstructionsAfter: "to one of the following options",
+	paymentOptionsInstructionBefore: "Before submitting this order, you must send {fiatAmount} {fiatCurrency} to us from your bank account.",
+	paymentIdNumber: "Our Cédula Jurídica is 3-102-875766, Toro Pagos Limitada.",
+	paymentOptionsInstructionAfter: "After sending {fiatAmount} {fiatCurrency} to us, copy the payment reference provided to you by your bank and paste it below.",
 	
-	crcAccount: "CRC Account",
-	usdAccount: "USD Account",
+	crcAccount: "Colones Account",
+	usdAccount: "Dollar Account",
 	
 	paymentIdentifierTitle: "Payment Reference #",
 	paymentIdentifierHelper: "Typically you will receive a 25 digit payment reference number. If your bank does not provide this, please enter the number provided by your bank. Please note, this may cause delays.",
