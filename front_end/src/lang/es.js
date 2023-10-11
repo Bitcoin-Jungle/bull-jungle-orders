@@ -59,7 +59,7 @@ const es = {
 	usdAccount: "Cuenta Dolares",
 	
 	paymentIdentifierTitle: "Comprobante del banco",
-	paymentIdentifierHelper: "Por lo general, recibirá un número de comprobante de pago de 25 dígitos. Si su banco no proporciona esto, ingrese el número proporcionado por su banco. Tenga en cuenta que esto puede causar retrasos.",
+	paymentIdentifierHelper: "Típicamente, recibirá un comprobante de 25 dígitos. Si su banco no engtrega el comprobante entero, ingrese el número entregado por su banco. Tenga en cuenta que esto puede causar retrasos.",
 	paymentConfirmationLabel: "Mi banco me entregó este comprobante",
 	
 	billerCategoryTitle: "Categoría del facturador",
