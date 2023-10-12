@@ -125,7 +125,12 @@ function OrderHistory({}) {
     <div className="container-fluid">
       <div className="row">
         <div className="col">
-          {orders.length > 0 &&
+          {loading &&
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          }
+          {!loading && orders.length > 0 &&
             <div>
               <div className="mb-3">
                 <DataGrid 
