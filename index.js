@@ -1351,7 +1351,7 @@ app.get('/getOrders', async (req, res) => {
     res.send({error: true, message: "orderHistory error"})
   }
 
-  return res.send({success: true, data})
+  return res.send({success: true, data: data.sort((x, y) => x.timestamp - y.timestamp)})
 })
 
 app.get('/alert', async (req, res) => {

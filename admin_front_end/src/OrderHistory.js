@@ -70,6 +70,18 @@ function OrderHistory({}) {
           const cell = props.row[props.column.key]
           const id = (Math.random() + 1).toString(36).substring(7)
 
+          if(props.column.key === 'From Amount' && props.row['Type'] == 'Sell') {
+            return (
+              <span>{eval(cell.replace('=', ''))}</span>
+            )
+          }
+
+          if(props.column.key === 'To Amount' && props.row['Type'] == 'Buy') {
+            return (
+              <span>{eval(cell.replace('=', ''))}</span>
+            )
+          }
+
           return (
             <>
               <span id={`cell-${id}`}>{cell}</span>
