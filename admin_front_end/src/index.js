@@ -1,13 +1,41 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import {
+  createHashRouter,
+  RouterProvider
+} from 'react-router-dom';
+
 import reportWebVitals from './reportWebVitals';
+
+import './index.css';
+import './App.css';
+
+import Home from './Home';
+import BankAccounts from './BankAccounts';
+import OrderHistory from './OrderHistory';
+
+const router = createHashRouter([
+  {
+    path: "/*",
+    element: <Home />
+  },
+  {
+    path: "/bankAccounts",
+    element: <BankAccounts />,
+  },
+  {
+    path: "/orderHistory",
+    element: <OrderHistory />,
+  },
+]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <div className="App">
+      <h3>Bull Jungle Admin</h3>
+      <RouterProvider router={router} />
+    </div>
   </React.StrictMode>
 );
 

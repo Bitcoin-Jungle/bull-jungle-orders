@@ -1329,6 +1329,31 @@ app.get('/getHistory', async (req, res) => {
   return res.send(data.data)
 })
 
+app.get('/getOrders', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const page = req.query.page
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!page) {
+    return res.send({error: true, message: "page is required"})
+  }
+
+  const data = await getOrders(db, '2000-01-01T00:00:00.000Z', new Date().toISOString())
+
+  if(!data) {
+    res.send({error: true, message: "orderHistory error"})
+  }
+
+  return res.send({success: true, data})
+})
+
 app.get('/alert', async (req, res) => {
   const alert = await getAlert(db)
 
