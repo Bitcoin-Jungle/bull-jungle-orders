@@ -1331,7 +1331,8 @@ app.get('/getHistory', async (req, res) => {
 
 app.get('/getOrders', async (req, res) => {
   const apiKey = req.query.apiKey
-  const page = req.query.page
+  const from = req.query.from
+  const to = req.query.to
 
   if(!apiKey) {
     return res.send({error: true, message: "apiKey is required"})
@@ -1341,11 +1342,15 @@ app.get('/getOrders', async (req, res) => {
     return res.send({error: true, message: "apiKey is incorrect"})
   }
 
-  if(!page) {
-    return res.send({error: true, message: "page is required"})
+  if(!from) {
+    return res.send({error: true, message: "from is required"})
   }
 
-  const data = await getOrders(db, '2000-01-01T00:00:00.000Z', new Date().toISOString())
+  if(!to) {
+    return res.send({error: true, message: "to is required"})
+  }
+
+  const data = await getOrders(db, from, to)
 
   if(!data) {
     res.send({error: true, message: "orderHistory error"})

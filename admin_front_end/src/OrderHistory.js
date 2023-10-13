@@ -9,10 +9,18 @@ import * as csv from 'csv/browser/esm/sync'
 import { getApiKey } from './utils/index'
 
 function OrderHistory({}) {
+  const today = new Date()
+  today.setUTCHours(23,59,59,999)
+
+  const defaultFromDate = new Date()
+  defaultFromDate.setUTCHours(6,0,0,0)
+  defaultFromDate.setDate(today.getDate() - 7)
+
   const [apiKey, setApiKey] = useState(getApiKey())
   const [orders, setOrders] = useState({})
   const [loading, setLoading] = useState(false)
-  const [pageNumber, setPageNumber] = useState(1)
+  const [from, setFrom] = useState(defaultFromDate)
+  const [to, setTo] = useState(today)
 
   const getOrders = () => {
     if(loading) {
@@ -21,7 +29,7 @@ function OrderHistory({}) {
 
     setLoading(true)
 
-    fetch(`/getOrders?apiKey=${apiKey}&page=${pageNumber}`)
+    fetch(`/getOrders?apiKey=${apiKey}&from=${from.toISOString()}&to=${to.toISOString()}`)
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
@@ -55,8 +63,10 @@ function OrderHistory({}) {
   }, [])
 
   useEffect(() => {
-    getOrders()
-  }, [pageNumber])
+    if(!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+      getOrders()
+    }
+  }, [from, to])
 
   let columns = []
 
@@ -105,6 +115,18 @@ function OrderHistory({}) {
     })
   }
 
+  const setDate = (type, dateStr) => {
+    const date = new Date(dateStr)
+
+    if(!isNaN(date.getTime())) {
+      if(type == 'from') {
+        setFrom(date)
+      } else if(type == 'to') {
+        setTo(date)
+      }
+    }
+  }
+
   const exportCSV = () => {
     const output = csv.stringify([
       columns.map((col) => col.key),
@@ -125,6 +147,25 @@ function OrderHistory({}) {
     <div className="container-fluid">
       <div className="row">
         <div className="col">
+          <div className="mb-3">
+            <div className="row">
+              <div className="col-4">
+                <label htmlFor="from" className="form-label">From Date</label>
+                <input type="date" className="form-control" defaultValue={from.toISOString().split('T')[0]} onBlur={(e) => setDate('from', e.target.value)} />
+              </div>
+              <div className="col-4">
+                <label htmlFor="to" className="form-label">To Date</label>
+                <input type="date" className="form-control" defaultValue={to.toISOString().split('T')[0]} onBlur={(e) => setDate('to', e.target.value)} />
+              </div>
+              <div className="col-4">
+                <br />
+                <button className="btn btn-primary from-control" onClick={() => exportCSV() }>
+                  Export CSV
+                </button>
+              </div>
+            </div>
+          </div> 
+
           {loading &&
             <div className="spinner-border" role="status">
               <span className="visually-hidden">Loading...</span>
@@ -138,19 +179,6 @@ function OrderHistory({}) {
                   columns={columns}
                   rows={orders} />
               </div>
-            
-              <div className="mb-3">
-                {pageNumber > 1 &&
-                  <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber - 1) }>
-                    Previous Page
-                  </button>
-                }
-
-                <button className="btn btn-primary" onClick={() => exportCSV() }>
-                  Export CSV
-                </button>
-                
-              </div> 
             </div>
           }
         </div>
