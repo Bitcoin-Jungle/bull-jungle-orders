@@ -41,6 +41,7 @@ function OrderHistory({}) {
         const newObj = JSON.parse(el.data)
         delete el.data
         delete el.id
+        delete newObj.Date
 
         return {
           ...el,
@@ -77,19 +78,14 @@ function OrderHistory({}) {
         name: value,
         resizable: true,
         renderCell(props) {
-          const cell = props.row[props.column.key]
+          let cell = props.row[props.column.key]
           const id = (Math.random() + 1).toString(36).substring(7)
 
-          if(props.column.key === 'From Amount' && props.row['Type'] == 'Sell') {
-            return (
-              <span>{eval(cell.replace('=', ''))}</span>
-            )
-          }
-
-          if(props.column.key === 'To Amount' && props.row['Type'] == 'Buy') {
-            return (
-              <span>{eval(cell.replace('=', ''))}</span>
-            )
+          if(
+            (props.column.key === 'From Amount' && props.row['Type'] == 'Sell') ||
+            (props.column.key === 'To Amount' && props.row['Type'] == 'Buy')
+          ) {
+            cell = eval(cell.replace('=', ''))
           }
 
           return (
