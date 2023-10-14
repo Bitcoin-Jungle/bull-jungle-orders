@@ -2177,7 +2177,7 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
   }
 
   const todayMidnight = new Date()
-  todayMidnight.setUTCHours(6, 0, 0, 0)
+  todayMidnight.setUTCHours(0, 0, 0, 0)
 
   const orders = await getUserOrders(db, action, phoneUser.id, todayMidnight.toISOString())
 
