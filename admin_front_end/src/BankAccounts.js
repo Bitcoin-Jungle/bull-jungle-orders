@@ -3,17 +3,26 @@ import 'react-data-grid/lib/styles.css'
 import { useState, useEffect } from 'react'
 import DataGrid from 'react-data-grid'
 import { Tooltip } from 'react-tooltip'
-import * as moment from 'moment'
+import * as csv from 'csv/browser/esm/sync'
 
 import { getApiKey } from './utils/index'
 
 function BankAccounts({}) {
+  const today = new Date()
+  today.setUTCHours(23,59,59,999)
+
+  const defaultFromDate = new Date()
+  defaultFromDate.setUTCHours(0,0,0,0)
+  defaultFromDate.setDate(today.getDate() - 7)
+
   const [apiKey, setApiKey] = useState(getApiKey())
   const [account, setAccount] = useState("")
   const [accounts, setAccounts] = useState({})
   const [accountDetail, setAccountDetail] = useState({})
   const [loading, setLoading] = useState(false)
   const [pageNumber, setPageNumber] = useState(1)
+  const [from, setFrom] = useState(defaultFromDate)
+  const [to, setTo] = useState(today)
 
   const getAccounts = () => {
     setLoading(true)
@@ -44,8 +53,8 @@ function BankAccounts({}) {
 
     const params = new URLSearchParams({
       apiKey,
-      from: moment().subtract(3, 'days').format('YYYY-MM-DD'),
-      to: moment().format('YYYY-MM-DD'),
+      from: from.toISOString(),
+      to: to.toISOString(),
       page: pageNumber,
       iban: account.iban,
     })
@@ -84,6 +93,45 @@ function BankAccounts({}) {
     setPageNumber(1)
   }
 
+  const setDate = (type, dateStr) => {
+    const date = new Date(dateStr)
+
+    if(!isNaN(date.getTime())) {
+      if(type == 'from') {
+        date.setUTCHours(0,0,0,0)
+        setFrom(date)
+      } else if(type == 'to') {
+        date.setUTCHours(23,59,59,999)
+        setTo(date)
+      }
+    }
+  }
+
+  const exportCSV = () => {
+    const output = csv.stringify([
+      columns.map((col) => col.key),
+      ...accountDetail.transfers.map((order) => Object.values(order)),
+    ])
+
+    let blobx = new Blob([output], { type: 'text/csv' }); // ! Blob
+    let elemx = window.document.createElement('a');
+    elemx.href = window.URL.createObjectURL(blobx); // ! createObjectURL
+    elemx.download = "orderHistory.csv";
+    elemx.style.display = 'none';
+    document.body.appendChild(elemx);
+    elemx.click();
+    document.body.removeChild(elemx);
+  }
+
+  const handleEditRow = (rows, data) => {
+    for (var i = data.indexes.length - 1; i >= 0; i--) {
+      const index = data.indexes[i]
+      const row = rows[index]
+
+      console.log(JSON.parse(row.originalObj))
+    }
+  }
+
   useEffect(() => {
     getAccounts()
   }, [])
@@ -92,6 +140,12 @@ function BankAccounts({}) {
     getHistory()
     // setInterval(getHistory, 1000 * 30)
   }, [account, pageNumber])
+
+  useEffect(() => {
+    if(!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+      getHistory()
+    }
+  }, [from, to])
 
   let columns = []
 
@@ -151,6 +205,27 @@ function BankAccounts({}) {
           </div>
         }
       </div>
+
+      {account && 
+        <div className="mb-3">
+          <div className="row">
+            <div className="col-4">
+              <label htmlFor="from" className="form-label">From Date</label>
+              <input type="date" className="form-control" defaultValue={from.toISOString().split('T')[0]} onBlur={(e) => setDate('from', e.target.value)} />
+            </div>
+            <div className="col-4">
+              <label htmlFor="to" className="form-label">To Date</label>
+              <input type="date" className="form-control" defaultValue={to.toISOString().split('T')[0]} onBlur={(e) => setDate('to', e.target.value)} />
+            </div>
+            <div className="col-4">
+              <br />
+              <button className="btn btn-primary from-control" onClick={() => exportCSV() }>
+                Export CSV
+              </button>
+            </div>
+          </div>
+        </div> 
+      }
 
       {accountDetail && accountDetail.transfers && accountDetail.transfers.length > 0 &&
         <div>

@@ -3,7 +3,6 @@ import 'react-data-grid/lib/styles.css'
 import { useState, useEffect } from 'react'
 import DataGrid from 'react-data-grid'
 import { Tooltip } from 'react-tooltip'
-import * as moment from 'moment'
 import * as csv from 'csv/browser/esm/sync'
 
 import { getApiKey } from './utils/index'
@@ -13,7 +12,7 @@ function OrderHistory({}) {
   today.setUTCHours(23,59,59,999)
 
   const defaultFromDate = new Date()
-  defaultFromDate.setUTCHours(6,0,0,0)
+  defaultFromDate.setUTCHours(0,0,0,0)
   defaultFromDate.setDate(today.getDate() - 7)
 
   const [apiKey, setApiKey] = useState(getApiKey())
@@ -116,8 +115,10 @@ function OrderHistory({}) {
 
     if(!isNaN(date.getTime())) {
       if(type == 'from') {
+        date.setUTCHours(0,0,0,0)
         setFrom(date)
       } else if(type == 'to') {
+        date.setUTCHours(23,59,59,999)
         setTo(date)
       }
     }
