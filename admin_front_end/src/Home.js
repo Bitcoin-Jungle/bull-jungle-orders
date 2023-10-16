@@ -24,7 +24,8 @@ function Home() {
     })
   }
 
-  const updateAlert = () => {
+  const updateAlert = (e) => {
+    e.preventDefault()
     const message = prompt("Enter updated system status here. Leave blank to deactivate message.")
 
     setLoading(true)
@@ -69,15 +70,10 @@ function Home() {
             <div className="container text-center mb-3">
               <div className="alert alert-danger">
                 🚨<b>System Status Update</b>🚨
-                <br /><button className="btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
                 <br />{new Date(systemAlert.timestamp).toLocaleString()}
                 <br />{systemAlert.message}
               </div>
             </div>
-          }
-
-          {!systemAlert.active &&
-            <button className="mb-3 btn btn-primary btn-sm" onClick={updateAlert}>Update System Status</button>
           }
         </div>
       </div>
@@ -89,6 +85,9 @@ function Home() {
             </li>
             <li className="list-group-item">
               <Link to="orderHistory">Order History</Link>
+            </li>
+            <li className="list-group-item">
+              <a onClick={updateAlert} href="#">Update System Status</a>
             </li>
           </ul>
         </div>
