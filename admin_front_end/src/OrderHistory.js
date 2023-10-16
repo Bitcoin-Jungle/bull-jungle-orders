@@ -148,11 +148,11 @@ function OrderHistory({}) {
             <div className="row">
               <div className="col-4">
                 <label htmlFor="from" className="form-label">From Date</label>
-                <input type="date" className="form-control" defaultValue={from.toISOString().split('T')[0]} onBlur={(e) => setDate('from', e.target.value)} />
+                <input type="date" className="form-control" defaultValue={from.toISOString().split('T')[0]} onBlur={(e) => setDate('from', e.target.value)} disabled={loading} />
               </div>
               <div className="col-4">
                 <label htmlFor="to" className="form-label">To Date</label>
-                <input type="date" className="form-control" defaultValue={to.toISOString().split('T')[0]} onBlur={(e) => setDate('to', e.target.value)} />
+                <input type="date" className="form-control" defaultValue={to.toISOString().split('T')[0]} onBlur={(e) => setDate('to', e.target.value)} disabled={loading} />
               </div>
               <div className="col-4">
                 <br />
