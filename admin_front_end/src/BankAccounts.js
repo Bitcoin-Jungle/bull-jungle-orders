@@ -63,7 +63,12 @@ function BankAccounts({}) {
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
-        alert(data.message)
+        if(!data.transfers.length) {
+          alert("No transactions found.")
+          return
+        }
+
+        alert(data.message || "An unexpected error has occurred.")
         return
       }
 
@@ -183,74 +188,89 @@ function BankAccounts({}) {
   }
 
   return (
-    <div>
-      <div className="mb-3">
-        <select onChange={handleAccountChange} value={(account ? account.data.account.Currency : null)}>
-          <option>-- Select an Account --</option>
-          {accounts.CRC &&
-            <option value={"CRC"}>
-              CRC - {accounts.CRC.data.account.Balance}
-            </option>
-          }
-          {accounts.USD &&
-            <option value={"USD"}>
-              USD - {accounts.USD.data.account.Balance}
-            </option>
-          }
-        </select>
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col">
+          <div className="mb-3">
+            <select onChange={handleAccountChange} value={(account ? account.data.account.Currency : null)}>
+              <option>-- Select an Account --</option>
+              {accounts.CRC &&
+                <option value={"CRC"}>
+                  CRC - {accounts.CRC.data.account.Balance}
+                </option>
+              }
+              {accounts.USD &&
+                <option value={"USD"}>
+                  USD - {accounts.USD.data.account.Balance}
+                </option>
+              }
+            </select>
 
-        {loading &&
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            {loading &&
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            }
           </div>
-        }
+        </div>
       </div>
 
       {account && 
-        <div className="mb-3">
-          <div className="row">
-            <div className="col-4">
-              <label htmlFor="from" className="form-label">From Date</label>
-              <input type="date" className="form-control" defaultValue={from.toISOString().split('T')[0]} onBlur={(e) => setDate('from', e.target.value)} />
-            </div>
-            <div className="col-4">
-              <label htmlFor="to" className="form-label">To Date</label>
-              <input type="date" className="form-control" defaultValue={to.toISOString().split('T')[0]} onBlur={(e) => setDate('to', e.target.value)} />
-            </div>
-            <div className="col-4">
-              <br />
-              <button className="btn btn-primary from-control" onClick={() => exportCSV() }>
-                Export CSV
-              </button>
-            </div>
+        <div className="row">
+          <div className="col">
+            <div className="mb-3">
+              <div className="row">
+                <div className="col-4">
+                  <label htmlFor="from" className="form-label">From Date</label>
+                  <input type="date" className="form-control" defaultValue={from.toISOString().split('T')[0]} onBlur={(e) => setDate('from', e.target.value)} />
+                </div>
+                <div className="col-4">
+                  <label htmlFor="to" className="form-label">To Date</label>
+                  <input type="date" className="form-control" defaultValue={to.toISOString().split('T')[0]} onBlur={(e) => setDate('to', e.target.value)} />
+                </div>
+                <div className="col-4">
+                  <br />
+                  <button className="btn btn-primary from-control" onClick={() => exportCSV() }>
+                    Export CSV
+                  </button>
+                </div>
+              </div>
+            </div> 
           </div>
-        </div> 
+        </div>
       }
 
       {accountDetail && accountDetail.transfers && accountDetail.transfers.length > 0 &&
         <div>
-          <div className="mb-3">
-            <DataGrid 
-              style={{height: "80vh"}}
-              columns={columns}
-              rows={accountDetail.transfers} />
+          <div className="row">
+            <div className="col">
+              <div className="mb-3">
+                <DataGrid 
+                  style={{height: "80vh"}}
+                  columns={columns}
+                  rows={accountDetail.transfers} />
+              </div>
+            </div>
           </div>
-        
-          <div className="mb-3">
-            {pageNumber > 1 &&
-              <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber - 1) }>
-                Previous Page
-              </button>
-            }
-            {accountDetail.nextPage &&
-              <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber + 1) }>
-                Next Page
-              </button>
-            }
-          </div> 
+
+          <div className="row">
+            <div className="col">
+              <div className="mb-3">
+                {pageNumber > 1 &&
+                  <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber - 1) }>
+                    Previous Page
+                  </button>
+                }
+                {accountDetail.nextPage &&
+                  <button className="btn btn-primary" onClick={() => setPageNumber(pageNumber + 1) }>
+                    Next Page
+                  </button>
+                }
+              </div> 
+            </div>
+          </div>
         </div>
       }
-
     </div>
   )
 }
