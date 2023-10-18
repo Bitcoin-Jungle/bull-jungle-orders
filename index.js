@@ -1520,6 +1520,66 @@ app.get('/stats', async (req, res) => {
   return res.send(output)
 })
 
+app.get('/phoneNumbers', async (req, res) => {
+  const apiKey = req.query.apiKey
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  const data = await getPhoneNumbers(db)
+
+  return res.send({success: true, data: data})
+})
+
+app.post('/phoneNumber', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const id = req.body.id
+  const data = req.body.data
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!id) {
+    return res.send({error: true, message: "id is required"})
+  }
+
+  if(!data) {
+    return res.send({error: true, message: 'data is required'})
+  }
+
+  const phoneNumber = await getPhoneNumberById(db, id)
+
+  if(!phoneNumber) {
+    return res.send({error: true, message: "phoneNumber not found"})
+  }
+
+  if(data.phoneNumber) {
+    const existing = await getPhoneNumber(db, data.phoneNumber)
+
+    if(existing && existing.id != id) {
+      return res.send({error: true, message: "phoneNumber already exists"})
+    }
+  }
+
+  const updated = await updatePhoneNumber(db, id, data)
+
+  if(!updated) {
+    return res.send({error: true, message: "error updating phone number"})
+  }
+
+  return res.send({success: true})
+})
+
 const payInvoice = async (bolt11) => {
   try {
     // const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
@@ -2105,6 +2165,16 @@ const getPaymentIdentifier = async (db, identifier) => {
   }
 }
 
+const getPhoneNumbers = async (db) => {
+  try {
+    return await db.all(
+      "SELECT * FROM phone_numbers",
+    )
+  } catch {
+    return false
+  }
+}
+
 const getPhoneNumber = async (db, phoneNumber) => {
   try {
     return await db.get(
@@ -2121,6 +2191,21 @@ const getPhoneNumberById = async (db, id) => {
     return await db.get(
       "SELECT * FROM phone_numbers WHERE id = ?", 
       [id]
+    )
+  } catch {
+    return false
+  }
+}
+
+const updatePhoneNumber = async (db, id, data) => {
+  try {
+    const col = Object.keys(data)[0]
+    return await db.run(
+      `UPDATE phone_numbers SET ${col} = ? WHERE id = ?`, 
+      [
+        data[col],
+        id,
+      ]
     )
   } catch {
     return false

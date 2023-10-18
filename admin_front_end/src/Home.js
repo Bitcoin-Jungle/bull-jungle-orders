@@ -87,6 +87,9 @@ function Home() {
               <Link to="orderHistory">Order History</Link>
             </li>
             <li className="list-group-item">
+              <Link to="phoneNumbers">Phone Numbers</Link>
+            </li>
+            <li className="list-group-item">
               <a onClick={updateAlert} href="#">Update System Status</a>
             </li>
           </ul>

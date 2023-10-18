@@ -13,6 +13,7 @@ import './App.css';
 import Home from './Home';
 import BankAccounts from './BankAccounts';
 import OrderHistory from './OrderHistory';
+import PhoneNumbers from './PhoneNumbers';
 
 const router = createHashRouter([
   {
@@ -26,6 +27,10 @@ const router = createHashRouter([
   {
     path: "/orderHistory",
     element: <OrderHistory />,
+  },
+  {
+    path: "/phoneNumbers",
+    element: <PhoneNumbers />,
   },
 ]);
 

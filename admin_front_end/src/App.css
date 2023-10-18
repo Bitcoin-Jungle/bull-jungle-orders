@@ -12,3 +12,23 @@
   -moz-user-select: none; 
   -khtml-user-select: none; 
 }
+
+.filter-column {
+  line-height: 35px;
+  padding: 0;
+}
+
+.filter-column > div {
+  padding-block: 0;
+  padding-inline: 8px;
+}
+
+.filter-column:first-child {
+  border-block-end: 1px solid var(--rdg-border-color);
+}
+
+.filterInput {
+  inline-size: 100%;
+  padding: 4px;
+  font-size: 14px;
+}
