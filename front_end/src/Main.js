@@ -338,11 +338,12 @@ function Main({ client, registeredUser }) {
   }
 
   const checkLimit = (callback) => {
-
     if(!action || !fiatAmount || !fiatCurrency || !phoneNumber) {
       if(callback) {
         callback()
       }
+
+      return
     }
 
     setLoading(true)
