@@ -337,6 +337,37 @@ function Main({ client, registeredUser }) {
     setFiatAmount(Math.floor(fiatAmount).toString())
   }
 
+  const checkLimit = (callback) => {
+
+    if(!action || !fiatAmount || !fiatCurrency || !phoneNumber) {
+      if(callback) {
+        callback()
+      }
+    }
+
+    setLoading(true)
+
+    fetch(`/checkLimit?apiKey=${apiKey}&action=${action}&fiatAmount=${fiatAmount}&fiatCurrency=${fiatCurrency}&phoneNumber=${phoneNumber}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        if(data.type) {
+          alert(localize(localized.errors, data.type, data.data))
+        } else {
+          alert(data.message || "An unexpected error has occurred")
+        }
+      } else if(callback) {  
+        callback()     
+      }
+    })
+    .catch((err) => {
+      alert(err)
+    })
+    .finally(() => {
+      setLoading(false)
+    })
+  }
+
   const calculateSatAmount = (setSat) => {
     if(!fiatAmount || !fiatCurrency || priceData.error) {
       setSatAmount("")
@@ -765,7 +796,7 @@ function Main({ client, registeredUser }) {
                       }
 
                       {!satAmount &&
-                        <button className="btn btn-primary btn-sm" onClick={() => calculateSatAmount(true)} disabled={overPerTxnLimit || underPerTxnMinimum}>
+                        <button className="btn btn-primary btn-sm" onClick={() => checkLimit(() => { calculateSatAmount(true) } )} disabled={overPerTxnLimit || underPerTxnMinimum}>
                           {overPerTxnLimit &&
                             <>{localized.overPerTxnLimit}</>
                           }

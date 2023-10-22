@@ -1599,6 +1599,46 @@ app.post('/phoneNumber', async (req, res) => {
   return res.send({success: true})
 })
 
+app.get('/checkLimit', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const action = req.query.action
+  const fiatAmount = req.query.fiatAmount
+  const fiatCurrency = req.query.fiatCurrency
+  const phoneNumber = req.query.phoneNumber
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  if(!action) {
+    return res.send({error: true, type: "actionRequired"})
+  }
+
+  if(!fiatAmount) {
+    return res.send({error: true, type: "fiatAmountRequired"})
+  }
+
+  if(!fiatCurrency) {
+    return res.send({error: true, type: "fiatCurrencyRequired"})
+  }
+
+  if(!phoneNumber) {
+    return res.send({error: true, message: "phoneNumberRequired"})
+  }
+
+  const isOver = await isUserOverDailyLimit({action, phoneNumber, fiatAmount, fiatCurrency})
+
+  if(isOver) {
+    return res.send({error: true, type: "isOverDailyLimit", data: isOver})
+  }
+
+  return res.send({success: true})
+})
+
 const payInvoice = async (bolt11) => {
   try {
     // const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
