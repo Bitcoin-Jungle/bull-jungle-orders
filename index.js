@@ -1604,7 +1604,7 @@ app.get('/checkLimit', async (req, res) => {
   const action = req.query.action
   const fiatAmount = req.query.fiatAmount
   const fiatCurrency = req.query.fiatCurrency
-  const phoneNumber = req.query.phoneNumber
+  const phoneNumber = (req.body.phoneNumber ? req.body.phoneNumber.replace(/[^\d]+/g, "").trim() : null)
 
   if(!apiKey) {
     return res.send({error: true, type: "apiKeyRequired"})
