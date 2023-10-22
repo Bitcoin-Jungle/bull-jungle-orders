@@ -565,6 +565,7 @@ app.post('/invoice', async (req, res) => {
   const fiatAmount = (req.body.fiatAmount ? parseFloat(req.body.fiatAmount.replace(/,/g, "")) : null)
   const fiatCurrency = req.body.fiatCurrency
   const phoneNumber = (req.body.phoneNumber ? req.body.phoneNumber.replace(/[^\d]+/g, "").trim() : null)
+  const paymentReq = (req.body.paymentReq ? req.body.paymentReq : null)
 
   if(!apiKey) {
     return res.send({error: true, type: "apiKeyRequired"})
@@ -600,6 +601,12 @@ app.post('/invoice', async (req, res) => {
 
   if(!phoneNumber) {
     return res.send({error: true, type: "phoneNumberRequired"})
+  }
+
+  const blocked = await getDestinationBlocklist(db, paymentReq)
+
+  if(blocked) {
+    return res.send({error: true, type: "paymentDestinationBlocked"})
   }
 
   const isOver = await isUserOverDailyLimit({action, phoneNumber, fiatAmount, fiatCurrency})
@@ -844,6 +851,12 @@ app.get('/checkPhoneNumberForSinpe', async (req, res) => {
     return res.send({error: true, message: "phoneNumber must be 8 digits"})
   }
 
+  const blocked = await getDestinationBlocklist(db, phoneNumber)
+
+  if(blocked) {
+    return res.send({error: true, type: "paymentDestinationBlocked"})
+  }
+
   const result = await checkPhoneNumberForSinpe(phoneNumber)
 
   return res.send(result)
@@ -869,6 +882,12 @@ app.get('/checkIbanAccount', async (req, res) => {
  
   if(!isValidIban) {
     return res.send({error: true, message: "iban account is invalid"})
+  }
+
+  const blocked = await getDestinationBlocklist(db, iban)
+
+  if(blocked) {
+    return res.send({error: true, type: "paymentDestinationBlocked"})
   }
 
   const result = await checkIbanAccount(ibantools.electronicFormatIBAN(iban))
@@ -2434,6 +2453,20 @@ const deleteOrder = async (db, timestamp) => {
     )
   } catch(e) {
     console.log('deleteOrder error', e)
+    return false
+  }
+}
+
+const getDestinationBlocklist = async (db, destination) => {
+  try {
+    return await db.get(
+      "SELECT * FROM destination_blocklist WHERE destination = ?",
+      [
+        destination,
+      ]
+    )
+  } catch(e) {
+    console.log('getDestinationBlocklist error', e)
     return false
   }
 }

@@ -29,6 +29,11 @@ CREATE TABLE alert (
 	message TEXT
 );
 
+CREATE TABLE destination_blocklist (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	destination TEXT UNIQUE
+);
+
 INSERT INTO alert (timestamp, active, message) VALUES ('1970-01-01-T00:00:00.000Z', false, null);
 
 ALTER TABLE orders ADD COLUMN paymentStatus TEXT;

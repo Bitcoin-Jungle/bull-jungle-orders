@@ -134,6 +134,7 @@ const es = {
 		pendingApproval: "Su solicitud está pendiente. Si ha pasado un tiempo y no ha escuchado nada de nosotros, intente contactarnos en WhatsApp.",
 		isOverDailyLimit: "Este pedido excedería los límites diarios de su cuenta. Por favor reduzca la cantidad o vuelva a intentarlo mañana.",
 		duplicateOrder: "Parece que esta es una orden duplicada. Espere unos minutos y asegúrese de que su pedido se haya procesado por completo antes de volver a intentarlo.",
+		paymentDestinationBlocked: "Este destino de pago ha sido bloqueado permanentemente.",
 	},
 
 }

@@ -151,6 +151,7 @@ function Main({ client, registeredUser }) {
         fiatAmount,
         fiatCurrency,
         phoneNumber,
+        paymentReq,
       })
     })
     .then((res) => res.json())

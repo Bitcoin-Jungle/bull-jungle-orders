@@ -134,6 +134,7 @@ const en = {
 		pendingApproval: "Your request is currently pending. If it's been a while and you haven't heard from us, try contacting us on WhatsApp.",
 		isOverDailyLimit: "Your daily limits are BUY: ${dailyBuyLimit} CAD, SELL: ${dailySellLimit} CAD. This order would exceed these daily limits for your account. Please lower the amount or try again tomorrow.",
 		duplicateOrder: "This appears to be a duplicate order. Please wait a few minutes and ensure your order has processed completely before trying again.",
+		paymentDestinationBlocked: "This payment destination has been permanently blocked.",
 	},
 }
 
