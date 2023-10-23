@@ -14,6 +14,7 @@ import Home from './Home';
 import BankAccounts from './BankAccounts';
 import OrderHistory from './OrderHistory';
 import PhoneNumbers from './PhoneNumbers';
+import Stats from "./Stats";
 
 const router = createHashRouter([
   {
@@ -32,6 +33,10 @@ const router = createHashRouter([
     path: "/phoneNumbers",
     element: <PhoneNumbers />,
   },
+  {
+    path: "/stats",
+    element: <Stats />,
+  }
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

@@ -90,6 +90,9 @@ function Home() {
               <Link to="phoneNumbers">Phone Numbers</Link>
             </li>
             <li className="list-group-item">
+              <Link to="stats">Order Stats</Link>
+            </li>
+            <li className="list-group-item">
               <a onClick={updateAlert} href="#">Update System Status</a>
             </li>
           </ul>
