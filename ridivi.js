@@ -173,7 +173,18 @@ const checkHistoryPageForPayment = async ({pageNumber, currency, paymentIdentifi
   }
 
   const exists = history.data.transfers.find((row) => {
-    return row.NumReferenciaSP === paymentIdentifier
+    if(row.NumReferenciaSP === paymentIdentifier) {
+      return true
+    }
+
+    // workaround for clients who also use ridivi, they get a NumMovimiento very similar to ours
+    if(!row.NumReferenciaSP && parseInt(row.NumMovimiento) && parseInt(paymentIdentifier)) {
+      if(parseInt(row.NumMovimiento) === parseInt(paymentIdentifier) + 1) {
+        return true
+      }
+    }
+
+    return false
   })
 
   if(!exists) {
