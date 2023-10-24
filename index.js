@@ -1490,6 +1490,7 @@ app.get('/stats', async (req, res) => {
     total_count: 0,
 
     total_sells_count: 0,
+    total_sells_btc: 0,
     total_sells_usd: 0,
     total_sells_count_usd: 0,
     total_sells_crc: 0,
@@ -1498,10 +1499,15 @@ app.get('/stats', async (req, res) => {
 
     total_buys_count: 0,
     total_buys_usd: 0,
+    total_buys_btc: 0,
     total_buys_count_usd: 0,
     total_buys_crc: 0,
     total_buys_count_crc: 0,
     total_buys_dollarized: 0,
+
+    net_btc: 0,
+    net_crc: 0,
+    net_usd: 0,
   }
 
   for (var i = data.length - 1; i >= 0; i--) {
@@ -1511,6 +1517,7 @@ app.get('/stats', async (req, res) => {
 
     if(el['Type'] === 'Buy') {
       output.total_buys_count += 1
+      output.total_buys_btc += parseFloat(eval(el['To Amount'].replace('=', '')))
 
       if(el['From Currency'] === 'USD') {
         output.total_buys_usd += parseFloat(el['From Amount'].replace(',', ''))
@@ -1523,6 +1530,7 @@ app.get('/stats', async (req, res) => {
       }
     } else if(el['Type'] === 'Sell') {
       output.total_sells_count += 1
+      output.total_sells_btc +=  parseFloat(eval(el['From Amount'].replace('=', '')))
 
       if(el['To Currency'] === 'USD') {
         output.total_sells_usd += parseFloat(el['To Amount'].replace(',', ''))
@@ -1535,6 +1543,21 @@ app.get('/stats', async (req, res) => {
       }
     }
   }
+
+  output.total_sells_btc = Number(output.total_sells_btc).toFixed(8)
+  output.total_buys_btc = Number(output.total_buys_btc).toFixed(8)
+  output.net_btc = Number(output.total_sells_btc - output.total_buys_btc).toFixed(8)
+
+  output.total_sells_usd = Number(output.total_sells_usd).toFixed(2)
+  output.total_sells_crc = Number(output.total_sells_crc).toFixed(2)
+  output.total_sells_dollarized = Number(output.total_sells_dollarized).toFixed(2)
+
+  output.total_buys_usd = Number(output.total_buys_usd).toFixed(2)
+  output.total_buys_crc = Number(output.total_buys_crc).toFixed(2)
+  output.total_buys_dollarized = Number(output.total_buys_dollarized).toFixed(2)
+
+  output.net_crc = Number(output.total_sells_crc - output.total_buys_crc).toFixed(2)
+  output.net_usd = Number(output.total_sells_usd - output.total_buys_usd).toFixed(2)
 
   return res.send(output)
 })
