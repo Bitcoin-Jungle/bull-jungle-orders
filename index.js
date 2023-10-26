@@ -170,22 +170,50 @@ processOrderEventHandler.on('processOrder', async ({rowData, tryNum}) => {
   }
 })
 
-twilioEventHandler.on('message', async ({ data, phoneNumber, amount, currency }) => {
+twilioEventHandler.on('message', async ({ type, data, name, phoneNumber, amount, currency }) => {
+  let referenceNumber = ''
+
   if(!data.data) {
     return false
   }
 
-  if(!data.data.result) {
-    return false
+  if(type === "sendLoadTransferCh4") {
+    if(!data.data.result) {
+      return false
+    }
+
+    if(!data.data.result.ReferenciaSinpe) {
+      return false
+    }
+
+    referenceNumber = data.data.result.ReferenciaSinpe
+  } else if(type === "sendLoadedTransfer") {
+    if(!data.data.send) {
+      return false
+    }
+
+    if(!data.data.send.length) {
+      return false
+    }
+
+    if(!data.data.send[1]) {
+      return false
+    }
+
+    if(!data.data.send[1].referenceNumber) {
+      return false
+    }
+
+    referenceNumber = data.data.send[1].referenceNumber
   }
 
-  if(!data.data.result.ReferenciaSinpe) {
+  if(!referenceNumber) {
     return false
   }
 
   try {
     const resp = await twilioClient.messages.create({
-      body: `Usted ha enviado ${amount} ${currency} a ${data.data.result.NombreClienteDestino}. Comprobante ${data.data.result.ReferenciaSinpe}`,
+      body: `Usted ha enviado ${amount} ${currency} a ${name}. Comprobante ${referenceNumber}`,
       from: twilio_from_number,
       to: phoneNumber
     })
@@ -1196,6 +1224,22 @@ app.get('/payFiat', async (req, res) => {
     await updateOrderPaymentStatus(db, timestamp, 'complete')
     await updateOrderSettlementData(db, timestamp, sendLoadedTransfer.data)
 
+    const phoneNumberRecord = await getPhoneNumberById(db, orderData['User'])
+
+    if(phoneNumberRecord) {
+      twilioEventHandler.emit(
+        'message',
+        {
+          type: "sendLoadedTransfer",
+          data: sendLoadedTransfer,
+          name: theirAccount.data.account.NomPropietario,
+          phoneNumber: phoneNumberRecord.phoneNumber,
+          amount,
+          currency,
+        }
+      )
+    }
+
     return res.send({error: false, data: sendLoadedTransfer.data})
 
   } else if(isValidSinpe) {
@@ -1255,7 +1299,9 @@ app.get('/payFiat', async (req, res) => {
       twilioEventHandler.emit(
         'message',
         {
+          type: "sendLoadTransferCh4",
           data: sendLoadTransferCh4,
+          name: sendLoadTransferCh4.data.result.NombreClienteDestino,
           phoneNumber: phoneNumberRecord.phoneNumber,
           amount,
           currency,
