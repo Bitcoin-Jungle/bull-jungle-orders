@@ -130,6 +130,8 @@ function BankAccounts({}) {
     document.body.appendChild(elemx);
     elemx.click();
     document.body.removeChild(elemx);
+
+    return true
   }
 
   const getFullHistory = async (pageNumber, output) => {
@@ -256,7 +258,7 @@ function BankAccounts({}) {
                 </div>
                 <div className="col-4">
                   <br />
-                  <button className="btn btn-primary from-control" onClick={() => exportCSV() } disabled={loading}>
+                  <button className="btn btn-primary from-control" onClick={async () => await exportCSV() } disabled={loading}>
                     Export CSV
                   </button>
                 </div>
