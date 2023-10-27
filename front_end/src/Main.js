@@ -382,7 +382,7 @@ function Main({ client, registeredUser }) {
     const btcAmount = parseFloat(fiatAmount / txnRate)
     const satAmount = btcAmount * 100000000
 
-    if(btcAmount * getTxnRate('CAD') >= 995) {
+    if(btcAmount * getTxnRate('CAD') >= 999) {
       setOverPerTxnLimit(true)
       setSatAmount("")
       setPaymentReq("")

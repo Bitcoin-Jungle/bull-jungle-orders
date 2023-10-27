@@ -383,7 +383,7 @@ app.post('/order', async (req, res) => {
 
   const txnRate = getTxnRate('CAD', action)
 
-  if((satAmount / 100000000) * txnRate >= 995) {
+  if((satAmount / 100000000) * txnRate >= 999) {
     return res.send({error: true, type: "invalidFiatAmount"})
   }
 
