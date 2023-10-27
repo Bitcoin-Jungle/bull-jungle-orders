@@ -44,7 +44,7 @@ function BankAccounts({}) {
     })
   }
 
-  const getHistory = () => {
+  const getHistory = async (forcePageNumber) => {
     if(!account.iban) {
       return
     }
@@ -55,11 +55,11 @@ function BankAccounts({}) {
       apiKey,
       from: from.toISOString(),
       to: to.toISOString(),
-      page: pageNumber,
+      page: (forcePageNumber ? forcePageNumber : pageNumber),
       iban: account.iban,
     })
 
-    fetch(`/getHistory?${params}`)
+    return fetch(`/getHistory?${params}`)
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
@@ -81,6 +81,8 @@ function BankAccounts({}) {
       })
 
       setAccountDetail(data)
+
+      return data
     })
     .catch((e) => {
       alert("ERROR")
@@ -112,20 +114,44 @@ function BankAccounts({}) {
     }
   }
 
-  const exportCSV = () => {
+  const exportCSV = async () => {
+    const data = await getFullHistory(1, [])
+
     const output = csv.stringify([
       columns.map((col) => col.key),
-      ...accountDetail.transfers.map((order) => Object.values(order)),
+      ...data.map((el) => Object.values(el)),
     ])
 
     let blobx = new Blob([output], { type: 'text/csv' }); // ! Blob
     let elemx = window.document.createElement('a');
     elemx.href = window.URL.createObjectURL(blobx); // ! createObjectURL
-    elemx.download = "orderHistory.csv";
+    elemx.download = "bankAccounts.csv";
     elemx.style.display = 'none';
     document.body.appendChild(elemx);
     elemx.click();
     document.body.removeChild(elemx);
+  }
+
+  const getFullHistory = async (pageNumber, output) => {
+    console.log('getFull', pageNumber, output.length)
+    const data = await getHistory(pageNumber)
+
+    if(data && data.transfers && data.transfers.length) {
+      output = output.concat(data.transfers.map((el) => {
+          return {
+            ...el,
+            sinpeMovil: JSON.stringify(el.sinpeMovil)
+          }
+        })
+      )
+
+      if(data.nextPage) {
+        const newPage = pageNumber + 1
+        return await getFullHistory(newPage, output)
+      }
+    }
+
+    return output
   }
 
   const handleEditRow = (rows, data) => {
@@ -230,7 +256,7 @@ function BankAccounts({}) {
                 </div>
                 <div className="col-4">
                   <br />
-                  <button className="btn btn-primary from-control" onClick={() => exportCSV() }>
+                  <button className="btn btn-primary from-control" onClick={() => exportCSV() } disabled={loading}>
                     Export CSV
                   </button>
                 </div>
