@@ -99,20 +99,20 @@ googleSheetEventHandler.on('addRow', async ({rowData, sheet: sheetIndex}) => {
   return true
 })
 
-telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, timestamp}) => {
+telegramEventHandler.on('sendMessage', async ({rowData, formulaFreeAmount, timestamp, error}) => {
   console.log('sending tg message')
   
-  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount, timestamp)
+  const telegramMessage = await sendOrderToTelegram(rowData, formulaFreeAmount, timestamp, error)
 
   if(!telegramMessage) {
     await new Promise(resolve => setTimeout(resolve, 1000 * 10))
-    await sendOrderToTelegram(rowData, formulaFreeAmount, timestamp)
+    await sendOrderToTelegram(rowData, formulaFreeAmount, timestamp, error)
   }
 
   return true
 })
 
-processOrderEventHandler.on('processOrder', async ({rowData, tryNum}) => {
+processOrderEventHandler.on('processOrder', async ({rowData, formulaFreeAmount, timestamp, tryNum}) => {
   console.log('processing order')
 
   try {
@@ -123,7 +123,7 @@ processOrderEventHandler.on('processOrder', async ({rowData, tryNum}) => {
       urlToCall += '/payFiat/?'
     }
 
-    urlToCall += new URLSearchParams({timestamp: rowData.Date, apiKey: admin_api_key}).toString()
+    urlToCall += new URLSearchParams({timestamp: timestamp, apiKey: admin_api_key}).toString()
 
     console.log('calling', urlToCall)
 
@@ -136,13 +136,15 @@ processOrderEventHandler.on('processOrder', async ({rowData, tryNum}) => {
 
       if(rowData.Type === 'Buy' && (!tryNum || tryNum < 4)) {
         tryNum = (!tryNum ? 2 : tryNum + 1)
-        await new Promise(resolve => setTimeout(resolve, 1000 * 10 * tryNum))
+        await new Promise(resolve => setTimeout(resolve, 1000 * 60 * tryNum))
         console.log(`trying again ${tryNum}...`)
 
         processOrderEventHandler.emit(
           'processOrder',
           {
             rowData,
+            formulaFreeAmount,
+            timestamp,
             tryNum: tryNum
           }
         )
@@ -150,18 +152,18 @@ processOrderEventHandler.on('processOrder', async ({rowData, tryNum}) => {
         return false
       }
 
-      await bot.telegram.sendMessage(
-        chat_id, 
-        `error processing order ${rowData.Date}: ${response.data.message}. Please review manually.`,
+      telegramEventHandler.emit(
+        'sendMessage',
+        {
+          rowData,
+          formulaFreeAmount,
+          timestamp,
+          error: response.data.message,
+        }
       )
 
       return false
     }
-
-    await bot.telegram.sendMessage(
-      chat_id, 
-      `order ${rowData.Date} processed successfully. ${JSON.stringify(response.data)}`,
-    )
 
     return true
   } catch(e) {
@@ -213,7 +215,7 @@ twilioEventHandler.on('message', async ({ type, data, name, phoneNumber, amount,
 
   try {
     const resp = await twilioClient.messages.create({
-      body: `Usted ha enviado ${amount} ${currency} a ${name}. Comprobante ${referenceNumber}`,
+      body: `Toro Pagos: Usted ha enviado ${amount} ${currency} a ${name}. Comprobante ${referenceNumber}`,
       from: twilio_from_number,
       to: phoneNumber
     })
@@ -549,15 +551,6 @@ app.post('/order', async (req, res) => {
   await updateOrderData(db, timestamp, {...rowData, "Payment Description": paymentDesc})
   await updateOrderStatus(db, timestamp, 'complete')
 
-  telegramEventHandler.emit(
-    'sendMessage',
-    {
-      rowData,
-      formulaFreeAmount,
-      timestamp,
-    }
-  )
-
   googleSheetEventHandler.emit(
     'addRow', 
     {
@@ -577,6 +570,18 @@ app.post('/order', async (req, res) => {
       'processOrder',
       {
         rowData,
+        formulaFreeAmount,
+        timestamp,
+      }
+    )
+  } else {
+    telegramEventHandler.emit(
+      'sendMessage',
+      {
+        rowData,
+        formulaFreeAmount,
+        timestamp,
+        error: 'user allow_instant is false',
       }
     )
   }
@@ -1802,9 +1807,10 @@ const checkIbanAccount = async (iban) => {
   }
 }
 
-const sendOrderToTelegram = async (rowData, formulaFreeAmount, timestamp) => {
+const sendOrderToTelegram = async (rowData, formulaFreeAmount, timestamp, error) => {
   try {
-    let message = `🚨 New Order 🚨\n`
+    let message = `🚨 Order Requires Manual Review 🚨\n\n`
+    message += `❌ Error Message: ${error}\n\n`
 
     Object.keys(rowData).forEach(key => {
       let val = rowData[key]
