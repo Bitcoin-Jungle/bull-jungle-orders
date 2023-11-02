@@ -19,6 +19,7 @@ function OrderHistory({}) {
   const [apiKey, setApiKey] = useState(getApiKey())
   const [orders, setOrders] = useState({})
   const [loading, setLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
   const [from, setFrom] = useState(defaultFromDate)
   const [to, setTo] = useState(today)
   const [filters, setFilters] = useState({
@@ -154,6 +155,34 @@ function OrderHistory({}) {
     })
   })
 
+  columns.unshift({
+    key: "Actions",
+    name: "Actions",
+    resizable: true,
+    headerCellClass: "filter-column",
+    renderCell(props) {
+      return (
+        <div>
+          {props.row.paymentStatus !== 'complete' &&
+            <button 
+              className="btn btn-sm btn-primary"
+              onClick={() => processOrder(props.row)} 
+              disabled={actionLoading}>
+                {actionLoading &&
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
+                {!actionLoading &&
+                  <span>Pay</span>
+                }
+            </button>
+          }
+        </div>
+      )
+    }
+  })
+
   const filteredRows = useMemo(() => {
     let hasFilter = false
     Object.values(filters).forEach((val) => {
@@ -180,10 +209,42 @@ function OrderHistory({}) {
           include = true
         }
       }
-      console.log(include)
+
       return include
     })
   }, [orders, filters])
+
+  const processOrder = (row) => {
+    setActionLoading(true)
+
+    let url = ''
+    if(row.Type === 'Buy') {
+      url += '/payInvoice/?'
+    } else {
+      url += '/payFiat/?'
+    }
+
+    url += new URLSearchParams({timestamp: row.timestamp, apiKey: apiKey}).toString()
+
+    fetch(url)
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        alert(data.message || "An unexpected error has occurred")
+        return
+      }
+
+      alert("Success!")
+    })
+    .catch((e) => {
+      alert('error settling order')
+      return
+    })
+    .finally(() => {
+      setActionLoading(false)
+      getOrders()
+    })
+  }
 
   const setDate = (type, dateStr) => {
     const date = new Date(dateStr)
