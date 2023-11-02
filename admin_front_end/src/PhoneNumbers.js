@@ -7,6 +7,7 @@ import * as csv from 'csv/browser/esm/sync'
 
 import { getApiKey, inputStopPropagation } from './utils/index'
 import FilterRenderer from './FilterRenderer'
+import TextEditor from './textEditor'
 
 function PhoneNumbers({}) {
   const [apiKey, setApiKey] = useState(getApiKey())
@@ -115,7 +116,7 @@ function PhoneNumbers({}) {
       }
 
       if(value !== 'id') {
-        obj.renderEditCell = textEditor
+        obj.renderEditCell = TextEditor
       }
 
       return obj
@@ -199,19 +200,18 @@ function PhoneNumbers({}) {
           <div className="mb-3">
             <div className="row">
               <div className="col-4">
+                {loading &&
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
                 <button className="btn btn-primary from-control" onClick={() => exportCSV() }>
                   Export CSV
                 </button>
               </div>
             </div>
           </div> 
-
-          {loading &&
-            <div className="spinner-border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-          }
-          {!loading && phoneNumbers.length > 0 &&
+          {phoneNumbers.length > 0 &&
             <div>
               <div className="mb-3">
                 <DataGrid 
@@ -233,30 +233,6 @@ function PhoneNumbers({}) {
       </div>
     </div>
   )
-}
-
-function autoFocusAndSelect(input) {
-  if(input && input.focus && input.select) {
-    input.focus();
-    input.select();
-  }
-}
-
-function textEditor({
-  row,
-  column,
-  onRowChange,
-  onClose
-}) {
-  return (
-    <input
-      // className={textEditorClassname}
-      ref={autoFocusAndSelect}
-      value={row[column.key]}
-      onChange={(event) => onRowChange({ ...row, [column.key]: event.target.value })}
-      onBlur={() => onClose(true, false)}
-    />
-  );
 }
 
 export default PhoneNumbers

@@ -928,6 +928,60 @@ app.get('/checkIbanAccount', async (req, res) => {
   return res.send(result)
 })
 
+app.post('/editOrder', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const timestamp = req.body.timestamp
+  const data = req.body.data
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!timestamp) {
+    return res.send({error: true, message: "timestamp is required"})
+  }
+
+  if(!data) {
+    return res.send({error: true, message: 'data is required'})
+  }
+
+  const order = await getOrder(db, timestamp)
+
+  if(!order) {
+    return res.send({error: true, message: "order not found"})
+  }
+
+  if(data["Payment Identifier"]) {
+    const existing = await getPaymentIdentifier(db, data["Payment Identifier"])
+
+    if(existing && existing.identifier != data["Payment Identifier"]) {
+      return res.send({error: true, message: "payment identifier already exists, can't update"})
+    }
+
+    const newIdentifier = await addPaymentIdentifier(db, data["Payment Identifier"])
+
+    if(!newIdentifier) {
+      return res.send({error: true, message: "error adding new payment identifier"})
+    }
+  }
+
+  const orderData = JSON.parse(order.data)
+
+  const merged = {...orderData, ...data}
+
+  const updated = await updateOrderData(db, timestamp, merged)
+
+  if(!updated) {
+    return res.send({error: true, message: "error updating order"})
+  }
+
+  return res.send({success: true})
+})
+
 app.get('/payInvoice', async (req, res) => {
   const apiKey = req.query.apiKey
   const timestamp = req.query.timestamp
@@ -1030,7 +1084,7 @@ app.get('/payInvoice', async (req, res) => {
 
     if(!fiatPaymentMade) {
       await updateOrderPaymentStatus(db, timestamp, null)
-      return res.send({error: true, message: "couldnt locate fiat payment, if you are sure then add &force=true and try again"})
+      return res.send({error: true, message: "couldnt locate fiat payment, if you are sure then click to force-pay."})
     }
   }
 
@@ -1831,8 +1885,8 @@ const sendOrderToTelegram = async (rowData, formulaFreeAmount, timestamp, error)
         inline_keyboard: [
           [
             {
-              text: "Pay Lightning Invoice",
-              url: `https://orders.bitcoinjungle.app/payInvoice?apiKey=${admin_api_key}&timestamp=${timestamp}`
+              text: "Force Pay Lightning Invoice",
+              url: `https://orders.bitcoinjungle.app/payInvoice?apiKey=${admin_api_key}&timestamp=${timestamp}&force=true`
             }
           ],
         ],

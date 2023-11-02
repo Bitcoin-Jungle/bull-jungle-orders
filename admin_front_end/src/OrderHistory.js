@@ -7,6 +7,7 @@ import * as csv from 'csv/browser/esm/sync'
 
 import { getApiKey, inputStopPropagation } from './utils/index'
 import FilterRenderer from './FilterRenderer'
+import TextEditor from './textEditor'
 
 function OrderHistory({}) {
   const today = new Date()
@@ -88,7 +89,7 @@ function OrderHistory({}) {
     }
 
     return Object.keys(orders[0]).map((value) => {
-      return {
+      const obj = {
         key: value,
         name: value,
         resizable: true,
@@ -152,6 +153,13 @@ function OrderHistory({}) {
           )
         }
       }
+
+      if(['Payment Identifier', 'Payment Destination', 'From Amount', 'To Amount', 'From Currency', 'To Currency'].indexOf(obj.key) !== -1) {
+        obj.renderEditCell = TextEditor
+      }
+
+      return obj
+
     })
   })
 
@@ -182,6 +190,35 @@ function OrderHistory({}) {
       )
     }
   })
+
+  const handleEditRows = (rows, change) => {
+    const field = change.column.key
+    const row = rows[change.indexes[0]]
+    const timestamp = row.timestamp
+    const newVal = row[field]
+    const data = {}
+    data[field] = newVal
+
+    fetch('/editOrder', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        apiKey,
+        timestamp,
+        data,
+      })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if(res.error) {
+        alert(res.message)
+      }
+    })
+    .then(getOrders)
+  }
 
   const filteredRows = useMemo(() => {
     let hasFilter = false
@@ -214,7 +251,7 @@ function OrderHistory({}) {
     })
   }, [orders, filters])
 
-  const processOrder = (row) => {
+  const processOrder = (row, force) => {
     setActionLoading(true)
 
     let url = ''
@@ -224,13 +261,22 @@ function OrderHistory({}) {
       url += '/payFiat/?'
     }
 
-    url += new URLSearchParams({timestamp: row.timestamp, apiKey: apiKey}).toString()
+    url += new URLSearchParams({timestamp: row.timestamp, apiKey: apiKey, force: (force ? "true" : "")}).toString()
 
     fetch(url)
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
         alert(data.message || "An unexpected error has occurred")
+
+        if(!force) {
+          const conf = window.confirm("Do you want to force pay this order?")
+
+          if(conf) {
+            processOrder(row, true)
+          }
+        }
+
         return
       }
 
@@ -292,26 +338,32 @@ function OrderHistory({}) {
               </div>
               <div className="col-4">
                 <br />
+                {loading &&
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
                 <button className="btn btn-primary from-control" onClick={() => exportCSV() }>
                   Export CSV
                 </button>
               </div>
             </div>
           </div> 
-
-          {loading &&
-            <div className="spinner-border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-          }
-          {!loading && orders.length > 0 &&
+          {orders.length > 0 &&
             <div>
               <div className="mb-3">
                 <DataGrid 
                   style={{height: "80vh"}}
                   columns={columns}
                   headerRowHeight={70}
-                  rows={filteredRows} />
+                  rows={filteredRows}
+                  onRowsChange={handleEditRows}
+                  onCellClick={(args, event) => {
+                    if (args.column.key === 'id') {
+                      event.preventGridDefault();
+                      args.selectCell(true);
+                    }
+                  }} />
               </div>
             </div>
           }
