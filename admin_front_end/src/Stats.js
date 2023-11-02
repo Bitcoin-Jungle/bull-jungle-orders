@@ -42,10 +42,6 @@ function Stats({}) {
   }
 
   useEffect(() => {
-    getData()
-  }, [])
-
-  useEffect(() => {
     if(!isNaN(from.getTime()) && !isNaN(to.getTime())) {
       getData()
     }
