@@ -1,11 +1,12 @@
 import 'react-data-grid/lib/styles.css'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, createContext, useContext } from 'react'
 import DataGrid from 'react-data-grid'
 import { Tooltip } from 'react-tooltip'
 import * as csv from 'csv/browser/esm/sync'
 
-import { getApiKey } from './utils/index'
+import { getApiKey, inputStopPropagation } from './utils/index'
+import FilterRenderer from './FilterRenderer'
 
 function OrderHistory({}) {
   const today = new Date()
@@ -20,6 +21,22 @@ function OrderHistory({}) {
   const [loading, setLoading] = useState(false)
   const [from, setFrom] = useState(defaultFromDate)
   const [to, setTo] = useState(today)
+  const [filters, setFilters] = useState({
+    timestamp: '',
+    status: '',
+    paymentStatus: '',
+    settlementData: '',
+    Type: '',
+    "From Amount": '',
+    "From Currency": '',
+    "To Amount": '',
+    "To Currency": '',
+    "Payment Type": '',
+    "Payment Identifier": '',
+    "Payment Destination": '',
+    User: '',
+    "Payment Description": '',
+  })
 
   const getOrders = () => {
     if(loading) {
@@ -59,23 +76,22 @@ function OrderHistory({}) {
   }
 
   useEffect(() => {
-    getOrders()
-  }, [])
-
-  useEffect(() => {
     if(!isNaN(from.getTime()) && !isNaN(to.getTime())) {
       getOrders()
     }
   }, [from, to])
 
-  let columns = []
+  const columns = useMemo(() => {
+    if(!orders.length) {
+      return []
+    }
 
-  if(orders.length > 0) {
-    columns = Object.keys(orders[0]).map((value) => {
+    return Object.keys(orders[0]).map((value) => {
       return {
         key: value,
         name: value,
         resizable: true,
+        headerCellClass: "filter-column",
         renderCell(props) {
           let cell = props.row[props.column.key]
           const id = (Math.random() + 1).toString(36).substring(7)
@@ -106,9 +122,68 @@ function OrderHistory({}) {
             </>
           )
         },
+        renderHeaderCell(p) {
+          const col = p.column.key
+
+          if(typeof filters[col] === 'undefined') {
+            return (
+              <div>{p.column.name}</div>
+            )
+          }
+
+          return (
+            <FilterRenderer {...p}>
+              {({ ...rest }) => (
+                <input
+                  {...rest}
+                  className="filterInput"
+                  value={filters[col] ?? filters[col]}
+                  placeholder="Search..."
+                  onChange={(e) => {
+                    const newObj = {...filters}
+                    newObj[col] = e.target.value.toString()
+                    setFilters(newObj)
+                  }}
+                  onKeyDown={inputStopPropagation}
+                />
+              )}
+            </FilterRenderer>
+          )
+        }
       }
     })
-  }
+  })
+
+  const filteredRows = useMemo(() => {
+    let hasFilter = false
+    Object.values(filters).forEach((val) => {
+      if(val.length) {
+        hasFilter = true
+      }
+    })
+
+    if(!hasFilter) {
+      return orders
+    }
+
+    const filterKeys = Object.keys(filters)
+
+    return orders.filter((order) => {
+
+      let include = false
+
+      for (let i = 0; i < filterKeys.length; i++) { 
+        const key = filterKeys[i]
+        const filterVal = filters[key]
+
+        if(order[key] && filterVal.length && order[key].toString().indexOf(filterVal) !== -1) {
+          include = true
+        }
+      }
+      console.log(include)
+      return include
+    })
+  }, [orders, filters])
 
   const setDate = (type, dateStr) => {
     const date = new Date(dateStr)
@@ -174,7 +249,8 @@ function OrderHistory({}) {
                 <DataGrid 
                   style={{height: "80vh"}}
                   columns={columns}
-                  rows={orders} />
+                  headerRowHeight={70}
+                  rows={filteredRows} />
               </div>
             </div>
           }

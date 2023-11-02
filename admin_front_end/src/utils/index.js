@@ -9,7 +9,13 @@ const getApiKey = () => {
   return ""
 }
 
+const inputStopPropagation = (event) => {
+  if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    event.stopPropagation();
+  }
+}
 
 export {
   getApiKey,
+  inputStopPropagation,
 }

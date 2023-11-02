@@ -5,15 +5,8 @@ import DataGrid from 'react-data-grid'
 import { Tooltip } from 'react-tooltip'
 import * as csv from 'csv/browser/esm/sync'
 
-import { getApiKey } from './utils/index'
-
-const FilterContext = createContext(undefined)
-
-function inputStopPropagation(event) {
-  if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
-    event.stopPropagation();
-  }
-}
+import { getApiKey, inputStopPropagation } from './utils/index'
+import FilterRenderer from './FilterRenderer'
 
 function PhoneNumbers({}) {
   const [apiKey, setApiKey] = useState(getApiKey())
@@ -263,17 +256,6 @@ function textEditor({
       onChange={(event) => onRowChange({ ...row, [column.key]: event.target.value })}
       onBlur={() => onClose(true, false)}
     />
-  );
-}
-
-function FilterRenderer({ tabIndex, column, children}) {
-  const filters = useContext(FilterContext)
-
-  return (
-    <>
-      <div>{column.name}</div>
-     {children({ tabIndex, filters })}
-    </>
   );
 }
 
