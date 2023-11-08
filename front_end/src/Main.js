@@ -9,6 +9,7 @@ import Invoice from './components/Invoice'
 import Register from './Register'
 import Chart from './Chart'
 import Rules from './Rules'
+import Overlay from './Overlay'
 
 import { 
   RECIPIENT_WALLET_ID, 
@@ -26,6 +27,7 @@ function Main({ client, registeredUser }) {
   const [language, setLanguage] = useState(getLanguage())
 
   const [loading, setLoading] = useState(false)
+  const [submittingForm, setSubmittingForm] = useState(false)
   const [disableButton, setDisableButton] = useState(false)
 
   const [priceData, setPriceData] = useState({})
@@ -136,7 +138,8 @@ function Main({ client, registeredUser }) {
     }
 
     setLoading(true)
-    
+    setSubmittingForm(true)
+
     fetch("/invoice", {
       method: "POST",
       headers: {
@@ -157,6 +160,7 @@ function Main({ client, registeredUser }) {
     .then((res) => res.json())
     .then((data) => {
       if(data.error) {
+        setSubmittingForm(false)
         if(data.type) {
           alert(localize(localized.errors, data.type, data.data))
           return
@@ -263,7 +267,8 @@ function Main({ client, registeredUser }) {
     if(loading) {
       return false
     }
-    setLoading(true)    
+    setLoading(true)   
+    setSubmittingForm(true) 
     return fetch("/order", {
       "method": "POST",
       "headers": {
@@ -291,6 +296,7 @@ function Main({ client, registeredUser }) {
     .then((res) => res.json())
     .then((data) => {
       setLoading(false)
+      setSubmittingForm(false)
 
       if(data.error) {
         alert(localized.errors[data.type] || data.message)
@@ -312,6 +318,7 @@ function Main({ client, registeredUser }) {
     })
     .catch((err) => {
       setLoading(false)
+      setSubmittingForm(false)
       setTimeout(() => {
         submitOrder()
       }, 1000)
@@ -491,6 +498,7 @@ function Main({ client, registeredUser }) {
     setInvoice("")
     setPaymentHash("")
     setShowInvoiceModal(false)
+    setSubmittingForm(false)
   }
 
   const copyToClipboard = (str) => {
@@ -606,9 +614,24 @@ function Main({ client, registeredUser }) {
     }
   }, [showInvoiceModal])
 
+  useEffect(() => {
+    if(window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({action: "submittingForm", submittingForm}))
+    } else if(isInIframe()) {
+      window.top.postMessage(JSON.stringify({action: "submittingForm", submittingForm}), "*")
+    }
+  }, [submittingForm])
+
   if(action === 'BUY' && !registeredUser) {
     return (
       <Register clearForm={clearForm} />
+    )
+  }
+
+  if(submittingForm && isFromBJ()) {
+    return (
+      <Overlay
+        localized={localized} />
     )
   }
 

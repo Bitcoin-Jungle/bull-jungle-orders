@@ -111,6 +111,9 @@ const en = {
 
 	statusUpdateTitle: "System Status Update",
 
+	loading: "Loading",
+	overlayText: "Please don't leave or close the app until your order is complete.",
+
 	errors: {
 		apiKeyRequired: "API Key is required.",
 		apiKeyIncorrect: "API Key is incorrect.",

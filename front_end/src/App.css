@@ -73,3 +73,28 @@ ul.accountList {
 ul.accountList li {
   padding-bottom: 5px;
 }
+
+.overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: rgba(51,51,51,0.7);
+  z-index: 10;
+}
+
+.overlay h3, .overlay p {
+  color: white;
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box>div {
+  height: 250px;
+  width: 100%;
+}

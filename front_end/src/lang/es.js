@@ -111,6 +111,9 @@ const es = {
 
 	statusUpdateTitle: "Actualización del estado del sistema",
 
+	loading: "Cargando",
+	overlayText: "Por favor, no abandone ni cierre la aplicación hasta que se complete su pedido.",
+
 	errors: {
 		apiKeyRequired: "Se requiere la clave API.",
 		apiKeyIncorrect: "La clave API es incorrecta.",
