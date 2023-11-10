@@ -307,8 +307,10 @@ function OrderHistory({}) {
   }
 
   const exportCSV = () => {
+    let myCols = [...columns]
+    myCols.shift()
     const output = csv.stringify([
-      columns.map((col) => col.key),
+      myCols.map((col) => col.key),
       ...orders.map((order) => Object.values(order)),
     ])
 
