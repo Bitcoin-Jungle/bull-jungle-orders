@@ -1664,7 +1664,7 @@ app.get('/stats', async (req, res) => {
       if(el['To Currency'] === 'USD') {
         dollarizedAmount = fiatAmount
       } else if(el['To Currency'] === 'CRC') {
-        dollarizedAmount = parseFloat(el['To Amount'].replace(',', '') / (el['USD/CRC'] || USDCRC.indexPrice))
+        dollarizedAmount = parseFloat(fiatAmount / (el['USD/CRC'] || USDCRC.indexPrice))
       }
 
       canadianizedAmount = (dollarizedAmount * (el['USD/CAD'] || USDCAD))
