@@ -1613,6 +1613,10 @@ app.get('/stats', async (req, res) => {
     net_btc: 0,
     net_crc: 0,
     net_usd: 0,
+
+    btc_reserve: 0,
+    cad_reserve: 0,
+    btc_average_cost: 0,
   }
 
   for (var i = data.length - 1; i >= 0; i--) {
@@ -1621,31 +1625,66 @@ app.get('/stats', async (req, res) => {
     output.total_count += 1
 
     if(el['Type'] === 'Buy') {
-      output.total_buys_count += 1
-      output.total_buys_btc += parseFloat(eval(el['To Amount'].replace('=', '')))
+
+      const satAmount = parseFloat(eval(el['To Amount'].replace('=', '')))
+      const fiatAmount = parseFloat(el['From Amount'].replace(',', ''))
+      let dollarizedAmount, canadianizedAmount
 
       if(el['From Currency'] === 'USD') {
-        output.total_buys_usd += parseFloat(el['From Amount'].replace(',', ''))
-        output.total_buys_dollarized += parseFloat(el['From Amount'].replace(',', ''))
+        dollarizedAmount = fiatAmount
+      } else if(el['From Currency'] === 'CRC') {
+        dollarizedAmount = parseFloat(fiatAmount / (el['USD/CRC'] || USDCRC.indexPrice))
+      }
+
+      canadianizedAmount = (dollarizedAmount * (el['USD/CAD'] || USDCAD))
+
+      output.total_buys_count += 1
+      output.total_buys_btc += satAmount
+
+      if(el['From Currency'] === 'USD') {
+        output.total_buys_usd += fiatAmount
         output.total_buys_count_usd += 1
       } else if(el['From Currency'] === 'CRC') {
-        output.total_buys_crc += parseFloat(el['From Amount'].replace(',', ''))
-        output.total_buys_dollarized += parseFloat(el['From Amount'].replace(',', '') / (el['USD/CRC'] || USDCRC.indexPrice))
+        output.total_buys_crc += fiatAmount
         output.total_buys_count_crc += 1
       }
+
+      output.total_buys_dollarized += dollarizedAmount
+
+      output.btc_reserve -= satAmount
+      output.cad_reserve += canadianizedAmount
+      output.btc_average_cost = parseFloat(Math.abs(output.cad_reserve) / Math.abs(output.btc_reserve))
+
     } else if(el['Type'] === 'Sell') {
-      output.total_sells_count += 1
-      output.total_sells_btc +=  parseFloat(eval(el['From Amount'].replace('=', '')))
+
+      const satAmount = parseFloat(eval(el['From Amount'].replace('=', '')))
+      const fiatAmount = parseFloat(el['To Amount'].replace(',', ''))
+      let dollarizedAmount, canadianizedAmount
 
       if(el['To Currency'] === 'USD') {
-        output.total_sells_usd += parseFloat(el['To Amount'].replace(',', ''))
-        output.total_sells_dollarized += parseFloat(el['To Amount'].replace(',', ''))
+        dollarizedAmount = fiatAmount
+      } else if(el['To Currency'] === 'CRC') {
+        dollarizedAmount = parseFloat(el['To Amount'].replace(',', '') / (el['USD/CRC'] || USDCRC.indexPrice))
+      }
+
+      canadianizedAmount = (dollarizedAmount * (el['USD/CAD'] || USDCAD))
+
+      output.total_sells_count += 1
+      output.total_sells_btc +=  satAmount
+
+      if(el['To Currency'] === 'USD') {
+        output.total_sells_usd += fiatAmount
         output.total_sells_count_usd += 1
       } else if(el['To Currency'] === 'CRC') {
-        output.total_sells_crc += parseFloat(el['To Amount'].replace(',', ''))
-        output.total_sells_dollarized += parseFloat(el['To Amount'].replace(',', '') / (el['USD/CRC'] || USDCRC.indexPrice))
+        output.total_sells_crc += fiatAmount
         output.total_sells_count_crc += 1
       }
+
+      output.total_sells_dollarized += dollarizedAmount
+
+      output.btc_reserve += satAmount
+      output.cad_reserve -= canadianizedAmount
+      output.btc_average_cost = parseFloat(Math.abs(output.cad_reserve) / Math.abs(output.btc_reserve))
     }
   }
 
@@ -1661,8 +1700,12 @@ app.get('/stats', async (req, res) => {
   output.total_buys_crc = Number(output.total_buys_crc).toFixed(2)
   output.total_buys_dollarized = Number(output.total_buys_dollarized).toFixed(2)
 
-  output.net_crc = Number(output.total_sells_crc - output.total_buys_crc).toFixed(2)
-  output.net_usd = Number(output.total_sells_usd - output.total_buys_usd).toFixed(2)
+  output.net_crc = Number(output.total_buys_crc - output.total_sells_crc).toFixed(2)
+  output.net_usd = Number(output.total_buys_usd - output.total_sells_usd).toFixed(2)
+
+  output.btc_reserve = Number(output.btc_reserve).toFixed(8)
+  output.cad_reserve = Number(output.cad_reserve).toFixed(2)
+  output.btc_average_cost = Number(output.btc_average_cost).toFixed(2)
 
   return res.send(output)
 })
