@@ -4,13 +4,13 @@ body {
 }
 
 .page {
-  width: 100vh;
+  width: 100vw;
   height: 100vh;
 }
 
 .page a {
-  margin-bottom: 5px;
   text-align: left;
+  position: absolute;
 }
 
 .App {
@@ -19,13 +19,14 @@ body {
 
 @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
   .page {
-    transform: rotate(-90deg);
-    transform-origin: left top;
-    width: 100vh;
-    height: 100vw;
-    overflow-x: hidden;
-    position: absolute;
-    top: 100%;
-    left: 0;
+    transform: rotate(90deg);
+    transform-origin:bottom left;
+    
+    position:absolute;
+    top:-90vw;
+    left: 10vw;
+    
+    height:90vw;
+    width:90vh;
   }
 }
