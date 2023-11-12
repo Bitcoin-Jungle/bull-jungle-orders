@@ -45,6 +45,7 @@ const options = {
 function Chart({ localized, language, apiKey }) {
   const [data, setData] = useState([])
   const [fiatCurrency, setFiatCurrency] = useState("CRC")
+  const [loaded, setLoaded] = useState(false)
 
   const getData = () => {
     fetch(`/priceHistory?apiKey=${apiKey}&fiatCurrency=${fiatCurrency}`)
@@ -56,6 +57,9 @@ function Chart({ localized, language, apiKey }) {
       }
 
       setData(data.data.reverse())
+      setTimeout(() => {
+        setLoaded(true)
+      }, 750)
     })
   }
 
@@ -105,7 +109,7 @@ function Chart({ localized, language, apiKey }) {
   }
 
   return (
-    <div style={{backgroundColor: "white"}}>
+    <div className={loaded ? "loaded" : ""} style={{backgroundColor: "white"}}>
       <select value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
         <option value="CRC">{localized.crc}</option>
         <option value="USD">{localized.usd}</option>

@@ -19,6 +19,13 @@ body {
 
 @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
   .page {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .page:has(div.loaded) {
+    animation: rotate 1s;
+
     transform: rotate(90deg);
     transform-origin:bottom left;
     
@@ -26,7 +33,17 @@ body {
     top:-90vw;
     left: 10vw;
     
-    height:90vw;
-    width:90vh;
+    height:90vw !important;
+    width:90vh !important;
   }
+
+  @keyframes rotate {
+    0% {
+      transform: rotate(0deg)
+    }
+    100% {
+      transform: rotate(90deg)
+    }
+  }
+
 }
