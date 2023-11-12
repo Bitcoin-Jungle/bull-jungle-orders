@@ -100,14 +100,12 @@ function Chart({ localized, language, apiKey }) {
 
   if(data.length === 0) {
     return (
-      <div className="spinner-border" role="status" style={{width: "1rem", height: "1rem"}}>
-        <span className="visually-hidden">Loading...</span>
-      </div>
+      <div>Loading...</div>
     )
   }
 
   return (
-    <div className="well" style={{backgroundColor: "white"}}>
+    <div style={{backgroundColor: "white"}}>
       <select value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
         <option value="CRC">{localized.crc}</option>
         <option value="USD">{localized.usd}</option>

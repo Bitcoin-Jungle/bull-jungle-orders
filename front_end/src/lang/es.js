@@ -101,8 +101,7 @@ const es = {
 	confirm: "Confirmar",
 
 	terms: "Términos y condiciones",
-	showPriceHistory: "Mostrar historial",
-	hidePriceHistory: "Esconder historial",
+	priceHistory: "Historial de precios",
 	support: "Soporte por WhatsApp",
 
 	orderSuccess: "Pedido enviado con éxito. Lo revisaremos y procesaremos en breve. Contáctenos por WhatsApp si tiene alguna pregunta.",

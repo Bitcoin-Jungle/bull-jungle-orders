@@ -258,6 +258,7 @@ app.use(async (req, res, next) => {
 })
 app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
 app.use("/admin", serveStatic('admin_front_end/build', { 'index': ['index.html'] }))
+app.use("/chart", serveStatic('chart_front_end/build', { 'index': ['index.html'] }))
 
 app.post('/order', async (req, res) => {
   const apiKey = req.body.apiKey

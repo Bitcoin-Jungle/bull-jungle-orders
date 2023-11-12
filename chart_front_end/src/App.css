@@ -1,0 +1,31 @@
+body {
+  background-color: #e6ebef !important;
+  margin: 10px;
+}
+
+.page {
+  width: 100vh;
+  height: 100vh;
+}
+
+.page a {
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.App {
+  text-align: center;
+}
+
+@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
+  .page {
+    transform: rotate(-90deg);
+    transform-origin: left top;
+    width: 100vh;
+    height: 100vw;
+    overflow-x: hidden;
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+}
