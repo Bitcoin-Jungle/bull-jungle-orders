@@ -761,9 +761,7 @@ function Main({ client, registeredUser }) {
                       <label htmlFor="fiatCurrency" className="form-label">{localized.fiatCurrencyTitle}</label>
                       <select className="form-control" id="fiatCurrency" value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
                         <option value="CRC">{localized.crc}</option>
-                        {action === "BUY" &&
-                          <option value="USD">{localized.usd}</option>
-                        }
+                        <option value="USD">{localized.usd}</option>
                       </select>
                       <div className="form-text">{localized.fiatCurrencyHelper}</div>
                     </div>
