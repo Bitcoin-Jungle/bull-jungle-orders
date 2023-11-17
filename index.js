@@ -755,6 +755,10 @@ app.post('/addUser', async (req, res) => {
 
   const user = await addUser(db, bitcoinJungleUsername)
 
+  if(!user) {
+    return res.send({error: true, message: "error adding user"})
+  }
+
   let phoneName = ''
   if(phoneNumber.indexOf('506') === 0 || phoneNumber.indexOf('+506') === 0) {
     let numberToSearch = phoneNumber.replaceAll(/[^0-9]/gi, '').replace(/^506/, '').trim()
@@ -763,18 +767,18 @@ app.post('/addUser', async (req, res) => {
       const phoneNumberCheck = await checkPhoneNumberForSinpe(numberToSearch)
 
       if(!phoneNumberCheck.error && phoneNumberCheck.data && phoneNumberCheck.data.NombreCliente) {
-       phoneName = phoneNumberCheck.data.NombreCliente
+        phoneName = phoneNumberCheck.data.NombreCliente
       }
     }
   }
 
-  const tgMsg = await sendUserAddMessage(bitcoinJungleUsername, phoneNumber, phoneName)
-  
-  if(!user) {
-    return res.send({error: true, message: "error adding user"})
+  if(!phoneName.length) {
+    const tgMsg = await sendUserAddMessage(bitcoinJungleUsername, phoneNumber, phoneName)
+    return res.send({success: true})
+  } else {
+    const approve = await approveUser(db, bitcoinJungleUsername)
+    return res.send({error: true, type: "approved"})
   }
-
-  return res.send({success: true})
 })
 
 app.get('/approveUser', async (req, res) => {
