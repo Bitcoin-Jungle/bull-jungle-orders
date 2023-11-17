@@ -1,6 +1,6 @@
-function Rules({ localized }) {
+function Rules({ localized, style }) {
   return (
-    <div className="alert alert-warning">
+    <div className="alert alert-warning" style={style}>
       <p>
         <b>🚨 {localized.rulesTitle} 🚨</b>
         <br />

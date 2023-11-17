@@ -51,9 +51,9 @@ const en = {
 	rulesInstructionsAfter: "Failure to adhere to these rules may result in a permanent ban from Bull Bitcoin and Toro Pagos.",
 
 	paymentOptionsTitle: "Payment Options",
-	paymentOptionsInstructionBefore: "Before submitting this order, you must send {fiatAmount} {fiatCurrency} to us from your bank account.",
+	paymentOptionsInstructionBefore: "Before submitting this order, you must send {fiatAmount} {fiatCurrency} to us from your bank account. Choose one of the bank accounts below to send to.",
 	paymentIdNumber: "Our Cédula Jurídica is 3-102-875766, Toro Pagos Limitada.",
-	paymentOptionsInstructionAfter: "After sending {fiatAmount} {fiatCurrency} to us, copy the payment reference provided to you by your bank and paste it below.",
+	paymentOptionsInstructionAfter: "After sending {fiatAmount} {fiatCurrency} to us, copy the payment reference provided to you by your bank and paste it below. You must complete this step to receive your bitcoin.",
 	
 	crcAccount: "Colones Account",
 	usdAccount: "Dollar Account",

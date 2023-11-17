@@ -51,9 +51,9 @@ const es = {
 	rulesInstructionsAfter: "El incumplimiento de estas reglas puede resultar en una prohibición permanente de Bull Bitcoin y Toro Pagos.",
 
 	paymentOptionsTitle: "Opciones de pago",
-	paymentOptionsInstructionBefore: "Antes de llenar este formulario, envíanos {fiatAmount} {fiatCurrency} a nuestra cuenta bancaria.",
+	paymentOptionsInstructionBefore: "Antes de llenar este formulario, envíanos {fiatAmount} {fiatCurrency} a nuestra cuenta bancaria. Elija una de las cuentas bancarias a continuación para enviar.",
 	paymentIdNumber: "Nuestra Cédula Jurídica es 3-102-875766, Toro Pagos Limitada.",
-	paymentOptionsInstructionAfter: "Cuando ya has enviado {fiatAmount} {fiatCurrency}, copie el comprobante que te entregó el banco y péguela aquí.",
+	paymentOptionsInstructionAfter: "Cuando ya has enviado {fiatAmount} {fiatCurrency}, copie el comprobante que te entregó el banco y péguela aquí. Hay que completar este paso para recibir tu bitcoin.",
 
 	crcAccount: "Cuenta Colónes",
 	usdAccount: "Cuenta Dolares",

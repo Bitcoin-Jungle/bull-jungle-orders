@@ -932,13 +932,19 @@ function Main({ client, registeredUser }) {
 
                         {paymentReq &&
                           <div className="well">
+                            <Rules 
+                              localized={localized}
+                              style={{marginBottom: 0}} />
+                          </div>
+                        }
+
+                        {paymentReq &&
+                          <div className="well">
                             <p>
                               <b>{localized.step} {isFromBJ() ? "3" : "5"}</b>
                               {" "}
                               {localized.step5Title}
                             </p>
-                            <Rules 
-                              localized={localized} />
                             <div className="alert alert-info">
                               <p>
                                 <b>{localized.paymentOptionsTitle}</b>
@@ -948,34 +954,48 @@ function Main({ client, registeredUser }) {
                                     localized, 
                                     'paymentOptionsInstructionBefore',
                                     {
-                                      fiatAmount, 
+                                      fiatAmount: Number(fiatAmount).toLocaleString(
+                                        (language === 'es' ? 'es-CR' : 'en-US'), 
+                                        {
+                                          currency: fiatCurrency,
+                                          style: "decimal",
+                                          maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                          minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                        }
+                                      ), 
                                       fiatCurrency: localized[fiatCurrency.toLowerCase()],
                                     }
                                   )}
                                 </span>
                                 <br />
                                 <ul className="accountList">
-                                  <li>
-                                    <span onClick={() => copyToClipboard('87833773')}>
-                                      📋
-                                    </span>
-                                    {" "}
-                                    8783-3773 (Sinpe Móvil)
-                                  </li>
-                                  <li>
-                                    <span onClick={() => copyToClipboard('CR06090100002792137502')}>
-                                      📋
-                                    </span>
-                                    {" "}
-                                    CR06090100002792137502 ({localized.crcAccount})
-                                  </li>
-                                  <li>
-                                    <span onClick={() => copyToClipboard('CR76090100002792137503')}>
-                                      📋
-                                    </span>
-                                    {" "}
-                                    CR76090100002792137503 ({localized.usdAccount})
-                                  </li>
+                                  {fiatCurrency === "CRC" &&
+                                    <>
+                                      <li>
+                                        <span onClick={() => copyToClipboard('87833773')}>
+                                          📋
+                                        </span>
+                                        {" "}
+                                        8783-3773 (Sinpe Móvil)
+                                      </li>
+                                      <li>
+                                        <span onClick={() => copyToClipboard('CR06090100002792137502')}>
+                                          📋
+                                        </span>
+                                        {" "}
+                                        CR06090100002792137502 ({localized.crcAccount})
+                                      </li>
+                                    </>
+                                  }
+                                  {fiatCurrency === "USD" &&
+                                    <li>
+                                      <span onClick={() => copyToClipboard('CR76090100002792137503')}>
+                                        📋
+                                      </span>
+                                      {" "}
+                                      CR76090100002792137503 ({localized.usdAccount})
+                                    </li>
+                                  }
                                 </ul>
                                 <span>
                                   {localized.paymentIdNumber}
@@ -987,7 +1007,15 @@ function Main({ client, registeredUser }) {
                                     localized, 
                                     'paymentOptionsInstructionAfter',
                                     {
-                                      fiatAmount, 
+                                      fiatAmount: Number(fiatAmount).toLocaleString(
+                                        (language === 'es' ? 'es-CR' : 'en-US'), 
+                                        {
+                                          currency: fiatCurrency,
+                                          style: "decimal",
+                                          maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                          minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                        }
+                                      ), 
                                       fiatCurrency: localized[fiatCurrency.toLowerCase()],
                                     }
                                   )}
