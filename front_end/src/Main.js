@@ -818,7 +818,13 @@ function Main({ client, registeredUser }) {
                       }
 
                       {!satAmount &&
-                        <button className="btn btn-primary btn-sm" onClick={() => checkLimit(() => { calculateSatAmount(true) } )} disabled={overPerTxnLimit || underPerTxnMinimum}>
+                        <button className="btn btn-primary btn-sm" onClick={() => checkLimit(() => { calculateSatAmount(true) } )} disabled={overPerTxnLimit || underPerTxnMinimum || loading}>
+                          {loading &&
+                            <div className="spinner-border" role="status" style={{width: "1rem", height: "1rem"}}>
+                              <span className="visually-hidden">Loading...</span>
+                            </div>
+                          }
+                              
                           {overPerTxnLimit &&
                             <>{localized.overPerTxnLimit}</>
                           }
