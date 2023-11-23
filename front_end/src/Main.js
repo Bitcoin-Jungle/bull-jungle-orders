@@ -394,12 +394,12 @@ function Main({ client, registeredUser }) {
       return
     }
 
-    if(Math.round(btcAmount * getTxnRate('CRC')) < 2000) {
-      setUnderPerTxnMinimum(true)
-      setSatAmount("")
-      setPaymentReq("")
-      return
-    }
+    // if(Math.round(btcAmount * getTxnRate('CRC')) < 2000) {
+    //   setUnderPerTxnMinimum(true)
+    //   setSatAmount("")
+    //   setPaymentReq("")
+    //   return
+    // }
     
     if(setSat) {
       setSatAmount(""+Math.round(satAmount))
