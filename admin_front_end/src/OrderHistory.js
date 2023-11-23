@@ -154,7 +154,7 @@ function OrderHistory({}) {
         }
       }
 
-      if(['Payment Identifier', 'Payment Destination', 'From Amount', 'To Amount', 'From Currency', 'To Currency'].indexOf(obj.key) !== -1) {
+      if(['Payment Identifier', 'Payment Destination', 'From Amount', 'To Amount', 'From Currency', 'To Currency', 'Payment Description'].indexOf(obj.key) !== -1) {
         obj.renderEditCell = TextEditor
       }
 
