@@ -1903,6 +1903,13 @@ const checkIbanAccount = async (iban) => {
     }
   }
 
+  if(!response.data.account.NomPropietario) {
+    return {
+      error: true,
+      message: "No se encuentra el propietario de esta cuenta IBAN.",
+    }
+  }
+
   return { 
     error: false,
     data: response.data.account,
