@@ -2062,6 +2062,34 @@ const checkInvoice = async (label) => {
   }
 }
 
+const getBitcoinJunglePrice = async (range) => {
+  try {
+    const response = await axios({
+      method: "POST",
+      url: "https://api.mainnet.bitcoinjungle.app/graphql",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: {
+        query: "query BtcPriceList($range: PriceGraphRange!) {\n  btcPriceList(range: $range) {\n    price {\n      base\n      currencyUnit\n      formattedAmount\n      offset\n    }\n    timestamp\n  }\n}",
+        variables: {
+          range,
+        },
+        operationName: "BtcPriceList"
+      }
+    })
+
+    if(!response || !response.data || !response.data.data || !response.data.data.btcPriceList || !response.data.data.btcPriceList.length) {
+      return false
+    }
+
+    return response.data.data.btcPriceList
+  } catch (e) {
+    console.log('getBitcoinJunglePrice error', e)
+    return false
+  }
+}
+
 const getBullPrice = async (from, to) => {
   try {
     const response = await axios({
@@ -2188,9 +2216,27 @@ setInterval(getUsdCad, 60 * 1000 * 240)
 getUsdCad()
 
 const getBtcCrc = async () => {
-  const response = await getBullPrice("BTC", "CRC")
+  const bbResponse = await getBullPrice("BTC", "CRC")
+  
+  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.indexPrice > 0) {
+    BTCCRC = bbResponse.data.result
+  } else {
+    console.log("Bull Bitcoin API down, falling back to Bitcoin Jungle")
+    const bjResponse = await getBitcoinJunglePrice("ONE_DAY")
+  
+    const priceData = bjResponse.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
+    const timestamp = new Date(priceData.timestamp * 1000).toISOString()
+    const bjBTCCRC = parseFloat(Number(((priceData.price.base / 10 ** priceData.price.offset) / 100)).toFixed(2))
 
-  BTCCRC = response.data.result
+    BTCCRC = {
+      createdAt: timestamp,
+      fromCode: "BTC",
+      toCode: "CRC",
+      fromToPrice: parseFloat(Number(bjBTCCRC * 0.992).toFixed(2)),
+      toFromPrice: parseFloat(Number(bjBTCCRC * 1.012).toFixed(2)),
+      indexPrice: bjBTCCRC
+    }
+  }
 
   console.log('set BTCCRC to', BTCCRC)
 
@@ -2202,9 +2248,27 @@ setInterval(getBtcCrc, 60 * 1000)
 getBtcCrc()
 
 const getBtcUsd = async () => {
-  const response = await getBullPrice("BTC", "USD")
+  const bbResponse = await getBullPrice("BTC", "USD")
 
-  BTCUSD = response.data.result
+  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.indexPrice > 0) {
+    BTCUSD = bbResponse.data.result
+  } else {
+    console.log("Bull Bitcoin API down, falling back to Bitcoin Jungle")
+    const bjResponse = await getBitcoinJunglePrice("ONE_DAY")
+  
+    const priceData = bjResponse.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
+    const timestamp = new Date(priceData.timestamp * 1000).toISOString()
+    const bjBTCUSD = parseFloat(Number(((priceData.price.base / 10 ** priceData.price.offset) / 100) / USDCRC.indexPrice).toFixed(2))
+
+    BTCUSD = {
+      createdAt: timestamp,
+      fromCode: "BTC",
+      toCode: "USD",
+      fromToPrice: parseFloat(Number(bjBTCUSD * 0.992).toFixed(2)),
+      toFromPrice: parseFloat(Number(bjBTCUSD * 1.012).toFixed(2)),
+      indexPrice: bjBTCUSD
+    }
+  }
 
   console.log('set BTCUSD to', BTCUSD)
 
@@ -2216,9 +2280,27 @@ setInterval(getBtcUsd, 60 * 1000)
 getBtcUsd()
 
 const getBtcCad = async () => {
-  const response = await getBullPrice("BTC", "CAD")
+  const bbResponse = await getBullPrice("BTC", "CAD")
 
-  BTCCAD = response.data.result
+  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.indexPrice > 0) {
+    BTCCAD = bbResponse.data.result
+  } else {
+    console.log("Bull Bitcoin API down, falling back to Bitcoin Jungle")
+    const bjResponse = await getBitcoinJunglePrice("ONE_DAY")
+  
+    const priceData = bjResponse.sort((a,b) => a.timestamp - b.timestamp).reverse()[0]
+    const timestamp = new Date(priceData.timestamp * 1000).toISOString()
+    const bjBTCCAD = parseFloat(Number( ( ((priceData.price.base / 10 ** priceData.price.offset) / 100) / USDCRC.indexPrice ) * USDCAD).toFixed(2))
+
+    BTCCAD = {
+      createdAt: timestamp,
+      fromCode: "BTC",
+      toCode: "CAD",
+      fromToPrice: parseFloat(Number(bjBTCCAD * 0.992).toFixed(2)),
+      toFromPrice: parseFloat(Number(bjBTCCAD * 1.012).toFixed(2)),
+      indexPrice: bjBTCCAD
+    }
+  }
 
   console.log('set BTCCAD to', BTCCAD)
 
@@ -2249,34 +2331,6 @@ const getPrice = async () => {
     return {BTCCRC, USDCRC: USDCRC.indexPrice, USDCAD, BTCUSD, BTCCAD, timestamp}
   } catch(e) {
     return {error: true, message: "Error fetching price"}
-  }
-}
-
-const getBitcoinJunglePrice = async (range) => {
-  try {
-    const response = await axios({
-      method: "POST",
-      url: "https://api.mainnet.bitcoinjungle.app/graphql",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      data: {
-        query: "query BtcPriceList($range: PriceGraphRange!) {\n  btcPriceList(range: $range) {\n    price {\n      base\n      currencyUnit\n      formattedAmount\n      offset\n    }\n    timestamp\n  }\n}",
-        variables: {
-          range,
-        },
-        operationName: "BtcPriceList"
-      }
-    })
-
-    if(!response || !response.data || !response.data.data || !response.data.data.btcPriceList || !response.data.data.btcPriceList.length) {
-      return false
-    }
-
-    return response.data.data.btcPriceList
-  } catch (e) {
-    console.log('getBitcoinJunglePrice error', e)
-    return false
   }
 }
 
