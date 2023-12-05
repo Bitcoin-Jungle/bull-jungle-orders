@@ -2798,7 +2798,14 @@ const getUserOrders = async (db, type, userId, since) => {
 const getOrders = async (db, from, to) => {
   try {
     return await db.all(
-      "SELECT * FROM orders WHERE timestamp >= ? AND timestamp <= ? AND status = 'complete'", 
+      `
+        SELECT o.*, p.phoneNumber as "Phone Number"
+        FROM orders o 
+        JOIN phone_numbers p ON p.id = json_extract(o.data, '$.User')
+        WHERE o.timestamp >= ? 
+        AND o.timestamp <= ? 
+        AND o.status = 'complete'
+      `,
       [
         from,
         to,

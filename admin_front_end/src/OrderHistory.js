@@ -38,6 +38,7 @@ function OrderHistory({}) {
     "Payment Destination": '',
     User: '',
     Username: '',
+    "Phone Number": '',
     "Payment Description": '',
   })
 
@@ -58,6 +59,9 @@ function OrderHistory({}) {
 
       const output = data.data.map((el) => {
         const newObj = JSON.parse(el.data)
+        const phoneNumber = el["Phone Number"].valueOf()
+
+        delete el["Phone Number"]
         delete el.data
         delete el.id
         delete newObj.Date
@@ -65,6 +69,7 @@ function OrderHistory({}) {
         return {
           ...el,
           ...newObj,
+          "Phone Number": phoneNumber,
         }
       })
 
