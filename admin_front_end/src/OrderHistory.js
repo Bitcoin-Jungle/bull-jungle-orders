@@ -287,7 +287,7 @@ function OrderHistory({}) {
       if(data.error) {
         alert(data.message || "An unexpected error has occurred")
 
-        if(!force) {
+        if(!force && row.Type === 'Buy') {
           const conf = window.confirm("Do you want to force pay this order?")
 
           if(conf) {
