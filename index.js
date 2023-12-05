@@ -1683,7 +1683,10 @@ app.get('/stats', async (req, res) => {
   }
 
   const data = orders.map((el) => {
-    return JSON.parse(el.data)
+    return {
+      ...JSON.parse(el.data),
+      settlementData: (el.settlementData ? JSON.parse(el.settlementData) : {}),
+    }
   })
 
   const output = {
@@ -1716,6 +1719,10 @@ app.get('/stats', async (req, res) => {
 
   for (var i = data.length - 1; i >= 0; i--) {
     const el = data[i]
+
+    if(el.settlementData && el.settlementData.refund) {
+      continue
+    }
   
     output.total_count += 1
 
@@ -2724,6 +2731,12 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
   for (var i = orders.length - 1; i >= 0; i--) {
     const order = orders[i]
     const orderData = JSON.parse(order.data)
+    const settlementData = (order.settlementData ? JSON.parse(order.settlementData) : {})
+
+    if(settlementData && settlementData.refund) {
+      continue
+    }
+
     let orderFiatAmount = 0
     let orderFiatCurrency = ''
 
