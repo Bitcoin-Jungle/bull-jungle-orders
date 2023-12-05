@@ -33,6 +33,7 @@ const invoice_endpoint_url = process.env.invoice_endpoint_url
 const invoice_endpoint_user = process.env.invoice_endpoint_user
 const invoice_endpoint_password = process.env.invoice_endpoint_password
 const price_data_url = process.env.price_data_url
+const lnurl_base_url = process.env.lnurl_base_url
 const db_location = process.env.db_location
 const admin_api_key = process.env.admin_api_key
 const sparkwallet_url = process.env.sparkwallet_url
@@ -273,6 +274,7 @@ app.post('/order', async (req, res) => {
   const invoice = (req.body.invoice ? req.body.invoice : null)
   const paymentHash = (req.body.paymentHash ? req.body.paymentHash : null)
   const paymentIdentifier = (req.body.paymentIdentifier && req.body.action === "BUY" ? req.body.paymentIdentifier : "")
+  const username = (req.body.username ? req.body.username : null)
   
   const billerCategory = req.body.billerCategory
   const billerService = req.body.billerService
@@ -549,7 +551,11 @@ app.post('/order', async (req, res) => {
     await addPaymentIdentifier(db, paymentIdentifier)
   }
 
-  await updateOrderData(db, timestamp, {...rowData, "Payment Description": paymentDesc})
+  await updateOrderData(db, timestamp, {
+    ...rowData, 
+    "Username": username, 
+    "Payment Description": paymentDesc,
+  })
   await updateOrderStatus(db, timestamp, 'complete')
 
   googleSheetEventHandler.emit(
@@ -985,6 +991,90 @@ app.post('/editOrder', async (req, res) => {
   }
 
   return res.send({success: true})
+})
+
+app.get('/refundOrder', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const timestamp = req.query.timestamp
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!timestamp) {
+    return res.send({error: true, message: "timestamp is required"})
+  }
+
+  const order = await getOrder(db, timestamp)
+
+  if(!order) {
+    return res.send({error: true, message: "order not found"})
+  }
+
+  if(order.status !== 'complete') {
+    return res.send({error: true, message: "order has not been processed internally yet"})
+  }
+
+  if(order.paymentStatus === 'in-flight') {
+    return res.send({error: true, message: "order payment status is currently in-flight"})
+  }
+
+  if(order.paymentStatus === 'complete') {
+    return res.send({error: true, message: "order payment status is already complete, can't pay a lightning invoice twice."})
+  }
+
+  let orderData = {}
+  try {
+    orderData = JSON.parse(order.data)
+  } catch (e) {
+    console.log('error parsing order data json', e)
+    return res.send({error: true, message: "error parsing order data json"})
+  }
+
+  if(!orderData.Username || !orderData.Username.length) {
+    return res.send({error: true, message: "order doesn't have a username, can't refund. please handle manually"})
+  }
+
+  if(orderData.Type !== "Sell") {
+    return res.send({error: true, message: "can only send sats for 'Sell' orders"})
+  }
+
+  const satAmount = parseFloat(eval(orderData['From Amount'].replace('=', '')))
+
+  if(!satAmount) {
+    return res.send({error: true, message: "error processing To Amount"})
+  }
+
+  let milliSatAmount = satAmount * 100000000 * 1000
+
+  // round to the nearest full mill-satoshi
+  milliSatAmount = Math.round(milliSatAmount / 1000) * 1000
+
+  // the minimum is 1 satoshi, if less than that, round up to 1
+  if(milliSatAmount < 1000) {
+    return res.send({error: true, message: "error calculating refund amount"})
+  }
+
+  await updateOrderPaymentStatus(db, timestamp, "in-flight")
+  
+  const invoice = await payLnurl(orderData.Username, milliSatAmount)
+
+  if(invoice) {
+    await updateOrderPaymentStatus(db, timestamp, "complete")
+    await updateOrderSettlementData(db, timestamp, {
+      refund: true, 
+      refunded_at: new Date().toISOString(), 
+      ...invoice,
+    })
+    return res.send({success: true})
+  }
+
+  await updateOrderPaymentStatus(db, timestamp, null)
+  return res.send({error: true, message: "an unexpected error has occurred"})
 })
 
 app.get('/payInvoice', async (req, res) => {
@@ -2060,6 +2150,64 @@ const checkInvoice = async (label) => {
     console.log('error checking invoice', e)
     return false
   }
+}
+
+const fetchLnUrl = async (bitcoinJungleUsername, milliSatAmount, callback) => {
+  try {
+    const response = await axios(
+      (!callback ? lnurl_base_url + ".well-known/lnurlp/" + bitcoinJungleUsername : callback) + (milliSatAmount ? "?amount=" + milliSatAmount : "")
+    )
+    
+    return response.data
+  } catch (err) {
+    console.log('fetchLnUrl fail', err)
+    return false
+  }
+}
+
+const payLnurl = async (username, amount) => {
+  // hit the LNURL endpoint for Bitcoin Jungle
+  const lnUrl = await fetchLnUrl(username)
+
+  console.log(lnUrl)
+
+  if(!amount || amount == 0) {
+    return true
+  }
+
+  if(!lnUrl) {
+    console.log('no lnurl')
+    return false
+  }
+
+  if(!lnUrl.callback) {
+    console.log('no lnurl callback')
+    return false
+  }
+
+  // use the Bitcoin Jungle LNURL endpoint to generate a bolt11 invoice for the milli-satoshi amount calculated
+  const lnUrlWithAmount = await fetchLnUrl(username, amount, lnUrl.callback)
+
+  if(!lnUrlWithAmount) {
+    console.log('no lnUrlWithAmount')
+    return false
+  }
+
+  if(lnUrlWithAmount.status == "ERROR") {
+    return false
+  }
+
+  if(!lnUrlWithAmount.pr) {
+    return false
+  }
+  
+  const lnInvoice = await payInvoice(lnUrlWithAmount.pr)
+
+  if(lnInvoice) {
+    return lnInvoice
+  }
+
+  return false
 }
 
 const getBitcoinJunglePrice = async (range) => {

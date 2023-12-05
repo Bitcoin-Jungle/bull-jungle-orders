@@ -37,6 +37,7 @@ function OrderHistory({}) {
     "Payment Identifier": '',
     "Payment Destination": '',
     User: '',
+    Username: '',
     "Payment Description": '',
   })
 
@@ -168,6 +169,7 @@ function OrderHistory({}) {
     name: "Actions",
     resizable: true,
     headerCellClass: "filter-column",
+    width: 150,
     renderCell(props) {
       return (
         <div>
@@ -185,6 +187,22 @@ function OrderHistory({}) {
                   <span>Pay</span>
                 }
             </button>
+          }
+          {props.row.Username && props.row.Username.length > 0 && props.row.Type === 'Sell' && props.row.paymentStatus !== 'complete' &&
+            <button 
+              style={{marginLeft: 5}}
+              className="btn btn-sm btn-danger"
+              onClick={() => refundOrder(props.row)} 
+              disabled={actionLoading}>
+                {actionLoading &&
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
+                {!actionLoading &&
+                  <span>Refund</span>
+                }
+            </button>            
           }
         </div>
       )
@@ -284,6 +302,42 @@ function OrderHistory({}) {
     })
     .catch((e) => {
       alert('error settling order')
+      return
+    })
+    .finally(() => {
+      setActionLoading(false)
+      getOrders()
+    })
+  }
+
+  const refundOrder = (row) => {
+    if(!row.Username || !row.Username.length || row.Type !== 'Sell' || row.paymentStatus === 'complete') {
+      return
+    }
+
+    if(!window.confirm(`Are you sure you want to refund this order to the customer? This will send ${eval(row["From Amount"].replace('=', ''))} BTC back to their wallet.`)) {
+      return
+    }
+
+    setActionLoading(true)
+
+    let url = '/refundOrder/?'
+    
+    url += new URLSearchParams({timestamp: row.timestamp, apiKey: apiKey}).toString()
+
+    fetch(url)
+    .then((res) => res.json())
+    .then((data) => {
+      if(data.error) {
+        alert(data.message || "An unexpected error has occurred")
+
+        return
+      }
+
+      alert("Success!")
+    })
+    .catch((e) => {
+      alert('error refunding order')
       return
     })
     .finally(() => {

@@ -289,6 +289,7 @@ function Main({ client, registeredUser }) {
         paymentHash,
         paymentIdentifier,
         timestamp,
+        username,
       })
     })
     .then((res) => res.json())
