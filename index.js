@@ -1912,6 +1912,31 @@ app.get('/checkLimit', async (req, res) => {
   return res.send({success: true})
 })
 
+app.get('/invoice', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const timestamp = req.query.timestamp
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  if(!timestamp) {
+    return res.send({error: true, message: "Missing timestamp"})
+  }
+
+  const invoice = await checkInvoice(timestamp)
+
+  if(!invoice) {
+    return res.send({error: true, message: "cant find invoice"})
+  }
+
+  return res.send({error: false, data: invoice})
+})
+
 const payInvoice = async (bolt11) => {
   try {
     // const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
