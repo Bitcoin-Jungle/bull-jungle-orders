@@ -53,14 +53,20 @@ const en = {
 	paymentOptionsTitle: "Payment Options",
 	paymentOptionsInstructionBefore: "Before submitting this order, you must send {fiatAmount} {fiatCurrency} to us from your bank account. Choose one of the bank accounts below to send to.",
 	paymentIdNumber: "Our Cédula Jurídica is 3-102-875766, Toro Pagos Limitada.",
-	paymentOptionsInstructionAfter: "After sending {fiatAmount} {fiatCurrency} to us, copy the payment reference provided to you by your bank and paste it below. You must complete this step to receive your bitcoin.",
-	
+	paymentOptionsInstructionOptions: "There are 2 options for identifying your payment, Reference Number & Payment Description. You must choose one of these options and follow the instructions in order to complete your order.",
+	paymentOptionsInstructionAfterReference: "After sending {fiatAmount} {fiatCurrency} to us, copy the 25 digit payment reference number provided to you by your bank and paste it below. Note, some banks do not show the 25 digit payment reference number. In this case, you should use the Payment Description option.",
+	paymentOptionsInstructionsAfterDescription: "When sending {fiatAmount} {fiatCurrency} to us, copy and paste the text below as the description for the payment in your bank. Do not include any other description.",
+	paymentConfirmationDescription: "Payment Description",
+	paymentOptionsReferenceTitle: "Reference #",
+	paymentOptionsDescriptionTitle: "Description",
+
 	crcAccount: "Colones Account",
 	usdAccount: "Dollar Account",
 	
 	paymentIdentifierTitle: "Payment Reference #",
 	paymentIdentifierHelper: "Typically you will receive a 25 digit payment reference number. If your bank does not provide this, please enter the number provided by your bank. Please note, this may cause delays.",
-	paymentConfirmationLabel: "I have sent the payment with the above reference number",
+	paymentConfirmationLabel: "I have sent the payment with the above reference number from my bank",
+	paymentConfirmationLabelDescription: "I have sent the payment with the above description from my bank",
 
 	billerCategoryTitle: "Biller Category",
 	billerServiceTitle: "Biller Service",

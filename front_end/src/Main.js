@@ -508,6 +508,16 @@ function Main({ client, registeredUser }) {
     }
   }
 
+  const dec2hex = (dec) => {
+    return dec.toString(16).padStart(2, "0")
+  }
+
+  const generateId = (len) => {
+    const arr = new Uint8Array((len || 40) / 2)
+    window.crypto.getRandomValues(arr)
+    return Array.from(arr, dec2hex).join('')
+  }
+
   const toggleLoadingOn = () => setLoading(true)
   const toggleLoadingOff = () => setLoading(false)
 
@@ -748,7 +758,7 @@ function Main({ client, registeredUser }) {
                       <div className="input-group">
                         <input type="text" className="form-control" id="fiatAmount" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
                         {getSatBalance() && action === 'SELL' && 
-                          <span class="input-group-text" id="fiatAmount-addon">
+                          <span className="input-group-text" id="fiatAmount-addon">
                             <button className="btn btn-warning fs-6 btn-sm" onClick={calculateMaxFiatAmount}>
                               Max
                             </button>
@@ -925,8 +935,8 @@ function Main({ client, registeredUser }) {
                                 <label htmlFor="username" className="form-label">{localized.bitcoinJungleWallet}</label>
                                 <div className="input-group">
                                   <input className="form-control" id="username" value={username} onChange={(e) => { setUsername(e.target.value); setPaymentReq("") } } />
-                                  <div class="input-group-append">
-                                    <span class="input-group-text" id="basic-addon2">
+                                  <div className="input-group-append">
+                                    <span className="input-group-text" id="basic-addon2">
                                       <button className="btn btn-success fs-6 btn-small" onClick={generateUserInvoice}>
                                         {localized.confirm} ➡️
                                       </button>
@@ -954,97 +964,139 @@ function Main({ client, registeredUser }) {
                               {" "}
                               {localized.step5Title}
                             </p>
-                            <div className="alert alert-info">
+                            <div>
                               <p>
-                                <b>{localized.paymentOptionsTitle}</b>
-                                <br />
-                                <span>
-                                  {localize(
-                                    localized, 
-                                    'paymentOptionsInstructionBefore',
-                                    {
-                                      fiatAmount: Number(fiatAmount).toLocaleString(
-                                        (language === 'es' ? 'es-CR' : 'en-US'), 
-                                        {
-                                          currency: fiatCurrency,
-                                          style: "decimal",
-                                          maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
-                                          minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
-                                        }
-                                      ), 
-                                      fiatCurrency: localized[fiatCurrency.toLowerCase()],
-                                    }
-                                  )}
-                                </span>
-                                <br />
-                                <ul className="accountList">
-                                  {fiatCurrency === "CRC" &&
-                                    <>
-                                      <li>
-                                        <span onClick={() => copyToClipboard('87833773')}>
-                                          📋
-                                        </span>
-                                        {" "}
-                                        8783-3773 (Sinpe Móvil)
-                                      </li>
-                                      <li>
-                                        <span onClick={() => copyToClipboard('CR06090100002792137502')}>
-                                          📋
-                                        </span>
-                                        {" "}
-                                        CR06090100002792137502 ({localized.crcAccount})
-                                      </li>
-                                    </>
+                                {localize(
+                                  localized, 
+                                  'paymentOptionsInstructionBefore',
+                                  {
+                                    fiatAmount: Number(fiatAmount).toLocaleString(
+                                      (language === 'es' ? 'es-CR' : 'en-US'), 
+                                      {
+                                        currency: fiatCurrency,
+                                        style: "decimal",
+                                        maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                        minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                      }
+                                    ), 
+                                    fiatCurrency: localized[fiatCurrency.toLowerCase()],
                                   }
-                                  {fiatCurrency === "USD" &&
+                                )}
+                                {" " + localized.paymentIdNumber}
+                              </p>
+                              <ul className="accountList">
+                                {fiatCurrency === "CRC" &&
+                                  <>
                                     <li>
-                                      <span onClick={() => copyToClipboard('CR76090100002792137503')}>
+                                      <span onClick={() => copyToClipboard('87833773')}>
                                         📋
                                       </span>
                                       {" "}
-                                      CR76090100002792137503 ({localized.usdAccount})
+                                      8783-3773 (Sinpe Móvil)
                                     </li>
-                                  }
-                                </ul>
-                                <span>
-                                  {localized.paymentIdNumber}
-                                </span>
-                                <br />
-                                <br />
-                                <span>
-                                  {localize(
-                                    localized, 
-                                    'paymentOptionsInstructionAfter',
-                                    {
-                                      fiatAmount: Number(fiatAmount).toLocaleString(
-                                        (language === 'es' ? 'es-CR' : 'en-US'), 
-                                        {
-                                          currency: fiatCurrency,
-                                          style: "decimal",
-                                          maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
-                                          minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
-                                        }
-                                      ), 
-                                      fiatCurrency: localized[fiatCurrency.toLowerCase()],
-                                    }
-                                  )}
-                                </span>
-                                <div className="mb-1 mt-3">
-                                  <label htmlFor="paymentIdentifier" className="form-label">{localized.paymentIdentifierTitle}</label>
-                                  <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => {
-                                    setDisableButton(true)
-                                    setPaymentIdentifier(e.target.value.replace(/[^0-9]/gi, ''))
-                                  }} />
-                                  {paymentIdentifier.length > 0 && paymentIdentifier.length !== 25 &&
-                                    <div className="form-text">{localized.paymentIdentifierHelper}</div>
-                                  }
-                                </div>
-                                <br />
-                                <div className="form-check form-switch">
-                                  <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckbox" onChange={(e) => {checkPaymentIdentifier(e)}} checked={!disableButton} />
-                                  <label className="form-check-label" for="buyConfirmationCheckbox">{localized.paymentConfirmationLabel}</label>
-                                </div>
+                                    <li>
+                                      <span onClick={() => copyToClipboard('CR06090100002792137502')}>
+                                        📋
+                                      </span>
+                                      {" "}
+                                      CR06090100002792137502 ({localized.crcAccount})
+                                    </li>
+                                  </>
+                                }
+                                {fiatCurrency === "USD" &&
+                                  <li>
+                                    <span onClick={() => copyToClipboard('CR76090100002792137503')}>
+                                      📋
+                                    </span>
+                                    {" "}
+                                    CR76090100002792137503 ({localized.usdAccount})
+                                  </li>
+                                }
+                              </ul>
+                              <p>
+                                {localized.paymentOptionsInstructionOptions}
                               </p>
+                              <br />
+                              <b>{localized.paymentOptionsTitle}</b>
+                              <br />
+                              <ul className="nav nav-pills nav-justified mb-1">
+                                <li className="nav-item" role="presentation">
+                                  <button className="nav-link active" id="reference-tab" data-bs-toggle="tab" data-bs-target="#reference" type="button" role="tab" aria-controls="reference" aria-selected="true" onClick={() => { setPaymentIdentifier("") }}>{localized.paymentOptionsReferenceTitle}</button>
+                                </li>
+                                <li className="nav-item" role="presentation">
+                                  <button className="nav-link" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="false" onClick={() => { setDisableButton(true); setPaymentIdentifier(generateId(10)); }}>{localized.paymentOptionsDescriptionTitle}</button>
+                                </li>
+                              </ul>
+                              <div className="tab-content well">
+                                <div className="tab-pane fade show active" id="reference" role="tabpanel" aria-labelledby="reference-tab">
+                                  <p>
+                                    {localize(
+                                      localized, 
+                                      'paymentOptionsInstructionAfterReference',
+                                      {
+                                        fiatAmount: Number(fiatAmount).toLocaleString(
+                                          (language === 'es' ? 'es-CR' : 'en-US'), 
+                                          {
+                                            currency: fiatCurrency,
+                                            style: "decimal",
+                                            maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                            minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                          }
+                                        ), 
+                                        fiatCurrency: localized[fiatCurrency.toLowerCase()],
+                                      }
+                                    )}
+                                  </p>
+                                  <div className="mb-1 mt-3">
+                                    <label htmlFor="paymentIdentifier" className="form-label">{localized.paymentIdentifierTitle}</label>
+                                    <input type="text" className="form-control" id="paymentIdentifier" value={paymentIdentifier} onChange={(e) => {
+                                      setDisableButton(true)
+                                      setPaymentIdentifier(e.target.value.replace(/[^0-9]/gi, ''))
+                                    }} />
+                                    {paymentIdentifier.length > 0 && paymentIdentifier.length !== 25 &&
+                                      <div className="form-text">{localized.paymentIdentifierHelper}</div>
+                                    }
+                                  </div>
+                                  <div className="form-check form-switch">
+                                    <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckbox" onChange={(e) => {checkPaymentIdentifier(e)}} checked={!disableButton} />
+                                    <label className="form-check-label" for="buyConfirmationCheckbox">{localized.paymentConfirmationLabel}</label>
+                                  </div>
+                                </div>
+                                <div className="tab-pane fade" id="description" role="tabpanel" aria-labelledby="description-tab">
+                                  <p>
+                                    {localize(
+                                      localized, 
+                                      'paymentOptionsInstructionsAfterDescription',
+                                      {
+                                        fiatAmount: Number(fiatAmount).toLocaleString(
+                                          (language === 'es' ? 'es-CR' : 'en-US'), 
+                                          {
+                                            currency: fiatCurrency,
+                                            style: "decimal",
+                                            maximumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                            minimumFractionDigits: (fiatCurrency === 'CRC' ? 0 : 2),
+                                          }
+                                        ), 
+                                        fiatCurrency: localized[fiatCurrency.toLowerCase()],
+                                      }
+                                    )}
+                                  </p>
+                                  <div className="mb-3 mt-3">
+                                    <p>
+                                      <b>{localized.paymentConfirmationDescription}</b>
+                                      <br />
+                                      <span onClick={() => copyToClipboard(paymentIdentifier)}>
+                                        📋
+                                      </span>
+                                      <b onClick={() => copyToClipboard(paymentIdentifier)}>{paymentIdentifier}</b>
+                                    </p>
+                                  </div>
+                                  <div className="form-check form-switch">
+                                    <input className="form-check-input" type="checkbox" role="switch" id="buyConfirmationCheckboxDesc" onChange={(e) => {setDisableButton(!e.target.checked)}} checked={!disableButton} />
+                                    <label className="form-check-label" for="buyConfirmationCheckboxDesc">{localized.paymentConfirmationLabelDescription}</label>
+                                  </div>
+                                </div>
+                              </div>                              
                             </div>
                           </div>
                         }

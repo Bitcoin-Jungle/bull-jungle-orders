@@ -53,7 +53,12 @@ const es = {
 	paymentOptionsTitle: "Opciones de pago",
 	paymentOptionsInstructionBefore: "Antes de llenar este formulario, envíanos {fiatAmount} {fiatCurrency} a nuestra cuenta bancaria. Elija una de las cuentas bancarias a continuación para enviar.",
 	paymentIdNumber: "Nuestra Cédula Jurídica es 3-102-875766, Toro Pagos Limitada.",
-	paymentOptionsInstructionAfter: "Cuando ya has enviado {fiatAmount} {fiatCurrency}, copie el comprobante que te entregó el banco y péguela aquí. Hay que completar este paso para recibir tu bitcoin.",
+	paymentOptionsInstructionOptions: "Hay 2 opciones para identificar su pago, Número de referencia y Descripción del pago. Debe elegir una de estas opciones y seguir las instrucciones para completar su pedido.",
+	paymentOptionsInstructionAfterReference: "Después de enviarnos {fiatAmount} {fiatCurrency}, copie el número de referencia de pago de 25 dígitos que le proporcionó su banco y péguelo a continuación. Tenga en cuenta que algunos bancos no muestran el número de referencia de pago de 25 dígitos. En este caso, debe utilizar la opción Descripción de pago.",
+	paymentOptionsInstructionsAfterDescription: "Cuando nos envíe {fiatAmount} {fiatCurrency}, copie y pegue el texto a continuación como descripción del pago en su banco. No incluya ninguna otra descripción.",
+	paymentConfirmationDescription: "Descripción del pago",
+	paymentOptionsReferenceTitle: "Comprobante",
+	paymentOptionsDescriptionTitle: "Descripción",
 
 	crcAccount: "Cuenta Colónes",
 	usdAccount: "Cuenta Dolares",
@@ -61,6 +66,7 @@ const es = {
 	paymentIdentifierTitle: "Comprobante del banco",
 	paymentIdentifierHelper: "Típicamente, recibirá un comprobante de 25 dígitos. Si su banco no engtrega el comprobante entero, ingrese el número entregado por su banco. Tenga en cuenta que esto puede causar retrasos.",
 	paymentConfirmationLabel: "Mi banco me entregó este comprobante",
+	paymentConfirmationLabelDescription: "He enviado el pago con la descripción anterior de mi banco",
 	
 	billerCategoryTitle: "Categoría del facturador",
 	billerServiceTitle: "Servicio de facturación",
