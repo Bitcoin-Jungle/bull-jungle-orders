@@ -1181,8 +1181,13 @@ app.get('/payInvoice', async (req, res) => {
       await updateOrderPaymentStatus(db, timestamp, null)
       return res.send({error: true, message: "couldnt locate fiat payment, if you are sure then click to force-pay."})
     } else if(fiatPaymentMade && fiatPaymentMade !== true) {
-      await addPaymentIdentifier(db, fiatPaymentMade.NumReferenciaSP)
-      await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento)
+      if(fiatPaymentMade.NumReferenciaSP && fiatPaymentMade.NumReferenciaSP.length > 0 && paymentIdentifier !== fiatPaymentMade.NumReferenciaSP) {
+        await addPaymentIdentifier(db, fiatPaymentMade.NumReferenciaSP)
+      }
+
+      if(fiatPaymentMade.DesMovimiento && fiatPaymentMade.DesMovimiento.length > 0 && paymentIdentifier !== fiatPaymentMade.DesMovimiento) {
+        await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento)
+      }
     }
   }
 
