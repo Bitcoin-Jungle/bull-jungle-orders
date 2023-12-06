@@ -1691,9 +1691,24 @@ app.get('/stats', async (req, res) => {
   }
 
   const data = orders.map((el) => {
+    let orD = {}
+    let settlementData = {}
+
+    try {
+      orD = JSON.parse(el.data)
+    } catch (e) {
+      console.log('json error orderData', e)
+    }
+
+    try {
+      settlementData = JSON.parse(el.settlementData)
+    } catch (e) {
+      console.log('json error settlementData', e)
+    }
+
     return {
-      ...JSON.parse(el.data),
-      settlementData: (el.settlementData ? JSON.parse(el.settlementData) : {}),
+      ...orD,
+      settlementData,
     }
   })
 
