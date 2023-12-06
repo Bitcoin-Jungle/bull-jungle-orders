@@ -1180,6 +1180,8 @@ app.get('/payInvoice', async (req, res) => {
     if(!fiatPaymentMade) {
       await updateOrderPaymentStatus(db, timestamp, null)
       return res.send({error: true, message: "couldnt locate fiat payment, if you are sure then click to force-pay."})
+    } else if(fiatPaymentMade && fiatPaymentMade !== true) {
+      await addPaymentIdentifier(db, fiatPaymentMade)
     }
   }
 

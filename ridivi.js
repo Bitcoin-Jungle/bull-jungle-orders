@@ -185,7 +185,7 @@ const checkHistoryPageForPayment = async ({pageNumber, currency, paymentIdentifi
     }
 
     if(row.DesMovimiento && row.DesMovimiento.length > 0 && paymentIdentifier.length === 10 && row.DesMovimiento.trim().toLowerCase().indexOf(paymentIdentifier) === 0) {
-      return true
+      return row.NumReferenciaSP
     }
 
     return false
