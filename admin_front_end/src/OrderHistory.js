@@ -209,6 +209,22 @@ function OrderHistory({}) {
                 }
             </button>            
           }
+          {props.row.Type === 'Buy' && props.row.paymentStatus !== 'complete' &&
+            <button 
+              style={{marginLeft: 5}}
+              className="btn btn-sm btn-danger"
+              onClick={() => deleteOrder(props.row)} 
+              disabled={actionLoading}>
+                {actionLoading &&
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
+                {!actionLoading &&
+                  <span>Delete</span>
+                }
+            </button>            
+          }
         </div>
       )
     }
@@ -348,6 +364,40 @@ function OrderHistory({}) {
     .finally(() => {
       setActionLoading(false)
       getOrders()
+    })
+  }
+
+  const deleteOrder = (row) => {
+    if(row.Type !== 'Buy' || row.paymentStatus === 'complete') {
+      return
+    }
+
+    if(!window.confirm("are you sure you want to permanently delete this order? This action is irreversible.")) {
+      return
+    }
+
+    setActionLoading(true)
+
+    fetch('/deleteOrder', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        apiKey,
+        timestamp: row.timestamp,
+      })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if(res.error) {
+        alert(res.message)
+      }
+    })
+    .then(getOrders)
+    .finally(() => {
+      setActionLoading(false)
     })
   }
 

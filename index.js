@@ -1945,6 +1945,33 @@ app.get('/invoice', async (req, res) => {
   return res.send({error: false, data: invoice})
 })
 
+app.post('/deleteOrder', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const timestamp = req.body.timestamp
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  if(!timestamp) {
+    return res.send({error: true, message: "Missing timestamp"})
+  }
+
+  const order = await getOrder(db, timestamp)
+
+  if(!order) {
+    return res.send({error: true, message: "cant find order"})
+  }
+
+  await deleteOrder(db, timestamp)
+
+  return res.send({success: true})
+})
+
 const payInvoice = async (bolt11) => {
   try {
     // const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
