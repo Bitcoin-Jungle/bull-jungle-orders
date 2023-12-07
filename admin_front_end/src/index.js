@@ -16,6 +16,7 @@ import OrderHistory from './OrderHistory';
 import PhoneNumbers from './PhoneNumbers';
 import CreateOrder from './CreateOrder';
 import Stats from "./Stats";
+import ManageCurrencies from "./ManageCurrencies";
 
 const router = createHashRouter([
   {
@@ -41,6 +42,10 @@ const router = createHashRouter([
   {
     path: "/stats",
     element: <Stats />,
+  },
+  {
+    path: "/manageCurrencies",
+    element: <ManageCurrencies />,
   }
 ]);
 

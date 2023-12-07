@@ -43,3 +43,6 @@ UPDATE orders set paymentStatus = 'complete';
 ALTER TABLE phone_numbers ADD COLUMN allow_instant NOT NULL DEFAULT false;
 ALTER TABLE phone_numbers ADD COLUMN daily_buy_limit DECIMAL(10,2) NOT NULL DEFAULT 9999.99;
 ALTER TABLE phone_numbers ADD COLUMN daily_sell_limit DECIMAL(10,2) NOT NULL DEFAULT 1100.00;
+
+ALTER TABLE alert ADD COLUMN types TEXT;
+UPDATE alert SET types = '{"USD":{"buy":true,"sell":true},"CRC":{"buy":true,"sell":true}}';

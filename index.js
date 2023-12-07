@@ -1596,6 +1596,7 @@ app.post('/alert', async (req, res) => {
   const active = (req.body.active ? true : false)
   let message = req.body.message
   const apiKey = req.body.key
+  const types = req.body.types
 
   if(!apiKey) {
     return res.send({error: true, message: "apiKey is required"})
@@ -1614,6 +1615,10 @@ app.post('/alert', async (req, res) => {
   }
 
   const alert = await updateAlert(db, active, message)
+
+  if(types) {
+    await updateAlertTypes(db, types)
+  }
 
   return res.send({error: alert ? false : true})
 })
@@ -2615,6 +2620,19 @@ const updateAlert = async (db, active, message) => {
         active,
         message,
         new Date().toISOString(),
+      ]
+    )
+  } catch {
+    return false
+  }
+}
+
+const updateAlertTypes = async (db, types) => {
+  try {
+    return await db.run(
+      "UPDATE alert SET types = ? WHERE id = 1",
+      [
+        JSON.stringify(types),
       ]
     )
   } catch {

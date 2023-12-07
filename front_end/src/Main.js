@@ -54,6 +54,16 @@ function Main({ client, registeredUser }) {
   const [underPerTxnMinimum, setUnderPerTxnMinimum] = useState(false)
   const [sinpeCheckData, setSinpeCheckData] = useState({})
   const [systemAlert, setSystemAlert] = useState({})
+  const [currencyData, setCurrencyData] = useState({
+    USD: {
+      buy: true,
+      sell: true,
+    },
+    CRC: {
+      buy: true,
+      sell: true,
+    }
+  })
 
   const localized = localizeText(language)
 
@@ -67,6 +77,13 @@ function Main({ client, registeredUser }) {
       }
 
       setSystemAlert(data.data)
+      try {
+        const types = JSON.parse(data.data.types)
+        setCurrencyData(types)
+      } catch {
+        console.log(data.data.types)
+        alert("error fetching data")
+      }
     })
     .catch((e) => {
       console.log('error getting alert', e)
@@ -77,6 +94,12 @@ function Main({ client, registeredUser }) {
     clearForm()
     setAction(action)
     setDisableButton(true)
+
+    if(currencyData.CRC[action.toLowerCase()]) {
+      setFiatCurrency("CRC")
+    } else {
+      setFiatCurrency("USD")
+    }
   }
 
   const fetchInvoice = () => {
@@ -771,8 +794,10 @@ function Main({ client, registeredUser }) {
                     <div className="col-12 mb-1">
                       <label htmlFor="fiatCurrency" className="form-label">{localized.fiatCurrencyTitle}</label>
                       <select className="form-control" id="fiatCurrency" value={fiatCurrency} onChange={(e) => setFiatCurrency(e.target.value)}>
-                        <option value="CRC">{localized.crc}</option>
-                        {action === 'BUY' &&
+                        {currencyData.CRC[action.toLowerCase()] &&
+                          <option value="CRC">{localized.crc}</option>
+                        }
+                        {currencyData.USD[action.toLowerCase()] &&
                           <option value="USD">{localized.usd}</option>
                         }
                       </select>

@@ -96,6 +96,9 @@ function Home() {
               <Link to="stats">Order Stats</Link>
             </li>
             <li className="list-group-item">
+              <Link to="manageCurrencies">Manage Currencies</Link>
+            </li>
+            <li className="list-group-item">
               <a onClick={updateAlert} href="#">Update System Status</a>
             </li>
           </ul>
