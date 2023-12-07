@@ -17,6 +17,7 @@ import PhoneNumbers from './PhoneNumbers';
 import CreateOrder from './CreateOrder';
 import Stats from "./Stats";
 import ManageCurrencies from "./ManageCurrencies";
+import Ticker from "./Ticker";
 
 const router = createHashRouter([
   {
@@ -54,6 +55,7 @@ root.render(
   <React.StrictMode>
     <div className="App">
       <h3>Bull Jungle Admin</h3>
+      <Ticker />
       <RouterProvider router={router} />
     </div>
   </React.StrictMode>
