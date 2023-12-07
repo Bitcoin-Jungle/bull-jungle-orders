@@ -1046,10 +1046,42 @@ function Main({ client, registeredUser }) {
                               <br />
                               <ul className="nav nav-pills nav-justified mb-1">
                                 <li className="nav-item" role="presentation">
-                                  <button className="nav-link active" id="reference-tab" data-bs-toggle="tab" data-bs-target="#reference" type="button" role="tab" aria-controls="reference" aria-selected="true" onClick={() => { setPaymentIdentifier("") }}>{localized.paymentOptionsReferenceTitle}</button>
+                                  <button 
+                                    className="nav-link active" 
+                                    id="reference-tab" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#reference" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="reference" 
+                                    aria-selected="true" 
+                                    onClick={() => { 
+                                      setPaymentIdentifier("")
+                                    }}
+                                  >
+                                    {localized.paymentOptionsReferenceTitle}
+                                  </button>
                                 </li>
                                 <li className="nav-item" role="presentation">
-                                  <button className="nav-link" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="false" onClick={() => { setDisableButton(true); setPaymentIdentifier(generateId(10)); }}>{localized.paymentOptionsDescriptionTitle}</button>
+                                  <button 
+                                    className="nav-link" 
+                                    id="description-tab" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#description" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="description" 
+                                    aria-selected="false" 
+                                    onClick={() => { 
+                                      setDisableButton(true);
+
+                                      if(paymentIdentifier.length !== 10) {
+                                        setPaymentIdentifier(generateId(10));
+                                      }
+                                    }}
+                                  >
+                                    {localized.paymentOptionsDescriptionTitle}
+                                  </button>
                                 </li>
                               </ul>
                               <div className="tab-content well">
