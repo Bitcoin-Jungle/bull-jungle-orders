@@ -1987,6 +1987,12 @@ app.post('/deleteOrder', async (req, res) => {
     return res.send({error: true, message: "cant find order"})
   }
 
+  const orderData = JSON.parse(order.data)
+
+  if(orderData.Type === 'Buy' && orderData["Payment Identifier"]) {
+    await deletePaymentIdentifier(db, orderData["Payment Identifier"])
+  }
+
   await deleteOrder(db, timestamp)
 
   return res.send({success: true})
@@ -2691,6 +2697,18 @@ const addPaymentIdentifier = async (db, identifier) => {
   try {
     return await db.run(
       "INSERT INTO payment_identifiers (identifier) VALUES (?)", 
+      [identifier]
+    )
+  } catch(e) {
+    console.log(e)
+    return false
+  }
+}
+
+const deletePaymentIdentifier = async (db, identifier) => {
+  try {
+    return await db.run(
+      "DELETE FROM payment_identifiers WHERE identifier = ?", 
       [identifier]
     )
   } catch(e) {
