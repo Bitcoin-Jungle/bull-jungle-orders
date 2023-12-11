@@ -86,7 +86,6 @@ const es = {
 
 	to: "a",
 
-	overPerTxnLimit: "El límite por transacción es de $1000 CAD.",
 	underPerTxnMinimum: "El mínimo por transacción es de ₡2.000 CRC",
 
 	step: "Paso",
@@ -137,10 +136,9 @@ const es = {
 		usdIbanRequired: "Al seleccionar la moneda USD, el destino del pago debe ser una cuenta IBAN.",
 		invalidPaymentReqSell: "Debe proporcionar un número de cuenta IBAN válido o un número de teléfono móvil SINPE.",
 		invalidInvoice: "Cuando la acción es VENDER o FACTURAR, debe proporcionar una factura y un hash de pago y una marca de tiempo.",
-		invalidFiatAmount: "Hay un límite por transacción de $1000 CAD.",
 		invoiceNotPaid: "La factura no ha sido pagada. Intente realizar su pedido de nuevo.",
 		pendingApproval: "Su solicitud está pendiente. Si ha pasado un tiempo y no ha escuchado nada de nosotros, intente contactarnos en WhatsApp.",
-		isOverDailyLimit: "Sus límites diarios son COMPRAR: ${dailyBuyLimit} CAD, VENDER: ${dailySellLimit} CAD. Este pedido excedería estos límites diarios para su cuenta. Por favor reduzca la cantidad o vuelva a intentarlo mañana.",
+		isOverDailyLimit: "Sus límites diarios son COMPRAR: ${dailyBuyLimit} CAD, VENDER: ${dailySellLimit} CAD. Su limite por transacción es ${perTxnLimit}. Este pedido excedería estos límites para su cuenta. Por favor reduzca la cantidad o vuelva a intentarlo mañana.",
 		duplicateOrder: "Parece que esta es una orden duplicada. Espere unos minutos y asegúrese de que su pedido se haya procesado por completo antes de volver a intentarlo.",
 		paymentDestinationBlocked: "Este destino de pago ha sido bloqueado permanentemente.",
 	},

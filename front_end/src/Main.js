@@ -50,7 +50,6 @@ function Main({ client, registeredUser }) {
   const [timestamp, setTimestamp] = useState(new Date().toISOString())
   const [phoneNumber, setPhoneNumber] = useState(getPhoneNumber())
   const [username, setUsername] = useState(getUsername())
-  const [overPerTxnLimit, setOverPerTxnLimit] = useState(false)
   const [underPerTxnMinimum, setUnderPerTxnMinimum] = useState(false)
   const [sinpeCheckData, setSinpeCheckData] = useState({})
   const [systemAlert, setSystemAlert] = useState({})
@@ -130,11 +129,6 @@ function Main({ client, registeredUser }) {
 
     if(action === 'BILLPAY' && (!billerCategory || !billerService || !billerActionType || !billerAccountNumber)) {
       alert(localized.errors.invalidBillPaySettings)
-      return false
-    }
-
-    if(overPerTxnLimit) {
-      alert(localized.overPerTxnLimit)
       return false
     }
 
@@ -269,7 +263,6 @@ function Main({ client, registeredUser }) {
     setInvoice("")
     setPaymentHash("")
     setTimestamp(new Date().toISOString())
-    setOverPerTxnLimit(false)
     setUnderPerTxnMinimum(false)
     setSinpeCheckData({})
   }
@@ -366,7 +359,7 @@ function Main({ client, registeredUser }) {
     setFiatAmount(Math.floor(fiatAmount).toString())
   }
 
-  const checkLimit = (callback) => {
+  const checkLimit = async (callback) => {
     if(!action || !fiatAmount || !fiatCurrency || !phoneNumber) {
       if(callback) {
         callback()
@@ -401,7 +394,6 @@ function Main({ client, registeredUser }) {
   const calculateSatAmount = (setSat) => {
     if(!fiatAmount || !fiatCurrency || priceData.error) {
       setSatAmount("")
-      setOverPerTxnLimit(false)
       setUnderPerTxnMinimum(false)
       return
     }
@@ -410,13 +402,6 @@ function Main({ client, registeredUser }) {
 
     const btcAmount = parseFloat(fiatAmount / txnRate)
     const satAmount = btcAmount * 100000000
-
-    if(btcAmount * getTxnRate('CAD') >= 999) {
-      setOverPerTxnLimit(true)
-      setSatAmount("")
-      setPaymentReq("")
-      return
-    }
 
     if(Math.round(btcAmount * getTxnRate('CRC')) < 2000) {
       setUnderPerTxnMinimum(true)
@@ -432,7 +417,6 @@ function Main({ client, registeredUser }) {
       setPaymentReq("")
     }
     
-    setOverPerTxnLimit(false)
     setUnderPerTxnMinimum(false)
   }
 
@@ -856,22 +840,17 @@ function Main({ client, registeredUser }) {
                       }
 
                       {!satAmount &&
-                        <button className="btn btn-primary btn-sm" onClick={() => checkLimit(() => { calculateSatAmount(true) } )} disabled={overPerTxnLimit || underPerTxnMinimum || loading}>
+                        <button className="btn btn-primary btn-sm" onClick={() => checkLimit(() => { calculateSatAmount(true) } )} disabled={underPerTxnMinimum || loading}>
                           {loading &&
                             <div className="spinner-border" role="status" style={{width: "1rem", height: "1rem"}}>
                               <span className="visually-hidden">Loading...</span>
                             </div>
                           }
-                              
-                          {overPerTxnLimit &&
-                            <>{localized.overPerTxnLimit}</>
-                          }
-
                           {underPerTxnMinimum &&
                             <>{localized.underPerTxnMinimum}</>
                           }
 
-                          {!overPerTxnLimit && !underPerTxnMinimum && 
+                          {!underPerTxnMinimum && 
                             <>{localized.continue}</>
                           }
                         </button>
@@ -880,7 +859,7 @@ function Main({ client, registeredUser }) {
                   </div>
                 </div>
 
-                {fiatAmount && fiatCurrency && satAmount && !overPerTxnLimit && 
+                {fiatAmount && fiatCurrency && satAmount && 
                   <div>
 
                     {!isFromBJ() && 
@@ -1193,7 +1172,7 @@ function Main({ client, registeredUser }) {
 
                     <div className="well">
                       <div className="submit-container mb-1 mt-1">
-                        <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton || overPerTxnLimit} onClick={handleFormSubmit}>{localized[`createOrder${action}`]}</button>
+                        <button id="submit-btn" type="submit" className="btn btn-primary" disabled={loading || disableButton} onClick={handleFormSubmit}>{localized[`createOrder${action}`]}</button>
                         {loading &&
                           <div className="spinner-border" role="status">
                             <span className="visually-hidden">Loading...</span>

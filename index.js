@@ -48,6 +48,7 @@ const twilio_auth_token = process.env.twilio_auth_token
 const twilio_from_number = process.env.twilio_from_number
 const default_daily_sell_limit = process.env.default_daily_sell_limit
 const default_daily_buy_limit = process.env.default_daily_buy_limit
+const default_per_txn_limit = process.env.default_per_txn_limit
 
 const twilioClient = twilio(twilio_account_sid, twilio_auth_token)
 
@@ -382,12 +383,6 @@ app.post('/order', async (req, res) => {
     //     return res.send({error: true, message: phoneNumberCheck.message})
     //   }
     // }
-  }
-
-  const txnRate = getTxnRate('CAD', action)
-
-  if((satAmount / 100000000) * txnRate >= 999) {
-    return res.send({error: true, type: "invalidFiatAmount"})
   }
 
   const isOver = await isUserOverDailyLimit({action, phoneNumber, fiatAmount, fiatCurrency})
@@ -2779,12 +2774,13 @@ const updatePhoneNumber = async (db, id, data) => {
 const addPhoneNumber = async (db, phoneNumber) => {
   try {
     return await db.run(
-      "INSERT INTO phone_numbers (phoneNumber, allow_instant, daily_buy_limit, daily_sell_limit) VALUES (?, ?, ?, ?)", 
+      "INSERT INTO phone_numbers (phoneNumber, allow_instant, daily_buy_limit, daily_sell_limit, per_txn_limit) VALUES (?, ?, ?, ?, ?)", 
       [
         phoneNumber,
         true,
         parseFloat(default_daily_buy_limit),
         parseFloat(default_daily_sell_limit),
+        parseFloat(default_per_txn_limit),
       ]
     )
   } catch {
@@ -2812,6 +2808,7 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
   let phoneUser = await getPhoneNumber(db, phoneNumber)
   let dailySellLimit = 0
   let dailyBuyLimit = 0
+  let perTxnLimit = 0
 
   if(!phoneUser) {
     console.log('phoneUser not found')
@@ -2820,9 +2817,11 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
     }
     dailySellLimit = default_daily_sell_limit
     dailyBuyLimit = default_daily_buy_limit
+    perTxnLimit = default_per_txn_limit
   } else {
     dailySellLimit = phoneUser.daily_sell_limit
     dailyBuyLimit = phoneUser.daily_buy_limit
+    perTxnLimit = phoneUser.per_txn_limit
   }
 
   const todayMidnight = new Date()
@@ -2839,6 +2838,17 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
   fiatAmount = fiatAmount * USDCAD
 
   let total = fiatAmount
+
+  if(fiatAmount > perTxnLimit) {
+    console.log(`phoneUser id ${phoneUser.id} is over per txn limit of ${perTxnLimit} requesting ${fiatAmount}`)
+    return {
+      total,
+      dailyBuyLimit,
+      dailySellLimit,
+      perTxnLimit,
+      type: "perTxnLimit",
+    }
+  }
 
   for (var i = orders.length - 1; i >= 0; i--) {
     const order = orders[i]
@@ -2879,6 +2889,8 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
       total,
       dailyBuyLimit,
       dailySellLimit,
+      perTxnLimit,
+      type: "dailyLimit",
     }
   }
 

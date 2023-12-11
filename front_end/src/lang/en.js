@@ -86,7 +86,6 @@ const en = {
 
 	to: "to",
 
-	overPerTxnLimit: "The per transaction limit is $1000 CAD.",
 	underPerTxnMinimum: "The minimum per transaction is ₡2.000 CRC",
 
 	step: "Step",
@@ -137,10 +136,9 @@ const en = {
 		usdIbanRequired: "When selecting USD currency, the payment destination must be an IBAN Account.",
 		invalidPaymentReqSell: "You must provide a valid IBAN Account Number or SINPE Movil Phone Number.",
 		invalidInvoice: "When action is SELL or BILLPAY, you must provide an invoice and payment hash and timestamp.",
-		invalidFiatAmount: "There is a per transaction limit of $1000 CAD.",
 		invoiceNotPaid: "Invoice has not been paid. Please try your order again.",
 		pendingApproval: "Your request is currently pending. If it's been a while and you haven't heard from us, try contacting us on WhatsApp.",
-		isOverDailyLimit: "Your daily limits are BUY: ${dailyBuyLimit} CAD, SELL: ${dailySellLimit} CAD. This order would exceed these daily limits for your account. Please lower the amount or try again tomorrow.",
+		isOverDailyLimit: "Your daily limits are BUY: ${dailyBuyLimit} CAD, SELL: ${dailySellLimit} CAD. Your per transaction limit is ${perTxnLimit}. This order would exceed these limits for your account. Please lower the amount or try again tomorrow.",
 		duplicateOrder: "This appears to be a duplicate order. Please wait a few minutes and ensure your order has processed completely before trying again.",
 		paymentDestinationBlocked: "This payment destination has been permanently blocked.",
 	},
