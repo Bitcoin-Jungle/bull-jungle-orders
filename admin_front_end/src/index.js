@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   createHashRouter,
-  RouterProvider
+  RouterProvider,
 } from 'react-router-dom';
 
 import reportWebVitals from './reportWebVitals';
@@ -54,7 +54,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <div className="App">
-      <h3>Bull Jungle Admin</h3>
+      <h3>
+        <a href="#" style={{color: "black"}}>
+          Bull Jungle Admin
+        </a>
+      </h3>
       <Ticker />
       <RouterProvider router={router} />
     </div>
