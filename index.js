@@ -1187,6 +1187,7 @@ app.get('/payInvoice', async (req, res) => {
 
       if(fiatPaymentMade.DesMovimiento && fiatPaymentMade.DesMovimiento.length > 0 && paymentIdentifier !== fiatPaymentMade.DesMovimiento) {
         await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento)
+        await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento.split[' '][0])
       }
     }
   }
