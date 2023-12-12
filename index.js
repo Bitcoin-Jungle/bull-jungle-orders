@@ -136,7 +136,7 @@ processOrderEventHandler.on('processOrder', async ({rowData, formulaFreeAmount, 
     if(response.data.error) {
       console.log('error calling')
 
-      if(rowData.Type === 'Buy' && (!tryNum || tryNum < 4)) {
+      if(!tryNum || tryNum < 4) {
         tryNum = (!tryNum ? 2 : tryNum + 1)
         await new Promise(resolve => setTimeout(resolve, 1000 * 60 * tryNum))
         console.log(`trying again ${tryNum}...`)
