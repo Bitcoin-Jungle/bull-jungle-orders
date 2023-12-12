@@ -47,13 +47,13 @@ function Ticker({}) {
     <marquee>
         {!loading && 
           <span>
-            <b>BTCUSD</b> {formatNumber("USD", ticker.BTCUSD.toFromPrice)}
+            <b>USDBTC</b> {formatNumber("USD", ticker.BTCUSD.toFromPrice)}
             <span className="mx-1"> | </span>
-            <b>USDBTC</b> {formatNumber("USD", ticker.BTCUSD.fromToPrice)}
+            <b>BTCUSD</b> {formatNumber("USD", ticker.BTCUSD.fromToPrice)}
             <span className="mx-1"> | </span>
-            <b>BTCCRC</b> {formatNumber("CRC", ticker.BTCCRC.toFromPrice)}
+            <b>CRCBTC</b> {formatNumber("CRC", ticker.BTCCRC.toFromPrice)}
             <span className="mx-1"> | </span>
-            <b>CRCBTC</b> {formatNumber("CRC", ticker.BTCCRC.fromToPrice)}
+            <b>BTCCRC</b> {formatNumber("CRC", ticker.BTCCRC.fromToPrice)}
             <span className="mx-1"> | </span>
             <b>USDCRC</b> {formatNumber("USD", ticker.USDCRC.indexPrice)}
             <span className="mx-1"> | </span>
