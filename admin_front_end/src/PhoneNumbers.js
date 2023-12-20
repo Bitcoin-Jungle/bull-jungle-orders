@@ -19,6 +19,7 @@ function PhoneNumbers({}) {
     daily_buy_limit: '',
     daily_sell_limit: '',
     per_txn_limit: '',
+    kyc_docs_link: '',
   })
 
 
@@ -125,7 +126,7 @@ function PhoneNumbers({}) {
   }, [filters, phoneNumbers])
 
   const filteredRows = useMemo(() => {
-    if(!filters.phoneNumber.length && !filters.daily_buy_limit.length && !filters.daily_sell_limit.length && !filters.id.length && !filters.per_txn_limit.length) {
+    if(!filters.phoneNumber.length && !filters.daily_buy_limit.length && !filters.daily_sell_limit.length && !filters.id.length && !filters.per_txn_limit.length && !filters.kyc_docs_link.length) {
       return phoneNumbers
     }
 
@@ -135,7 +136,8 @@ function PhoneNumbers({}) {
         (filters.daily_buy_limit.length ? r.daily_buy_limit.toString().indexOf(filters.daily_buy_limit) !== -1 : true) &&
         (filters.daily_sell_limit.length ? r.daily_sell_limit.toString().indexOf(filters.daily_sell_limit) !== -1 : true) &&
         (filters.id.length ? r.id.toString().indexOf(filters.id) !== -1 : true) &&
-        (filters.per_txn_limit.length ? r.per_txn_limit.toString().indexOf(filters.per_txn_limit) !== -1 : true)
+        (filters.per_txn_limit.length ? r.per_txn_limit.toString().indexOf(filters.per_txn_limit) !== -1 : true) &&
+        (filters.kyc_docs_link.length ? r.kyc_docs_link.indexOf(filters.kyc_docs_link) !== -1 : true)
       );
     });
   }, [phoneNumbers, filters])
@@ -147,6 +149,7 @@ function PhoneNumbers({}) {
       daily_buy_limit: '',
       daily_sell_limit: '',
       per_txn_limit: '',
+      kyc_docs_link: '',
     });
   }
 

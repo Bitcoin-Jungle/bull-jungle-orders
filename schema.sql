@@ -48,3 +48,5 @@ ALTER TABLE alert ADD COLUMN types TEXT;
 UPDATE alert SET types = '{"USD":{"buy":true,"sell":true},"CRC":{"buy":true,"sell":true}}';
 
 ALTER TABLE phone_numbers ADD COLUMN per_txn_limit DECIMAL(10,2) NOT NULL DEFAULT 999.00;
+
+ALTER TABLE phone_numbers ADD COLUMN kyc_docs_link TEXT;
