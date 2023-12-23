@@ -103,7 +103,7 @@ function Main({ client, registeredUser }) {
 
   const fetchInvoice = () => {
     if(!fiatAmount) {
-      alert(localized.errors.fiatAmountRequired)
+      // alert(localized.errors.fiatAmountRequired)
       return false
     }
 
@@ -323,6 +323,8 @@ function Main({ client, registeredUser }) {
       } else {
         if(window.ReactNativeWebView) {
           window.ReactNativeWebView.postMessage(JSON.stringify({action: "complete", message: localized.orderSuccess, title: localized.orderSuccessTitle, subtext: localized.orderSuccessMessage}))
+        } else if(isInIframe()) {
+          window.top.postMessage(JSON.stringify({action: "complete", message: localized.orderSuccess, title: localized.orderSuccessTitle, subtext: localized.orderSuccessMessage}), "*")
         } else {
           alert(localized.orderSuccess)
         }
