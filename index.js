@@ -1178,11 +1178,27 @@ app.get('/payInvoice', async (req, res) => {
     } else if(fiatPaymentMade && fiatPaymentMade !== true) {
       if(fiatPaymentMade.NumReferenciaSP && fiatPaymentMade.NumReferenciaSP.length > 0 && paymentIdentifier !== fiatPaymentMade.NumReferenciaSP) {
         await addPaymentIdentifier(db, fiatPaymentMade.NumReferenciaSP)
+
+        const otherOrderExistsBySP = await getOrderByPaymentIdentifier(db, fiatPaymentMade.NumReferenciaSP, timestamp)
+
+        if(otherOrderExistsBySP) {
+          await updateOrderPaymentStatus(db, timestamp, null)
+          return res.send({error: true, message: `fiat payment already used on another order ${otherOrderExistsBySP.timestamp}`})
+        }
       }
 
       if(fiatPaymentMade.DesMovimiento && fiatPaymentMade.DesMovimiento.length > 0 && paymentIdentifier !== fiatPaymentMade.DesMovimiento) {
+        const formattedDesMovimiento = fiatPaymentMade.DesMovimiento.replaceAll(/[^0-9a-z]/gi, '')
         await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento)
         await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento.split(' ')[0])
+        await addPaymentIdentifier(db, formattedDesMovimiento)
+
+        const otherOrderExistsByDes = await getOrderByPaymentIdentifier(db, formattedDesMovimiento, timestamp)
+
+        if(otherOrderExistsByDes) {
+          await updateOrderPaymentStatus(db, timestamp, null)
+          return res.send({error: true, message: `fiat payment already used on another order ${otherOrderExistsByDes.timestamp}`})
+        }
       }
     }
   }
@@ -2949,6 +2965,21 @@ const getOrder = async (db, timestamp) => {
     )
   }catch(e) {
     console.log('getOrder error', e)
+    return false
+  }
+}
+
+const getOrderByPaymentIdentifier = async (db, paymentIdentifier, notTimestamp) => {
+  try {
+    return await db.get(
+      "SELECT * FROM orders WHERE json_extract(data, '$.Payment Identifier') = ? AND timestamp != ?", 
+      [
+        paymentIdentifier,
+        notTimestamp,
+      ]
+    )
+  }catch(e) {
+    console.log('getOrderByPaymentIdentifier error', e)
     return false
   }
 }
