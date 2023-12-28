@@ -1977,6 +1977,23 @@ app.get('/invoice', async (req, res) => {
   return res.send({error: false, data: invoice})
 })
 
+app.get('/reconcileInvoices', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const since = req.query.since
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  const output = await reconcileInvoices(since)
+
+  res.send({success: true, count: output.length, invoices: output})
+})
+
 app.post('/deleteOrder', async (req, res) => {
   const apiKey = req.body.apiKey
   const timestamp = req.body.timestamp
@@ -2042,6 +2059,92 @@ const payInvoice = async (bolt11) => {
     console.log('error paying invoice', e)
     return false
   }
+}
+
+const reconcileInvoices = async (date) => {
+  let sinceDate
+  if(date) {
+    sinceDate = new Date(date)
+  }
+
+  if(!sinceDate) {
+    sinceDate = new Date()
+    sinceDate.setDate(sinceDate.getDate() - 1)
+    sinceDate.setUTCHours(0,0,0,0)
+  }
+
+  console.log('reconciling invoices since ', sinceDate.toISOString())
+
+  const output = []
+
+  const invoices = await listInvoices()
+
+  for(const invoice of invoices) {
+    if(invoice.label && invoice.status === 'paid') {
+      const timestamp = new Date(invoice.label)
+      if(timestamp && timestamp >= sinceDate) {
+        const order = await getOrder(db, timestamp.toISOString())
+
+        if(!order) {
+          output.push(invoice)
+        }
+      }
+    }
+  }
+
+  if(output.length) {
+    console.log(`${output.length} invoices require manual reconciliation since ${sinceDate.toISOString()}`)
+
+    let message = `🚨 ${output.length} invoices require manual reconciliation 🚨\n\n`
+
+    for(const invoice of output) {
+      message += `- ${invoice.label}: ${invoice.description}\n`
+    }
+
+    let optionsObj = {}
+    optionsObj.reply_markup = {
+      inline_keyboard: [
+        [
+          {
+            text: "View Invoices",
+            url: `https://orders.bitcoinjungle.app/reconcileInvoices?apiKey=${admin_api_key}`
+          }
+        ],
+      ],
+    }
+
+    const tgMsg = await bot.telegram.sendMessage(
+      chat_id, 
+      message,
+      optionsObj
+    )
+  } else {
+    console.log('reconciled and no issues since ', sinceDate.toISOString())
+  }
+
+  return output
+}
+
+setInterval(reconcileInvoices, 1000 * 60 * 60)
+
+const listInvoices = async () => {
+  const response = await axios(sparkwallet_url, {
+    method: "POST",
+    auth: {
+      username: sparkwallet_user,
+      password: sparkwallet_password,
+    },
+    data: {
+      method: "_listinvoices",
+      params: [
+
+      ],
+    },
+    // rejectUnauthorized: false,
+    // httpsAgent,
+  })
+
+  return response.data.invoices
 }
 
 const checkPhoneNumberForSinpe = async (phoneNumber) => {
