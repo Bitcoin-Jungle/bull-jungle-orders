@@ -1205,13 +1205,11 @@ function Main({ client, registeredUser }) {
               {localized.terms}
             </a>
             {" | "}
-            <a href="whatsapp:+50687833773">
-              {localized.support}
-            </a>
-            {" | "}
             <a href={`/chart?key=${apiKey}&lang=${language}`}>
               {localized.priceHistory}
             </a>
+            <br />
+            {localized.support}: +506 8783-3773
           </span>
         </div>
       </footer>
