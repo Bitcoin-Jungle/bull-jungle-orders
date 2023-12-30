@@ -1191,13 +1191,16 @@ app.get('/payInvoice', async (req, res) => {
         const formattedDesMovimiento = fiatPaymentMade.DesMovimiento.replaceAll(/[^0-9a-z]/gi, '')
         await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento)
         await addPaymentIdentifier(db, fiatPaymentMade.DesMovimiento.split(' ')[0])
-        await addPaymentIdentifier(db, formattedDesMovimiento)
 
-        const otherOrderExistsByDes = await getOrderByPaymentIdentifier(db, formattedDesMovimiento, timestamp)
+        if(formattedDesMovimiento && formattedDesMovimiento.length > 0) {
+          await addPaymentIdentifier(db, formattedDesMovimiento)
 
-        if(otherOrderExistsByDes) {
-          await updateOrderPaymentStatus(db, timestamp, null)
-          return res.send({error: true, message: `fiat payment already used on another order ${otherOrderExistsByDes.timestamp}`})
+          const otherOrderExistsByDes = await getOrderByPaymentIdentifier(db, formattedDesMovimiento, timestamp)
+
+          if(otherOrderExistsByDes) {
+            await updateOrderPaymentStatus(db, timestamp, null)
+            return res.send({error: true, message: `fiat payment already used on another order ${otherOrderExistsByDes.timestamp}`})
+          }
         }
       }
     }
