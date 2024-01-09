@@ -1366,7 +1366,7 @@ app.get('/payFiat', async (req, res) => {
       toName: theirAccount.data.account.NomPropietario,
       amount: amount,
       description: (paymentDesc || `orden ${order.id}`).padEnd(16, '_'),
-      reference: timestamp,
+      // reference: timestamp,
     })
 
     if(!loadTransfer) {
