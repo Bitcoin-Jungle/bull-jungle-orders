@@ -174,7 +174,7 @@ processOrderEventHandler.on('processOrder', async ({rowData, formulaFreeAmount, 
   }
 })
 
-twilioEventHandler.on('message', async ({ type, data, name, phoneNumber, amount, currency }) => {
+twilioEventHandler.on('message', async ({ type, data, name, phoneNumber, amount, currency, whatsapp }) => {
   let referenceNumber = ''
 
   if(!data.data) {
@@ -217,9 +217,9 @@ twilioEventHandler.on('message', async ({ type, data, name, phoneNumber, amount,
 
   try {
     const resp = await twilioClient.messages.create({
-      body: `Toro Pagos: Usted ha enviado ${amount} ${currency} a ${name}. Comprobante ${referenceNumber}`,
+      body: `Toro Pagos: Usted ha enviado ${amount}${currency} a ${name}. ${referenceNumber} es su comprobante.`,
       from: twilio_from_number,
-      to: phoneNumber
+      to: `${whatsapp ? 'whatsapp:' : ''}${phoneNumber}`,
     })
 
     return true
@@ -276,7 +276,7 @@ app.post('/order', async (req, res) => {
   const paymentHash = (req.body.paymentHash ? req.body.paymentHash : null)
   const paymentIdentifier = (req.body.paymentIdentifier && req.body.action === "BUY" ? req.body.paymentIdentifier : "")
   const username = (req.body.username ? req.body.username : null)
-  
+  const whatsapp = (req.body.whatsapp ? req.body.whatsapp : false)
   const billerCategory = req.body.billerCategory
   const billerService = req.body.billerService
   const billerActionType = req.body.billerActionType
@@ -550,6 +550,7 @@ app.post('/order', async (req, res) => {
     ...rowData, 
     "Username": username, 
     "Payment Description": paymentDesc,
+    "Whatsapp": whatsapp,
   })
   await updateOrderStatus(db, timestamp, 'complete')
 
@@ -1269,6 +1270,7 @@ app.get('/payFiat', async (req, res) => {
   const destination = orderData["Payment Destination"]
   const satAmount = orderData["From Amount"].replace("=(", "").replace(" / 100000000)", "")
   const paymentDesc = orderData["Payment Description"] || null
+  const whatsapp = (orderData["Whatsapp"] ? true : false)
 
   if(currency !== "USD" && currency !== "CRC") {
     return res.send({error: true, message: "order currency is invalid"})
@@ -1413,6 +1415,7 @@ app.get('/payFiat', async (req, res) => {
           phoneNumber: phoneNumberRecord.phoneNumber,
           amount,
           currency,
+          whatsapp,
         }
       )
     }
@@ -1482,6 +1485,7 @@ app.get('/payFiat', async (req, res) => {
           phoneNumber: phoneNumberRecord.phoneNumber,
           amount,
           currency,
+          whatsapp,
         }
       )
     }

@@ -36,6 +36,8 @@ const es = {
 	buyPaymentReqHelper: "Ingresa una factura lightning donde quieres recibir el bitcoin",
 
 	sellPaymentDescHelper: "Opcionalmente, incluya un mensaje con su pago.",
+
+	whatsappDescHelper: "¿Quieres recibir su comprobante por SMS o WhatsApp?",
 	
 	bitcoinJungleWallet: "Bitcoin Jungle Wallet",
 	lightningWallet: "Otro Lightning Wallet",
@@ -96,6 +98,7 @@ const es = {
 	step4Title: "Ingrese el destino del pago.",
 	step5Title: "Revise la información a continuación y envíe su pago antes de enviar este pedido.",
 	step6Title: "Incluya un mensaje con su pago.",
+	step7Title: "Elija cómo recibir su comprobante.",
 
 	buy: "comprar",
 	sell: "vender",

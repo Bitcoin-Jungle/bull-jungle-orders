@@ -65,6 +65,7 @@ function OrderHistory({}) {
         delete el.data
         delete el.id
         delete newObj.Date
+        delete newObj.Whatsapp
 
         return {
           ...el,

@@ -52,6 +52,7 @@ function Main({ client, registeredUser }) {
   const [username, setUsername] = useState(getUsername())
   const [underPerTxnMinimum, setUnderPerTxnMinimum] = useState(false)
   const [sinpeCheckData, setSinpeCheckData] = useState({})
+  const [whatsapp, setWhatsapp] = useState(false)
   const [systemAlert, setSystemAlert] = useState({})
   const [currencyData, setCurrencyData] = useState({
     USD: {
@@ -265,6 +266,7 @@ function Main({ client, registeredUser }) {
     setTimestamp(new Date().toISOString())
     setUnderPerTxnMinimum(false)
     setSinpeCheckData({})
+    setWhatsapp(false)
   }
 
   const handleFormSubmit = async (e) => {
@@ -306,6 +308,7 @@ function Main({ client, registeredUser }) {
         paymentIdentifier,
         timestamp,
         username,
+        whatsapp,
       })
     })
     .then((res) => res.json())
@@ -912,15 +915,35 @@ function Main({ client, registeredUser }) {
                     }
 
                     {action === 'SELL' && phoneNumber && (isValidSinpe || isValidIban) &&
-                      <div className="well">
-                        <p>
-                          <b>{localized.step} {isFromBJ() ? "4" : "5"}</b>
-                          {" "}
-                          {localized.step6Title}
-                        </p>
-                        <div className="paymentDescContainer mb-1">
-                          <input className="form-control" id="paymentDesc" value={paymentDesc} onChange={handlePaymentDescChange} />
-                          <div className="form-text">{localized.sellPaymentDescHelper}</div>
+                      <div>
+                        <div className="well">
+                          <p>
+                            <b>{localized.step} {isFromBJ() ? "4" : "5"}</b>
+                            {" "}
+                            {localized.step6Title}
+                          </p>
+                          <div className="paymentDescContainer mb-1">
+                            <input className="form-control" id="paymentDesc" value={paymentDesc} onChange={handlePaymentDescChange} />
+                            <div className="form-text">{localized.sellPaymentDescHelper}</div>
+                          </div>
+                        </div>
+                        <div className="well">
+                          <p>
+                            <b>{localized.step} {isFromBJ() ? "5" : "6"}</b>
+                            {" "}
+                            {localized.step7Title}
+                          </p>
+                          <div className="whatsappContainer mb-1">
+                            <div className="form-check form-check-inline">
+                              <input className="form-check-input" type="radio" name="whatsapp" id="inlineRadio1" onChange={() => { setWhatsapp(false) }} value="sms" defaultChecked />
+                              <label className="form-check-label" for="inlineRadio1">SMS</label>
+                            </div>
+                            <div className="form-check form-check-inline">
+                              <input className="form-check-input" type="radio" name="whatsapp" id="inlineRadio2" onChange={() => { setWhatsapp(true) }} value="whatsapp" />
+                              <label className="form-check-label" for="inlineRadio2">WhatsApp</label>
+                            </div>
+                            <div className="form-text">{localized.whatsappDescHelper}</div>
+                          </div>
                         </div>
                       </div>
                     }

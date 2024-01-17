@@ -37,6 +37,8 @@ const en = {
 
 	sellPaymentDescHelper: "Optionally, include a message with your payment. This will be visible to the recipient.",
 	
+	whatsappDescHelper: "Would you like to receive your receipt over SMS or WhatsApp?",
+
 	bitcoinJungleWallet: "Bitcoin Jungle Wallet",
 	lightningWallet: "Other Lightning Wallet",
 
@@ -96,6 +98,7 @@ const en = {
 	step4Title: "Enter the payment destination details.",
 	step5Title: "Please review the information below & send your payment before submitting this order.",
 	step6Title: "Include a message with your payment.",
+	step7Title: "Select your receipt options.",
 
 	buy: "buy",
 	sell: "sell",
