@@ -1575,6 +1575,70 @@ app.get('/getHistory', async (req, res) => {
   return res.send(data.data)
 })
 
+app.get('/getOrderByHash', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const hash = req.query.hash
+  const phoneNumber = req.query.phone
+
+  if(!apiKey) {
+    return res.send({error: true, message: "apiKey is required"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, message: "apiKey is incorrect"})
+  }
+
+  if(!hash) {
+    return res.send({error: true, message: "hash is required"})
+  }
+
+  if(!phoneNumber) {
+    return res.send({error: true, message: "phone is required"})
+  }
+
+  const order = await getOrderByHash(db, hash)
+
+  if(!order) {
+    return res.send({error: true, message: "order not found"})
+  }
+
+  if(order.phoneNumber !== phoneNumber) {
+    return res.send({error: true, message: "error identifying order"})
+  }
+
+  let orD = {}
+  let settlementData = {}
+
+  try {
+    orD = JSON.parse(el.data)
+  } catch (e) {
+    console.log('json error orderData', e)
+  }
+
+  try {
+    settlementData = JSON.parse(el.settlementData)
+  } catch (e) {
+    console.log('json error settlementData', e)
+  }
+
+  const output = {
+    success: true,
+    data: {
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      referenceNumber: null,
+    }
+  }
+
+  if(settlementData && settlementData.result && settlementData.result.ReferenciaSinpe) {
+    output.data.referenceNumber = settlementData.result.ReferenciaSinpe
+  } else if(settlementData && settlementData.send && settlementData.send[1] && settlementData.send[1].referenceNumber) {
+    output.data.referenceNumber = settlementData.send[1].referenceNumber
+  }
+
+  return res.send(output)
+})
+
 app.get('/getOrders', async (req, res) => {
   const apiKey = req.query.apiKey
   const from = req.query.from
@@ -2001,6 +2065,24 @@ app.get('/reconcileInvoices', async (req, res) => {
   res.send({success: true, count: output.length, invoices: output})
 })
 
+app.get('/findInvoices', async (req, res) => {
+  const apiKey = req.query.apiKey
+  const since = req.query.since
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  const output = await findInvoices(since)
+  const pays = await findPays(since)
+
+  res.send({success: true, count: output.length + pays.length, invoices: output, payments: pays})
+})
+
 app.post('/deleteOrder', async (req, res) => {
   const apiKey = req.body.apiKey
   const timestamp = req.body.timestamp
@@ -2133,6 +2215,102 @@ const reconcileInvoices = async (date) => {
 }
 
 setInterval(reconcileInvoices, 1000 * 60 * 60)
+
+const findInvoices = async (date) => {
+  let sinceDate
+  if(date) {
+    sinceDate = new Date(date)
+  }
+
+  if(!sinceDate) {
+    sinceDate = new Date()
+    sinceDate.setDate(sinceDate.getDate() - 1)
+    sinceDate.setUTCHours(0,0,0,0)
+  }
+
+  console.log('finding invoices since ', sinceDate.toISOString())
+
+  const output = []
+
+  const invoices = await listInvoices()
+
+  for(const invoice of invoices) {
+    if(invoice.label && invoice.status === 'paid') {
+      const timestamp = new Date(invoice.label)
+      if(timestamp == 'Invalid Date') {
+        const paidDate = new Date(invoice.paid_at * 1000)
+
+        if(sinceDate && paidDate >= sinceDate) {
+          output.push(invoice)
+        }
+      }
+    }
+  }
+
+  if(output.length) {
+    console.log(`${output.length} invoices found since ${sinceDate ? sinceDate.toISOString() : "forever"}`)
+  } else {
+    console.log(`looked and no invoices found since ${sinceDate ? sinceDate.toISOString() : "forever"}`)
+  }
+
+  return output
+}
+
+const findPays = async (date) => {
+  let sinceDate
+  if(date) {
+    sinceDate = new Date(date)
+  }
+
+  if(!sinceDate) {
+    sinceDate = new Date()
+    sinceDate.setDate(sinceDate.getDate() - 1)
+    sinceDate.setUTCHours(0,0,0,0)
+  }
+
+  console.log('finding pays since ', sinceDate.toISOString())
+
+  const output = []
+
+  const payments = await listPays()
+
+  for(const payment of payments) {
+    const paidDate = new Date(payment.created_at * 1000)
+    if(sinceDate && paidDate >= sinceDate) {
+      if(!payment.description || payment.description.indexOf("SINPE to BTC") < 0) {
+        output.push(payment)
+      }
+    }
+  }
+
+  if(output.length) {
+    console.log(`${output.length} pays found since ${sinceDate ? sinceDate.toISOString() : "forever"}`)
+  } else {
+    console.log(`looked and no pays found since ${sinceDate ? sinceDate.toISOString() : "forever"}`)
+  }
+
+  return output
+}
+
+const listPays = async () => {
+  const response = await axios(sparkwallet_url, {
+    method: "POST",
+    auth: {
+      username: sparkwallet_user,
+      password: sparkwallet_password,
+    },
+    data: {
+      method: "_listpays",
+      params: [
+
+      ],
+    },
+    // rejectUnauthorized: false,
+    // httpsAgent,
+  })
+
+  return response.data.pays
+}
 
 const listInvoices = async () => {
   const response = await axios(sparkwallet_url, {
@@ -3075,6 +3253,23 @@ const getOrder = async (db, timestamp) => {
     )
   }catch(e) {
     console.log('getOrder error', e)
+    return false
+  }
+}
+
+const getOrderByHash = async (db, hash) => {
+  try {
+    return await db.get(
+      `
+        SELECT o.*, p.phoneNumber
+        FROM orders o
+        JOIN phone_numbers p ON p.id = json_extract(o.data, '$.User')
+        WHERE json_extract(o.data, '$.Invoice Payment PreImage') = ?
+      `, 
+      [hash]
+    )
+  }catch(e) {
+    console.log('getOrderByHash error', e)
     return false
   }
 }
