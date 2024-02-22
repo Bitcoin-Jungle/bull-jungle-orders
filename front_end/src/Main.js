@@ -505,7 +505,7 @@ function Main({ client, registeredUser }) {
   }
 
   const handleLogin = () => {
-    fetch("https://api01.bullbitcoin.dev/api-users", {
+    fetch("https://api02.bullbitcoin.dev/api-users", {
       method: "POST",
       credentials: "include",
       headers: {
