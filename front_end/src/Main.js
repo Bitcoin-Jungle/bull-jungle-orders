@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 
 import { localizeText, localize } from './lang/index'
 import { getApiKey, getPhoneNumber, getUsername, getLanguage, getSatBalance, isFromBJ, isInIframe } from './utils/index'
+import { fetchBbApi } from './utils/bullbitcoin'
 
 import { SendReceiveIcon } from './components/SendReceiveIcon'
 import Modal from './components/Modal'
@@ -504,29 +505,29 @@ function Main({ client, registeredUser }) {
     })
   }
 
-  const handleLogin = () => {
-    fetch("https://api02.bullbitcoin.dev/api-users", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: "234",
-        method: "getMyUser",
-      })
+  const handleLogin = async () => {
+    const response = await fetchBbApi({
+      service: "api-users",
+      method: "getMyUser",
     })
-    .then((res) => {
-      if(res.status != 200) {
-        alert("no auth")
-      }
-      return res
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log('data', data)
-    })
+
+    if(!response) {
+      alert("Error logging in")
+      return
+    }
+
+    if(response.status != 200) {
+      alert("no auth")
+
+      window.location = `http://accounts02.bullbitcoin.dev/login?return_to=https://cr.bullbitcoin.dev/`
+      return
+    }
+
+    const data = await response.json()
+
+    console.log("data", data)
+
+    console.log("RESPONSE", response)
   }
 
   const resetTimestamp = () => {

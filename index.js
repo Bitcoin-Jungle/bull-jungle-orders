@@ -2116,6 +2116,35 @@ app.post('/deleteOrder', async (req, res) => {
   return res.send({success: true})
 })
 
+app.get('/whoami', async (req, res) => {
+  const cookie = req.headers.cookie
+
+  try {
+    const response = await axios(`https://api02.bullbitcoin.dev/api-users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cookie": cookie,
+      },
+      data: {
+        jsonrpc: "2.0",
+        id: Math.floor(Math.random() * 1001).toString(),
+        method: "getMyUser",
+        params: {}
+      }
+    })
+
+    if(response.data.error) {
+      return res.send({error: true, success: false, code: response.data.error.code})
+    }
+    
+    return res.send({error: false, success: true, data: response.data})
+  } catch (error) {
+    console.log('fetch error auth', error.response)
+    return res.send({error: true, success: false, code: error.response.status})
+  }
+})
+
 const payInvoice = async (bolt11) => {
   try {
     // const proxyPort = (process.env.NODE_ENV !== "production" ? 9150 : 9050)
