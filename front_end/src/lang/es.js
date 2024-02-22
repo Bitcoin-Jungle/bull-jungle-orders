@@ -4,6 +4,9 @@ const es = {
 	apiKeyTitle: "Contraseña",
 	apiKeyHelper: "Ingrese tu contraseña aquí",
 
+	loginButton: "Ingresa / Inscriba",
+	loginButtonHelper: "Ingresa o registra una cuenta con Bull Bitcoin.",
+
 	crc: "Colónes",
 	usd: "Dolares",
 

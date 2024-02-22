@@ -4,6 +4,9 @@ const en = {
 	apiKeyTitle: "API Key",
 	apiKeyHelper: "Enter your API Key here",
 
+	loginButton: "Log In / Register",
+	loginButtonHelper: "Log In or Create a new Bull Bitcoin account.",
+
 	crc: "Colónes",
 	usd: "Dollars",
 

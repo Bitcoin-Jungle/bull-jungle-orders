@@ -504,6 +504,31 @@ function Main({ client, registeredUser }) {
     })
   }
 
+  const handleLogin = () => {
+    fetch("https://api01.bullbitcoin.dev/api-users", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "234",
+        method: "getMyUser",
+      })
+    })
+    .then((res) => {
+      if(res.status != 200) {
+        alert("no auth")
+      }
+      return res
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log('data', data)
+    })
+  }
+
   const resetTimestamp = () => {
     setTimestamp(new Date().toISOString())
     setInvoice("")
@@ -674,9 +699,23 @@ function Main({ client, registeredUser }) {
           </div>
           {!apiKey &&
             <div className="mb-1">
-              <label htmlFor="apiKey" className="form-label">{localized.apiKeyTitle}</label>
-              <input type="password" className="form-control" id="apiKey" onBlur={(e) => setApiKey(e.target.value)} />
-              <div className="form-text">{localized.apiKeyHelper}</div>
+              <button className={"btn bg-white btn-secondary text-dark align-middle"} onClick={() => handleLogin()}>
+                <div className="d-flex justify-content-center align-items-center">
+                  <div className="p-1">
+                    <SendReceiveIcon isReceive={true} size={50} />
+                  </div>
+                  <div className="text-start w-75">
+                    <div>
+                      <span className="align-middle">
+                        {localized.loginButton}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="fs-6 fw-light mt-1 align-top">{localized.loginButtonHelper}</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
             </div>
           }
         </div>
