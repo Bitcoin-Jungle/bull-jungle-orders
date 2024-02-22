@@ -32,6 +32,8 @@ function Main({ client, registeredUser }) {
 
   const [priceData, setPriceData] = useState({})
 
+  const [user, setUser] = useState(null)
+
   const [apiKey, setApiKey] = useState(getApiKey())
   const [fiatAmount, setFiatAmount] = useState("")
   const [fiatCurrency, setFiatCurrency] = useState("CRC")
@@ -509,6 +511,9 @@ function Main({ client, registeredUser }) {
     const response = await fetchBbApi({
       service: "api-users",
       method: "getMyUser",
+      params: {
+        includes: [ "kycs", "groups", "balances"],
+      }
     })
 
     if(!response) {
@@ -527,7 +532,12 @@ function Main({ client, registeredUser }) {
 
     console.log("data", data)
 
-    console.log("RESPONSE", response)
+    if(data.error) {
+      alert(`Error calling API. Message: ${data.error.message}`)
+      return
+    }
+
+    setUser(data)
   }
 
   const resetTimestamp = () => {
@@ -619,6 +629,10 @@ function Main({ client, registeredUser }) {
         console.log('decode fail', e.data)
       }
     })
+
+
+    handleLogin()
+
   }, [])
 
   useEffect(() => {
@@ -698,25 +712,14 @@ function Main({ client, registeredUser }) {
               </select>
             </h1>
           </div>
-          {!apiKey &&
-            <div className="mb-1">
-              <button className={"btn bg-white btn-secondary text-dark align-middle"} onClick={() => handleLogin()}>
-                <div className="d-flex justify-content-center align-items-center">
-                  <div className="p-1">
-                    <SendReceiveIcon isReceive={true} size={50} />
-                  </div>
-                  <div className="text-start w-75">
-                    <div>
-                      <span className="align-middle">
-                        {localized.loginButton}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="fs-6 fw-light mt-1 align-top">{localized.loginButtonHelper}</span>
-                    </div>
-                  </div>
-                </div>
-              </button>
+          {!user &&
+            <div>
+              <div className="spinner-border" role="status" style={{width: "1rem", height: "1rem"}}>
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <div>
+                <a href="#" onClick={handleLogin}>Click here to log in</a>
+              </div>
             </div>
           }
         </div>
@@ -737,7 +740,7 @@ function Main({ client, registeredUser }) {
       }
 
       <div className="container d-flex">
-        {apiKey &&
+        {user &&
           <form id="addOrder" className="d-flex flex-grow-1 justify-content-center align-items-center" onSubmit={(e) => e.preventDefault()}>
 
             {!action &&

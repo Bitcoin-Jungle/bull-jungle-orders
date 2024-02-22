@@ -2135,9 +2135,10 @@ app.get('/whoami', async (req, res) => {
     })
 
     if(response.data.error) {
+      console.log(response)
       return res.send({error: true, success: false, code: response.data.error.code})
     }
-    
+
     return res.send({error: false, success: true, data: response.data})
   } catch (error) {
     console.log('fetch error auth', error.response)
