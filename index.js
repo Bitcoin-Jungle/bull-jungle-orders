@@ -1840,7 +1840,7 @@ app.get('/stats', async (req, res) => {
     if(el['Type'] === 'Buy') {
 
       const satAmount = parseFloat(eval(el['To Amount'].replace('=', '')))
-      const fiatAmount = parseFloat(el['From Amount'].replace(',', ''))
+      const fiatAmount = parseFloat(el['From Amount'].replaceAll(',', ''))
       let dollarizedAmount, canadianizedAmount
 
       if(el['From Currency'] === 'USD') {
@@ -1871,7 +1871,7 @@ app.get('/stats', async (req, res) => {
     } else if(el['Type'] === 'Sell') {
 
       const satAmount = parseFloat(eval(el['From Amount'].replace('=', '')))
-      const fiatAmount = parseFloat(el['To Amount'].replace(',', ''))
+      const fiatAmount = parseFloat(el['To Amount'].replaceAll(',', ''))
       let dollarizedAmount, canadianizedAmount
 
       if(el['To Currency'] === 'USD') {
@@ -3167,10 +3167,10 @@ const isUserOverDailyLimit = async ({action, phoneNumber, fiatAmount, fiatCurren
     let orderFiatCurrency = ''
 
     if(orderData.Type === 'Buy') {
-      orderFiatAmount = orderData['From Amount'].replace(',', '')
+      orderFiatAmount = orderData['From Amount'].replaceAll(',', '')
       orderFiatCurrency = orderData['From Currency']
     } else {
-      orderFiatAmount = orderData['To Amount'].replace(',', '')
+      orderFiatAmount = orderData['To Amount'].replaceAll(',', '')
       orderFiatCurrency = orderData['To Currency']
     }
 
