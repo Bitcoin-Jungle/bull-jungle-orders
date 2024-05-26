@@ -1222,6 +1222,7 @@ app.get('/payInvoice', async (req, res) => {
 app.get('/payFiat', async (req, res) => {
   const apiKey = req.query.apiKey
   const timestamp = req.query.timestamp
+  const force = (req.query.force && req.query.force == 'true' ? true : false)
 
   if(!apiKey) {
     return res.send({error: true, message: "apiKey is required"})
@@ -1286,12 +1287,14 @@ app.get('/payFiat', async (req, res) => {
 
   const txnRate = getTxnRate(currency, 'SELL')
 
-  if((satAmount / 100000000) * txnRate > amount * 1.05) {
-    return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
-  }
+  if(!force) {
+    if((satAmount / 100000000) * txnRate > amount * 1.05) {
+      return res.send({error: true, type: "Fiat amount is more than 5% over current market value. Please review manually."})
+    }
 
-  if((satAmount / 100000000) * txnRate < amount * 0.95) {
-    return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
+    if((satAmount / 100000000) * txnRate < amount * 0.95) {
+      return res.send({error: true, type: "Fiat amount is more than 5% under current market value. Please review manually."})
+    }
   }
 
   if(!destination) {
