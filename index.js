@@ -258,7 +258,7 @@ app.use(async (req, res, next) => {
 
   next()
 })
-app.use(serveStatic('front_end/build', { 'index': ['index.html'] }))
+app.use(serveStatic('front_end/build', { 'index': ['new-system.html'] }))
 app.use("/admin", serveStatic('admin_front_end/build', { 'index': ['index.html'] }))
 app.use("/chart", serveStatic('chart_front_end/build', { 'index': ['index.html'] }))
 
