@@ -2647,8 +2647,10 @@ const getBullPrice = async (from, to) => {
         "jsonrpc": "2.0",
         "method": "getRate",
         "params": {
-          "to": to,
-          "from": from
+          element: {
+            "toCurrency": to,
+            "fromCurrency": from,
+          }
         }
       }
     })
@@ -2762,7 +2764,7 @@ getUsdCad()
 const getBtcCrc = async () => {
   const bbResponse = await getBullPrice("BTC", "CRC")
   
-  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.indexPrice > 0) {
+  if(bbResponse && bbResponse.data && bbResponse.data.result.element && bbResponse.data.result.element.indexPrice > 0) {
     BTCCRC = bbResponse.data.result
   } else {
     console.log("Bull Bitcoin API down, falling back to Bitcoin Jungle")
@@ -2794,7 +2796,7 @@ getBtcCrc()
 const getBtcUsd = async () => {
   const bbResponse = await getBullPrice("BTC", "USD")
 
-  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.indexPrice > 0) {
+  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.element && bbResponse.data.result.element.indexPrice > 0) {
     BTCUSD = bbResponse.data.result
   } else {
     console.log("Bull Bitcoin API down, falling back to Bitcoin Jungle")
@@ -2826,7 +2828,7 @@ getBtcUsd()
 const getBtcCad = async () => {
   const bbResponse = await getBullPrice("BTC", "CAD")
 
-  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.indexPrice > 0) {
+  if(bbResponse && bbResponse.data && bbResponse.data.result && bbResponse.data.result.element && bbResponse.data.result.element.indexPrice > 0) {
     BTCCAD = bbResponse.data.result
   } else {
     console.log("Bull Bitcoin API down, falling back to Bitcoin Jungle")
