@@ -17,6 +17,7 @@ import PhoneNumbers from './PhoneNumbers';
 import CreateOrder from './CreateOrder';
 import Stats from "./Stats";
 import ManageCurrencies from "./ManageCurrencies";
+import SendToSelva from "./SendToSelva";
 import Ticker from "./Ticker";
 
 const router = createHashRouter([
@@ -47,6 +48,10 @@ const router = createHashRouter([
   {
     path: "/manageCurrencies",
     element: <ManageCurrencies />,
+  },
+  {
+    path: "/sendToSelva",
+    element: <SendToSelva />,
   }
 ]);
 

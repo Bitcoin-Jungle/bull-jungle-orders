@@ -99,6 +99,9 @@ function Home() {
               <Link to="manageCurrencies">Manage Currencies</Link>
             </li>
             <li className="list-group-item">
+              <Link to="sendToSelva">Send to Selva</Link>
+            </li>
+            <li className="list-group-item">
               <a onClick={updateAlert} href="#">Update System Status</a>
             </li>
           </ul>

@@ -49,6 +49,10 @@ const twilio_from_number = process.env.twilio_from_number
 const default_daily_sell_limit = process.env.default_daily_sell_limit
 const default_daily_buy_limit = process.env.default_daily_buy_limit
 const default_per_txn_limit = process.env.default_per_txn_limit
+const selva_usd_account = process.env.selva_usd_account
+const selva_crc_account = process.env.selva_crc_account
+const selva_name = process.env.selva_name
+const selva_cedula = process.env.selva_cedula
 
 const twilioClient = twilio(twilio_account_sid, twilio_auth_token)
 
@@ -2117,6 +2121,71 @@ app.post('/deleteOrder', async (req, res) => {
   await deleteOrder(db, timestamp)
 
   return res.send({success: true})
+})
+
+app.post('/sendToSelva', async (req, res) => {
+  const apiKey = req.body.apiKey
+  const amount = (req.body.amount ? parseFloat(req.body.amount.replace(/,/g, "")) : null)
+  const currency = req.body.currency
+
+  if(!apiKey) {
+    return res.send({error: true, type: "apiKeyRequired"})
+  }
+
+  if(apiKey !== admin_api_key) {
+    return res.send({error: true, type: "apiKeyIncorrect"})
+  }
+
+  if(!amount) {
+    return res.send({error: true, type: "amountRequired"})
+  }
+
+  if(amount <= 0) {
+    return res.send({error: true, type: "amountMustBeGreaterThanZero"})
+  }
+
+  if(!currency) {
+    return res.send({error: true, type: "currencyRequired"})
+  }
+
+  if(currency !== 'CRC' && currency !== 'USD') {
+    return res.send({error: true, type: "currencyMustBeCRCOrUSD"})
+  }
+
+  const loadTransfer = await ridivi.loadTransfer({
+    currency,
+    toId: selva_cedula,
+    toIban: (currency === 'CRC' ? selva_crc_account : selva_usd_account),
+    toName: selva_name,
+    amount: amount,
+    description: `Transfer to SELVA`,
+  })
+
+  if(!loadTransfer) {
+    return res.send({error: true, message: "error with loadTransfer"})
+  }
+
+  if(loadTransfer.data.error) {
+    return res.send({error: true, message: loadTransfer.data.message})
+  }
+
+  if(!loadTransfer.data.loadKey) {
+    return res.send({error: true, message: "loadTransfer failed to generate loadKey"})
+  }
+
+  const sendLoadedTransfer = await ridivi.sendLoadedTransfer({
+    loadKey: loadTransfer.data.loadKey,
+  })
+
+  if(!sendLoadedTransfer) {
+    return res.send({error: true, message: "error with sendLoadedTransfer"})
+  }
+
+  if(sendLoadedTransfer.data.error) {
+    return res.send({error: true, message: sendLoadedTransfer.data.message || sendLoadedTransfer.data.error})
+  }
+
+  return res.send({success: true, data: sendLoadedTransfer.data})
 })
 
 const payInvoice = async (bolt11) => {
